@@ -173,6 +173,7 @@ push_spent(struct spwd *spent)
 static void
 f_setspent(INT32 args)
 {
+    pop_n_elems(args);
     if (THIS->shadow.db_opened)
         return;
 
@@ -183,9 +184,10 @@ f_setspent(INT32 args)
 static void
 f_endspent(INT32 args)
 {
-    if (!THIS->shadow.db_opened)
-        return;
-
+    pop_n_elems(args);
+    if (!THIS->shadow.db_opened) {
+      return;
+    }
     endspent();
     THIS->shadow.db_opened = 0;
 }
@@ -194,6 +196,7 @@ f_endspent(INT32 args)
 static void
 f_getspent(INT32 args)
 {
+    pop_n_elems(args);
     if (!THIS->shadow.db_opened)
         f_setspent(0);
 
@@ -220,7 +223,10 @@ f_getspent(INT32 args)
 	 * /grendel 22-09-2000
 	 */
         if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0)
-            return;
+	{
+	  push_int(0);
+	  return;
+	}
         push_spent(spent);
 
 #ifndef __GNUC__
@@ -245,6 +251,7 @@ f_getallspents(INT32 args)
     struct spwd    spbuf;
 #endif
 
+    pop_n_elems(args);
     if(THIS->shadow.db_opened)
         f_endspent(0);
     f_setspent(0);
@@ -261,8 +268,10 @@ f_getallspents(INT32 args)
 	error("AdminTools.Shadow->getallspents(): out of memory\n");
 #endif
 
-    if (getspent_r(&spbuf, buf, sizeof(buf), &spent) != 0)
+    if (getspent_r(&spbuf, buf, sizeof(buf), &spent) != 0) {
+        push_int(0);
         return;
+    }
 #endif
     
     while(spent) {
@@ -279,6 +288,8 @@ f_getallspents(INT32 args)
     sp_arr = aggregate_array(nents);
     if (sp_arr)
         push_array(sp_arr);
+    else
+        push_int(0);
 #ifdef _REENTRANT
 #ifndef __GNUC__
     LFREE(buf)
@@ -290,6 +301,7 @@ f_getallspents(INT32 args)
 static void
 f_create(INT32 args)
 {
+    pop_n_elems(args);
     THIS->shadow.sp_buf_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (THIS->shadow.sp_buf_max < 0)
         THIS->shadow.sp_buf_max = 2048;
@@ -302,24 +314,23 @@ void pike_module_init(void)
     start_new_program();
     ADD_STORAGE(struct INSTANCE);
 
-    ADD_FUNCTION("create", f_create,
-                 tFunc(tVoid, tVoid), 0);
+    add_function("create", f_create, "function(void:void)", 0);
     
-    ADD_FUNCTION("setspent", f_setspent, 
-                 tFunc(tVoid, tVoid), 0);
+    add_function("setspent", f_setspent, "function(void:void)", 0);
 
-    ADD_FUNCTION("endspent", f_endspent, 
-                 tFunc(tVoid, tVoid), 0);
+    add_function("endspent", f_endspent, "function(void:void)", 0);
 		 
-    ADD_FUNCTION("getspent", f_getspent, 
-                 tFunc(tVoid,tOr(tInt,tArray)), 0);
+    add_function("getspent", f_getspent, 
+                 "function(void:array)", 0);
 		 
-    ADD_FUNCTION("getallspents", f_getallspents,
-                 tFunc(tVoid,tOr(tInt,tArr(tArray))), 0);
+    add_function("getallspents", f_getallspents,
+                 "function(void:array(array))", 0);
     
-    end_class("Shadow", 0);
+    shadow_program = end_program();
+    add_program_constant("Shadow", shadow_program, 0);
 }
 
 void pike_module_exit(void)
 {
+  free_program(shadow_program);
 }
