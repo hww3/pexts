@@ -18,7 +18,7 @@
  *
  */
 
-/* PCRE Support - This module adds PCRE support to Pike. */
+/* PDF Support - This module adds PDF support to Pike. */
 
 #include "global.h"
 RCSID("$Id$");
@@ -157,6 +157,18 @@ void f_continue_text(INT32 args) {
 	pop_n_elems(args);
 }
 
+void f_show_boxed(INT32 args) {
+	char *text,*mode,*feature;
+	float x,y,width,height;
+	int ret;
+	
+	get_all_args("show_boxed",args,"%s%f%f%f%f%s%s",
+				&text,&x,&y,&width,&height,&mode,&feature );
+	ret=PDF_show_boxed(THIS->pdf, text, x, y, width, height, mode, feature );
+	pop_n_elems(args);
+	push_int(ret);
+}
+
 void f_set_text_pos(INT32 args) {
 	float x,y;
 	get_all_args("set_text_pos",args,"%f%f",&x,&y);
@@ -248,6 +260,119 @@ void f_stroke(INT32 args) {
 	PDF_stroke(THIS->pdf);
 	pop_n_elems(args);
 }
+
+void f_fill(INT32 args) {
+	PDF_fill(THIS->pdf);
+	pop_n_elems(args);
+}
+
+void f_setgray_fill(INT32 args) {
+	float gray;
+	get_all_args("setgray_fill",args,"%f",&gray);
+	PDF_setgray_fill(THIS->pdf, gray );
+	pop_n_elems(args);
+}
+
+void f_setgray_stroke(INT32 args) {
+	float gray;
+	get_all_args("setgray_stroke",args,"%f",&gray);
+	PDF_setgray_stroke(THIS->pdf, gray );
+	pop_n_elems(args);
+}
+
+void f_setgray(INT32 args) {
+	float gray;
+	get_all_args("setgray",args,"%f",&gray);
+	PDF_setgray(THIS->pdf, gray );
+	pop_n_elems(args);
+}
+
+void f_setrgbcolor_fill(INT32 args) {
+	float r,g,b;
+	get_all_args("setrgbcolor_fill",args,"%f%f%f", &r, &g, &b );
+	PDF_setrgbcolor_fill(THIS->pdf, r, g, b );
+	pop_n_elems(args);
+}
+
+void f_setrgbcolor_stroke(INT32 args) {
+	float r,g,b;
+	get_all_args("setrgbcolor_stroke",args,"%f%f%f", &r, &g, &b );
+	PDF_setrgbcolor_stroke(THIS->pdf, r, g, b );
+	pop_n_elems(args);
+}
+
+void f_setrgbcolor(INT32 args) {
+	float r,g,b;
+	get_all_args("setrgbcolor",args,"%f%f%f", &r, &g, &b );
+	PDF_setrgbcolor(THIS->pdf, r, g, b );
+	pop_n_elems(args);
+}
+
+// Parameter handling
+void f_get_value(INT32 args) {
+	char *key;
+	float modifier,value;
+
+	modifier=0;
+	if( args == 1 )
+		get_all_args("get_value",args,"%s",&key );
+	else
+		get_all_args("get_value",args,"%s%f",&key, &modifier );
+
+	value=PDF_get_value(THIS->pdf, key, modifier );
+	pop_n_elems(args);
+	push_float(value);
+}
+
+void f_set_value(INT32 args) {
+	char *key;
+	float value;
+
+	get_all_args("set_value",args,"%s%f", &key,  &value );
+	PDF_set_value(THIS->pdf, key, value );
+	pop_n_elems(args);
+}
+
+void f_get_parameter(INT32 args) {
+	char *key,*value;
+	float modifier;
+
+	modifier=0;
+
+	if( args == 1 )
+			get_all_args("get_parameter",args,"%s", &key );
+	else 
+			get_all_args("get_parameter",args,"%s%f", &key, &modifier );
+
+	// due to the PDFlib manual
+	// ...clients must neither touch nor free the returned string...
+	value=(char *) PDF_get_parameter(THIS->pdf, key, modifier);
+	value=strdup(value);
+	pop_n_elems(args);
+	push_string(make_shared_binary_string(value,sizeof(value)));	
+}
+
+void f_set_parameter(INT32 args) {
+	char *key, *value;
+
+	get_all_args("set_parameter",args,"%s%s", &key, &value );
+	PDF_set_parameter(THIS->pdf, key, value );
+	pop_n_elems(args);
+}
+
+// Bookmarks
+void f_add_bookmark(INT32 args) {
+	char *text;
+	int parent, open,id;
+	
+
+	get_all_args("add_bookmark",args,"%s%i%i",&text,&parent,&open);
+	id=PDF_add_bookmark(THIS->pdf, text, parent, open );
+	pop_n_elems(args);
+	push_int(id);
+}
+
+
 static struct program *pdf_program;
 static void free_pdf(struct object *o)
 {
@@ -288,6 +413,8 @@ void pike_module_init(void)
 		"function(int,float:void)",0);
   add_function( "show", f_show,
 		"function(string,int|void:void)",0);
+  add_function( "show_boxed", f_show,
+		"function(string,float,float,float,float,string,string:int)",0);
   add_function( "continue_text", f_continue_text,
 		"function(string,int|void:void)",0);
   add_function( "set_text_pos", f_set_text_pos,
@@ -313,6 +440,32 @@ void pike_module_init(void)
 		"function(float,float,float,float:void)",0);
   add_function( "stroke", f_stroke,
 		"function(void:void)",0);
+  add_function( "fill", f_fill,
+		"function(void:void)",0);
+  add_function( "setgray_fill", f_setgray_fill,
+		"function(float:void)",0);
+  add_function( "setgray_stroke", f_setgray_stroke,
+		"function(float:void)",0);
+  add_function( "setgray", f_setgray,
+		"function(float:void)",0);
+  add_function( "setrgbcolor_fill", f_setrgbcolor_fill,
+		"function(float,float,float:void)",0);
+  add_function( "setrgbcolor_stroke", f_setrgbcolor_stroke,
+		"function(float,float,float:void)",0);
+  add_function( "setrgbcolor", f_setrgbcolor,
+		"function(float,float,float:void)",0);
+
+  add_function( "get_value", f_get_value,
+		"function(string,float|void:float)",0);
+  add_function( "set_value", f_get_value,
+		"function(string,float:void)",0);
+  add_function( "get_parameter", f_get_parameter,
+		"function(string,float|void:string)",0);
+  add_function( "set_parameter", f_set_parameter,
+		"function(string,string:void)",0);
+// Bookmark function
+  add_function( "add_bookmark", f_add_bookmark,
+		"function(string,int,int:int)",0);
 
   set_init_callback(init_pdf);
   set_exit_callback(free_pdf);

@@ -53,6 +53,7 @@ void f_close(INT32 args);
 void f_findfont(INT32 args);
 void f_setfont(INT32 args);
 void f_show(INT32 args);
+void f_show_boxed(INT32 args);
 void f_continue_text(INT32 args);
 void f_set_text_pos(INT32 args);
 void f_generate(INT32 args);
@@ -67,6 +68,23 @@ void f_circle(INT32);
 void f_arc(INT32);
 void f_rect(INT32);
 void f_stroke(INT32);
+void f_fill(INT32);
+
+void f_setgray_fill(INT32);
+void f_setgray_stroke(INT32);
+void f_setgray(INT32);
+
+void f_setrgbcolor_fill(INT32);
+void f_setrgbcolor_stroke(INT32);
+void f_setrgbcolor(INT32);
+
+void f_get_value(INT32);
+void f_set_value(INT32);
+
+void f_get_parameter(INT32);
+void f_set_parameter(INT32);
+
+void f_add_bookmark(INT32);
 
 // pike module functions
 void pike_module_init(void);
