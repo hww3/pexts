@@ -1,0 +1,15 @@
+#!/bin/bash
+
+PIKE=@PIKE@
+PMOD=../../pmod/Newt.pmod
+
+#
+# This test script is for running the test.pike without
+# installing pexts only
+#
+
+if [ ! -L ./Newt.pmod ]; then
+    ln -sf $PMOD ./Newt.pmod
+fi
+
+$PIKE -M./ ./test.pike 2> test.log

@@ -13,7 +13,9 @@ if test $ac_cv_lib_newt_newtInit = yes; then
     AC_CHECK_FUNCS(newtSetThreeD)
 fi
 
-AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
+AC_SUBST(PIKE)
+
+AC_OUTPUT(Makefile.pre test, [make -f Makefile.pre depend; chmod 755 test])
 
 
 dnl ## Local Variables:
