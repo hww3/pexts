@@ -45,8 +45,6 @@ RCSID("$Id$");
 #include <errno.h>
 #include <string.h>
 
-#define ARG(_n_) sp[-(args - _n_)]
-
 #ifdef HAVE_BZLIB_H
 static struct program   *inflate_program;
 static struct program   *deflate_program;
@@ -64,10 +62,10 @@ static void
 f_inflate_create(INT32 args)
 {
     if (args == 1) {
-	if (ARG(0).type != T_INT)
+	if (ARG(1).type != T_INT)
 	    Pike_error("bzip2.inflate->create(): argument must be of type INT\n");
 	    
-	THIS->blkSize = ARG(0).u.integer != 0;
+	THIS->blkSize = ARG(1).u.integer != 0;
     } else if (args > 1) {
 	Pike_error("bzip2.inflate->create(): expected 1 argument of type INT.\n");
     } else
@@ -86,12 +84,12 @@ f_inflate_inflate(INT32 args)
     int                 retval;
     
     if (args == 1) {
-	if (ARG(0).type != T_STRING || ARG(0).u.string->size_shift > 0)
+	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
 	    Pike_error("bzip2.inflate->inflate(): argument 1 must be an 8-bit string\n");
-	if (!ARG(0).u.string->str || !strlen(ARG(0).u.string->str))
+	if (!ARG(1).u.string->str || !strlen(ARG(1).u.string->str))
 	    Pike_error("bzip2.inflate->inflate(): cannot decompress an empty string!\n");
 
-	src = ARG(0).u.string;
+	src = ARG(1).u.string;
     } else if (args != 1) {
 	Pike_error("bzip2.inflate->inflate(): expected exactly one argument of type STRING.\n");
     }
@@ -186,13 +184,13 @@ static void
 f_deflate_create(INT32 args)
 {
     if (args == 1) {
-	if (ARG(0).type != T_INT)
+	if (ARG(1).type != T_INT)
 	    Pike_error("bzip2.deflate->create(): argument must be of type INT\n");
 	    
-	if ((ARG(0).u.integer < 0) && (ARG(0).u.integer > 9))
+	if ((ARG(1).u.integer < 0) && (ARG(1).u.integer > 9))
 	    Pike_error("bzip2.deflate->create(): argument 1 must be between 0 and 9\n");
 	    
-	THIS->blkSize = ARG(0).u.integer;
+	THIS->blkSize = ARG(1).u.integer;
     } else if (args > 1) {
 	Pike_error("bzip2.deflate->create(): expected 1 argument of type INT.\n");
     } else
@@ -219,21 +217,21 @@ f_deflate_deflate(INT32 args)
     int                verbosity = 0;
     switch(args) {
      case 2:
-      if(ARG(1).type != T_INT) {
+      if(ARG(2).type != T_INT) {
 	  Pike_error("bzip2.deflate->deflate(): argument 2 not an integer.\n");
       }
-      verbosity = ARG(1).u.integer;
+      verbosity = ARG(2).u.integer;
       if( verbosity > 4 || verbosity < 0 ) {
 	Pike_error("bzip2.deflate->deflate(): verbosity should be between 0 and 4.\n");
       }
       /* FALLTHROUGH */
 
      case 1:
-      if (ARG(0).type != T_STRING)
+      if (ARG(1).type != T_STRING)
 	  Pike_error("bzip2.deflate->deflate(): argument 1 must be a string.\n");
-      if (!ARG(0).u.string->str || !ARG(0).u.string->len)
+      if (!ARG(1).u.string->str || !ARG(1).u.string->len)
 	  Pike_error("bzip2.deflate->deflate(): cannot compress an empty string!\n");
-      src = ARG(0).u.string;
+      src = ARG(1).u.string;
       break;
      default:
       Pike_error("bzip2.deflate->deflate(): expected  1 to 2 arguments.\n");
