@@ -362,7 +362,7 @@ f_dir_index(INT32 args)
             if (ARG(1).u.string == s_ino) {
                 pop_n_elems(args);                
                 push_int(THIS->dent->d_ino);
-#ifndef RUNNING_BSD
+#ifdef HAVE_DIRENT_D_OFF
             } else if (ARG(1).u.string == s_off) {
                 pop_n_elems(args);                
                 push_int(THIS->dent->d_off);
