@@ -18,28 +18,10 @@
  *
  */
 
-#ifndef PCRE_CONFIG_H
-#define PCRE_CONFIG_H
+#ifndef PCRELIB_CONFIG_H
+#define PCRELIB_CONFIG_H
 
 @TOP@
 
 @BOTTOM@
-
-#include "pcrelib/pcre.h"
-#define THIS ((PCRE_Regexp *)fp->current_storage)
-
-typedef struct
-{
-  pcre *regexp;
-  pcre_extra *extra;
-  struct pike_string *pattern;
-} PCRE_Regexp;
-
-void f_pcre_create(INT32);
-void f_pcre_match(INT32);
-void f_pcre_split(INT32);
-void pike_module_init(void);
-void pike_module_exit(void);
-static void free_regexp(struct object *);
-
 #endif

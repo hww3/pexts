@@ -1,3 +1,4 @@
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000 The Caudium Group
@@ -18,28 +19,28 @@
  *
  */
 
-#ifndef PCRE_CONFIG_H
-#define PCRE_CONFIG_H
+#ifndef PCRELIB_CONFIG_H
+#define PCRELIB_CONFIG_H
 
-@TOP@
 
-@BOTTOM@
+/* Define to empty if the keyword does not work.  */
+#undef const
 
-#include "pcrelib/pcre.h"
-#define THIS ((PCRE_Regexp *)fp->current_storage)
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
 
-typedef struct
-{
-  pcre *regexp;
-  pcre_extra *extra;
-  struct pike_string *pattern;
-} PCRE_Regexp;
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
 
-void f_pcre_create(INT32);
-void f_pcre_match(INT32);
-void f_pcre_split(INT32);
-void pike_module_init(void);
-void pike_module_exit(void);
-static void free_regexp(struct object *);
+/* Define if you have the bcopy function.  */
+#undef HAVE_BCOPY
 
+/* Define if you have the memmove function.  */
+#undef HAVE_MEMMOVE
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
 #endif

@@ -27,7 +27,6 @@ RCSID("$Id$");
 
 #include "pexts_ver.c"
 
-#ifdef HAVE_PCRE 
 #include <stdio.h>
 #include <fcntl.h>
 #ifdef HAVE_LOCALE_H
@@ -322,12 +321,6 @@ void pike_module_init(void)
   end_class("Regexp", 0);
   add_integer_constant("version", 2, 0);
 }
-
-#else
-void pike_module_init(void) {
-    pexts_init();
-}
-#endif /* HAVE_PCRE */
 
 /* Restore and exit module */
 void pike_module_exit( void )

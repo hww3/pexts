@@ -4,10 +4,9 @@ AC_CONFIG_HEADER(pcre_config.h)
 PEXTS_MODULE_INIT()
 
 
-AC_CHECK_HEADERS( pcre.h locale.h)
+AC_CHECK_HEADERS(  locale.h)
 AC_CHECK_FUNCS( setlocale )
-AC_CHECK_LIB(pcre, pcre_compile)
-
+AC_CONFIG_SUBDIRS(libpcre)
 
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 

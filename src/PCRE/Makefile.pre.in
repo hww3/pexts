@@ -1,6 +1,6 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
 MODNAME=PCRE
-OBJS= pcre.o
+OBJS= pcre.o pcrelib/libpcre.a
 SOURCES=pcre.c
 MODULE_LIBS=@LIBS@
 EXTRA_CLEAN=pcre_config.h pcre_config.h.in PCRE.so
@@ -8,6 +8,9 @@ EXTRA_CLEAN=pcre_config.h pcre_config.h.in PCRE.so
 @module_makefile@
 
 extrainstall:
+
+pcrelib/libpcre.a: pcrelib/chartables.c pcrelib/config.h pcrelib/dftables.c pcrelib/get.c pcrelib/internal.h pcrelib/maketables.c pcrelib/pcre.c pcrelib/pcre.h pcrelib/pcretest.c pcrelib/study.c
+	(cd pcrelib ; make )
 
 # DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
 
