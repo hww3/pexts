@@ -100,6 +100,9 @@ static struct program   *shadow_program;
 static struct program   *dir_program;
 static struct program   *quota_program;
 static struct program   *system_program;
+#ifdef HAVE_PAM
+static struct program   *pam_program;
+#endif
 
 void pike_module_init(void)
 {
@@ -122,6 +125,11 @@ void pike_module_init(void)
     
     /* System stuff */
     system_program = _at_system_init();
+
+    /* PAM stuff */
+#ifdef HAVE_PAM
+    pam_program = _at_pam_init();
+#endif
 }
 
 void pike_module_exit(void)
@@ -129,4 +137,7 @@ void pike_module_exit(void)
   free_program(shadow_program);
   free_program(dir_program);
   free_program(quota_program);
+#ifdef HAVE_PAM
+  free_program(pam_program);
+#endif
 }

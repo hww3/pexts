@@ -29,6 +29,8 @@ RCSID("$Id$");
 
 #include "at_config.h"
 
+#ifdef HAVE_PAM
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -44,7 +46,7 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
-#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, pam_program))
+#define THIS_LOW ((ATSTORAGE*)Pike_fp->current_storage)
 #define THIS ((PAM_OBJECT_DATA*)THIS_LOW->object_data)
 
 static char *_object_name = "PAM";
@@ -226,11 +228,7 @@ static void
 f_create(INT32 args)
 {
     get_all_args("AdminTools.PAM->create", args,
-                 "%s", THIS->appname);
-
-    if (!THIS->appname)
-        FERROR("create", "First argument is required - an application name");
-
+                 "%s", &THIS->appname);
     pop_n_elems(args);
 }
 
@@ -275,3 +273,4 @@ _at_pam_init(void)
     
     return pam_program;
 }
+#endif /* HAVE_PAM */ 

@@ -5,10 +5,6 @@
 
 @BOTTOM@
 
-#ifndef ADD_STORAGE
-#define ADD_STORAGE(x) add_storage(sizeof(x))
-#endif
-
 /* Define if you have a failsafe strerror */
 #undef HAVE_STRERROR
 
@@ -26,5 +22,9 @@
 
 /* Define if your system has known quotactl support */
 #undef HAVE_QUOTA_SUPPORT
+
+#if defined(HAVE_SECURITY_PAM_APPL_H) && defined(HAVE_PAM_END)
+#define HAVE_PAM
+#endif
 
 #endif

@@ -40,10 +40,13 @@ AC_CHECK_HEADERS( db.h )
 AC_CHECK_LIB(db-3, db_create)
 if test "$ac_cv_lib_db_3_db_create" = "no"; then
   AC_CHECK_LIB(db-3.1, db_create)
-fi
-if test "$ac_cv_lib_db_3_1_db_create" = "no"; then
-  AC_CHECK_LIB(db-3.1, db_create)
-fi
+  if test "$ac_cv_lib_db_3_1_db_create" = "no"; then
+    AC_CHECK_LIB(db-3.2, db_create)
+    if test "$ac_cv_lib_db_3_2_db_create" = "no"; then
+      AC_CHECK_LIB(db, db_create)
+    fi
+  fi
+fi 
 AC_MSG_CHECKING(if Berkeley DB is new enough)
 AC_CACHE_VAL(caudium_cv_bdb_new_enough, 
   AC_TRY_RUN([#include <db.h>

@@ -41,7 +41,7 @@ install_only:
 spotless:  clean
 	@(cd src/;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
 	@(cd src/PCRE/pcrelib;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
-	rm -f tools/caudium-rc_script
+	rm -f Makefile
 	find . '(' -name '#*#' -o -name '*~' -o -name '.*~' -o -name '*.bak'\
         -o -name '.pine-debug*' -o -name '.*.bak' -o -name core -o -name \
 	config.cache -o -name config.status -o -name config.log -o -name \
@@ -63,8 +63,4 @@ bump_version: bump_version.stamp
 
 $(SRCDIR)/ChangeLog.gz:
 	cd $(SRCDIR); pike tools/make_changelog.pike | gzip -9 > ChangeLog.gz
-
-$(SRCDIR)/ChangeLog.rxml.gz:
-	cd $(SRCDIR); pike tools/make_changelog.pike --rxml | gzip -9 > ChangeLog.rxml.gz
-
 
