@@ -33,9 +33,10 @@ RCSID("$Id$");
 #include "pexts.h"
 
 #include "newt_config.h"
-#include "newt_global.h"
 
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
+#include "newt_global.h"
+
 static char *dictname = "NewtFunctions";
 static DICT *dict;
 

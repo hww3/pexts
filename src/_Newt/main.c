@@ -39,9 +39,9 @@ RCSID("$Id$");
 #include "pexts_ver.c"
 
 #include "newt_config.h"
-#include "newt_global.h"
 
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
+#include "newt_global.h"
 
 #ifdef __DEBUG__
 #include <stdio.h>
