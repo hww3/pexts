@@ -1,0 +1,8 @@
+configure
+xml_config.h
+xml_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+_XML.so
