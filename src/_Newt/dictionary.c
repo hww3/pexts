@@ -43,9 +43,14 @@ static DICT      **dictionaries;
 static unsigned    dictcount;
 static unsigned    dictmax;
 
+#define INFUN() printf(__FUNCTION__ " entered\n")
+#define OUTFUN() printf(__FUNCTION__  " leaving\n")
+
 static int
 dict_insert(DICT *dict, struct object *obj, void *data)
 {
+    INFUN();
+    
     if (!obj)
         return DICT_NULL_OBJECT;
 
@@ -80,6 +85,7 @@ dict_insert(DICT *dict, struct object *obj, void *data)
         tmp = low_mapping_lookup(dict->dict, &skey);
         if (tmp) {
             free_string(skey.u.string);
+	    OUTFUN();
             return DICT_EXISTS;
         }
 
@@ -87,6 +93,7 @@ dict_insert(DICT *dict, struct object *obj, void *data)
         dict->used++;
     }
 
+    OUTFUN();
     return DICT_OK;
 }
 
@@ -96,6 +103,7 @@ dict_lookup(DICT *dict, void *data)
     struct svalue   *obj, skey;
     char             addr[64];
     
+    INFUN();
     if (!dict || !data)
         return NULL;
 
@@ -105,6 +113,8 @@ dict_lookup(DICT *dict, void *data)
     
     obj = low_mapping_lookup(dict->dict, &skey);
 
+    free_string(skey.u.string);
+    
     return obj->u.object;
 }
 

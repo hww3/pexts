@@ -42,6 +42,7 @@ static DICT *dict;
 #define dict_lookup(_data_) dict->lookup(dict, _data_)
 #define dict_foreach(_cb_) dict->foreach(dict, _cb_)
 
+#ifdef HAVE_NEWTSETTHREED
 static void
 f_setThreeD(INT32 args)
 {
@@ -58,6 +59,7 @@ f_setThreeD(INT32 args)
 
     pop_n_elems(args);
 }
+#endif
 
 static void
 f_cls(INT32 args)
@@ -2668,9 +2670,11 @@ void init_functions()
     add_integer_constant("KEY_F11", NEWT_KEY_F11, 0);
     add_integer_constant("KEY_F12", NEWT_KEY_F12, 0);
     add_integer_constant("KEY_RESIZE", NEWT_KEY_RESIZE, 0);
-    
+
+#ifdef HAVE_NEWTSETTHREED    
     ADD_FUNCTION("setThreeD", f_setThreeD,
                  tFunc(tInt, tVoid), 0);
+#endif
     ADD_FUNCTION("cls", f_cls,
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("resizeScreen", f_resizeScreen,

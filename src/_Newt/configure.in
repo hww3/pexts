@@ -9,7 +9,8 @@ AC_CHECK_LIB(newt, newtInit)
 
 if test $ac_cv_lib_newt_newtInit = yes; then
     AC_CHECK_FUNCS(newtCursorOn newtCursorOff newtListitem newtListitemSet newtListitemGetData)
-	AC_CHECK_FUNCS(newtCheckboxTreeSetEntry newtCheckboxTreeGetEntryValue newtCheckboxTreeSetEntryValue)
+    AC_CHECK_FUNCS(newtCheckboxTreeSetEntry newtCheckboxTreeGetEntryValue newtCheckboxTreeSetEntryValue)
+    AC_CHECK_FUNCS(newtSetThreeD)
 fi
 
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
