@@ -65,6 +65,7 @@
 
 #define OL_DEF_FILTER     "dn=*"
 
+#ifdef HAVE_LDAP_H
 typedef struct 
 {
     LDAP                *conn;
@@ -77,6 +78,7 @@ typedef struct
     int                  bound:1;
     int                  caching:1;
 } OLSTORAGE;
+#endif
 
 struct program* _ol_ldap_program_init(void);
 

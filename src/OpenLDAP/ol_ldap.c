@@ -30,6 +30,8 @@ RCSID("$Id$");
 #include "ol_config.h"
 #include "ol_common.h"
 
+#ifdef HAVE_LIBLDAP
+
 #ifdef HAVE_UNISTD
 #include <unistd.h>
 #endif
@@ -457,3 +459,10 @@ _ol_ldap_program_init(void)
     
     return ldap_program;
 }
+#else /* !HAVE_LIBLDAP */
+struct program*
+_ol_ldap_program_init(void)
+{
+    return NULL;
+}
+#endif
