@@ -65,7 +65,7 @@ do-configure:
 	if test "$(CVS_SNAPSHOT)" = "yes"; then \
 	    ./autogen.sh; \
 	fi
-	 ./configure --prefix=/usr \
+	./configure --prefix=/usr \
 	             --with-pike=$(PIKE) \
 		     --without-_esmtp \
 		     --without-_FDF \
@@ -118,6 +118,7 @@ clean: inter-clean
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
+	rm -f configure config.h.in config.log configure.ac
 
 inter-install:
 	dh_testdir

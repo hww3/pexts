@@ -10,7 +10,7 @@ config_files="$mydir/configure.ac.in $mydir/src/configure.ac.in"
 #
 # Catch some signals for cleanup
 #
-trap 'rm -f $tmpfile_with $tmpfile_subdirs; exit 1' 0 1 2 13 15
+trap 'rm -f $tmpfile_with $tmpfile_subdirs; exit 0' 0 1 2 13 15
 
 clean_dirs()
 {
