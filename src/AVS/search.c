@@ -38,9 +38,9 @@ static void f_create(INT32 args)
   if (!args)
     Pike_error("Too few arguments to Search->create()\n");
 
-  if ((sp[-args].type != T_OBJECT) || 
+  if ((Pike_sp[-args].type != T_OBJECT) || 
       (!(index = (struct private_index_data *)
-                 get_storage(sp[-args].u.object, index_program))))
+                 get_storage(Pike_sp[-args].u.object, index_program))))
     Pike_error("Bad argument 1 to Search->create()\n");
 
   memcpy(PIKE_SEARCH, &index->tmp_search, sizeof(struct private_search_data));
