@@ -1,0 +1,17 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=_esmtp
+OBJS= esmtp_main.o
+SOURCES=esmtp_main.c
+LIBESMTP_LIBS=@LIBESMTP_LIBS@
+LIBESMTP_CFLAGS=@LIBESMTP_CFLAGS@
+MODULE_LIBS=@LIBS@ $(LIBESMTP_LIBS)
+MODULE_CFLAGS=$(LIBESMTP_CFLAGS)
+EXTRA_CLEAN=esmtp_config.h esmtp_config.h.in _esmtp.so
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

@@ -15,7 +15,7 @@ fi
 
 AC_SUBST(PIKE)
 
-AC_OUTPUT(Makefile.pre test, [${MAKE} -f Makefile.pre depend; chmod 755 test])
+AC_OUTPUT(Makefile.pre test, [${MAKE-make} -f Makefile.pre depend; chmod 755 test])
 
 
 dnl ## Local Variables:

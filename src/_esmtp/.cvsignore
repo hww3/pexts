@@ -1,0 +1,8 @@
+configure
+esmtp_config.h
+esmtp_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+_esmtp.so
