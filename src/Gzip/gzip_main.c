@@ -44,7 +44,22 @@ RCSID("$Id$");
 #include <zlib.h>
 #endif
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
+#if defined(HAVE_ALLOCA)
+#define LOCAL_BUF(_s_) alloca(_s_)
+#define LOCAL_FREE(_s_)
+#else
+#define LOCAL_BUF(_s_) malloc(_s_)
+#define LOCAL_FREE(_n_) if (_n_) free(_n_)
+#endif
+
 static struct program   *gzip_program;
+
+#define GMODE_NORMAL      0x00
+#define GMODE_IN_CHUNK    0x01
 
 typedef struct
 {
@@ -52,9 +67,44 @@ typedef struct
     int         out;
     char       *from;
     char       *to;
+    int         gmode;
 } GZSTRUCT;
 
 #define THIS ((GZSTRUCT*)fp->current_storage)
+
+static INLINE gzFile
+open_gz(char *from)
+{
+    gzFile ret;
+    
+    if (from && (!strcmp(from, "stdin") || !strcmp(from, "-")))
+        from = NULL;
+      
+    if (from)
+        ret = gzopen(from, "rb");
+    else
+        ret = gzdopen(0, "rb");
+    
+    if (!ret)
+        Pike_error("Error opening input gzip file '%s'\n",
+                   from ? from : "stdin");
+
+    return ret;
+}
+
+static INLINE int
+read_gz_chunk(gzFile in, char *buf, int buflen, int close_on_err)
+{
+    int len;
+    
+    len = gzread(in, buf, buflen);
+    if (len < 0) {
+        if (close_on_err)
+            gzclose(in);
+    }
+
+    return len;
+}
 
 /*
  * Uncompress data from THIS->from to THIS->to.
@@ -69,6 +119,8 @@ f_gzip_uncompress(INT32 args)
     int     err;
     char   *from;
     char   *to;
+    gzFile  in;
+    int     out;
 
     switch (args) {
         case 2:
@@ -90,76 +142,126 @@ f_gzip_uncompress(INT32 args)
             Pike_error("Wrong number of parameters\n");
     }
 
-    if (from && (!strcmp(from, "stdin") || !strcmp(from, "-")))
-        THIS->from = NULL;
-    else
-        THIS->from = from;
+    in = open_gz(from);
     
     if (to && (!strcmp(to, "stdout") || !strcmp(to, "-")))
-        THIS->to = NULL;
-    else
-        THIS->to = to;
-    
-    if (THIS->from)
-        THIS->in = gzopen(THIS->from, "rb");
-    else
-        THIS->in = gzdopen(0, "rb");
-    
-    if (!THIS->in)
-        Pike_error("Error opening input gzip file '%s'\n",
-                   THIS->from ? THIS->from : "stdin");
+        to = NULL;
 
-    if (THIS->to) {
-        THIS->out = open(THIS->to, O_CREAT | O_TRUNC | O_WRONLY, 0600);
-        if (THIS->out < 0)
+    if (to) {
+        out = open(to, O_CREAT | O_TRUNC | O_WRONLY, 0600);
+        if (out < 0)
             Pike_error("Error opening output file '%s'. %s\n",
-                       THIS->to ? THIS->to : "stdout",
+                       to ? to : "stdout",
                        strerror(errno));
     } else
-        THIS->out = 1;
+        out = 1;
     
     while(1){
-        len = gzread(THIS->in, buf, sizeof(buf));
+        len = read_gz_chunk(in, buf, sizeof(buf), from != NULL);
         if (len < 0) {
-            if (THIS->from)
-                gzclose(THIS->in);
-            if (THIS->to)
-                close(THIS->out);
-            THIS->out = -1;
-            THIS->in = NULL;
+            if (to)
+                close(out);
             Pike_error("Error while decompressing data from file '%s'. %s\n",
-                       THIS->from ? THIS->from : "stdin",
-                       gzerror(THIS->in, &err));
+                       from ? from : "stdin",
+                       gzerror(in, &err));
         }
         
         if (!len)
             break;
 
-        wlen = write(THIS->out, (const void*)buf, len);
+        wlen = write(out, (const void*)buf, len);
         if (wlen < 0 || wlen != len) {
-            if (THIS->from)
-                gzclose(THIS->in);
-            if (THIS->to)
-                close(THIS->out);
-            THIS->out = -1;
-            THIS->in = NULL;
+            if (from)
+                gzclose(in);
+            if (to)
+                close(out);
             Pike_error("Error while writing the decompressed data to file '%s'. %s\n",
-                       THIS->to ? THIS->to : "stdout",
+                       to ? to : "stdout",
                        strerror(errno));
         }
     }
 
-    if (THIS->from && gzclose(THIS->in) != Z_OK)
+    if (from && gzclose(in) != Z_OK)
         Pike_error("Error closing the input file '%s'\n",
-                   THIS->from ? THIS->from : "stdin");
-    if (THIS->to && close(THIS->out) < 0)
+                   from ? from : "stdin");
+    if (to && close(out) < 0)
         Pike_error("Error closing the output file '%s'\n",
-                   THIS->to ? THIS->to : "stdout");
-
-    THIS->out = -1;
-    THIS->in = NULL;
+                   to ? to : "stdout");
 
     pop_n_elems(args);
+}
+
+/*
+ * Read data from an input file (or stdin if from is 'stdin' or '-') and
+ * return it as a Pike string - in _one chunk_. That might be BIG!
+ */
+static void
+f_gzip_getdata(INT32 args)
+{
+    char                buf[BUFLEN]; /* todo: make it configurable */
+    char               *tmpbuf;
+    int                 len, wlen;
+    int                 err;
+    char               *from;
+    gzFile              in;
+    struct pike_string *ret;
+    size_t              tmplen;
+    
+    switch (args) {            
+        case 1:
+            get_all_args("Gzip.gzip->getdata()", args, "%s",
+                         &from);
+            break;
+
+        case 0:
+            from = THIS->from;
+            break;
+
+        default:
+            Pike_error("Wrong number of parameters\n");
+    }
+
+    in = open_gz(from);
+
+    tmpbuf = NULL;
+    tmplen = 0;
+    
+    while(1) {
+        char  *tmp;
+        
+        len = read_gz_chunk(in, buf, sizeof(buf), from != NULL);
+        if (len < 0)
+            Pike_error("Error while decompressing data from file '%s'. %s\n",
+                       from ? from : "stdin",
+                       gzerror(in, &err));
+        
+        if (!len)
+            break;
+
+        /*
+         * todo: need a smarter algo here
+         */
+        if (!tmpbuf) {
+            tmpbuf = (char*)malloc(len * sizeof(char));
+            tmplen = len;
+            tmp = tmpbuf;
+        } else {
+            tmpbuf = (char*)realloc(tmpbuf, (tmplen + len) * sizeof(char));
+            tmp = tmpbuf + tmplen;
+            tmplen += len;
+        }
+
+        memcpy(tmp, buf, len);
+    }
+
+    pop_n_elems(args);
+    
+    if (!tmpbuf)
+        push_int(0);
+    else {
+        push_string(make_shared_binary_string(tmpbuf, tmplen));
+        free(tmpbuf);
+    }
 }
 
 static void
@@ -206,6 +308,7 @@ init_gzip(struct object *o)
     THIS->to = NULL;
     THIS->in = NULL;
     THIS->out = -1;
+    THIS->gmode = GMODE_NORMAL;
 }
 
 static void
@@ -228,6 +331,8 @@ void pike_module_init(void)
                  tFunc(tOr(tString, tVoid) tOr(tString, tVoid), tVoid), 0);
     ADD_FUNCTION("uncompress", f_gzip_uncompress,
                  tFunc(tOr(tString, tVoid) tOr(tString, tVoid), tVoid), 0);
+    ADD_FUNCTION("getdata", f_gzip_getdata,
+                 tFunc(tOr(tString, tVoid), tString), 0);
     
     gzip_program = end_program();
     add_program_constant("gzip", gzip_program, 0);
