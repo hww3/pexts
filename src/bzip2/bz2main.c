@@ -265,7 +265,7 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
 				  src->len << src->size_shift,
 				  THIS->blkSize, verbosity, 0);
 #else
-    retval = bzBuffToBuffCompress(dest, &dlen, src->str,
+    retval = BZ2_bzBuffToBuffCompress(dest, &dlen, src->str,
 				      src->len << src->size_shift,
 				      THIS->blkSize, verbosity, 0);
 #endif
