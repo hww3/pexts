@@ -148,6 +148,7 @@ typedef struct
   struct object       *callbacks;
   struct object       *file_obj;
   struct pike_string  *input_data;
+  struct svalue        user_data;
 } sax_storage;
 
 static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID);
@@ -260,9 +261,11 @@ static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   safe_push_text(externalID);
   safe_push_text(systemID);
+  push_svalue(&THIS->user_data);
   
   CB_CALL(endElementSAX, 3);
   pop_stack();
@@ -280,6 +283,8 @@ static int pextsIsStandalone(void *ctx)
     return 1;
   }
 
+  push_object(this_object());
+  push_svalue(&THIS->user_data);
   CB_CALL(isStandaloneSAX, 0);
   stack_pop_to(&sv);
   
@@ -297,6 +302,8 @@ static int pextsHasInternalSubset(void *ctx)
     return 0;
   }
 
+  push_object(this_object());
+  push_svalue(&THIS->user_data);
   CB_CALL(hasInternalSubsetSAX, 0);
   stack_pop_to(&sv);
   
@@ -314,6 +321,8 @@ static int pextsHasExternalSubset(void *ctx)
     return 0;
   }
 
+  push_object(this_object());
+  push_svalue(&THIS->user_data);
   CB_CALL(hasExternalSubsetSAX, 0);
   stack_pop_to(&sv);
   
@@ -343,11 +352,13 @@ static void pextsEntityDecl(void *ctx, const xmlChar *name, int type, const xmlC
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   push_int(type);
   safe_push_text(publicId);
   safe_push_text(systemId);
   safe_push_text(content);
+  push_svalue(&THIS->user_data);
 
   CB_CALL(entityDeclSAX, 5);
   pop_stack();
@@ -363,10 +374,12 @@ static void pextsNotationDecl(void *ctx, const xmlChar *name, const xmlChar *pub
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   safe_push_text(publicId);
   safe_push_text(systemId);
-
+  push_svalue(&THIS->user_data);
+  
   CB_CALL(notationDeclSAX, 3);
   pop_stack();
   
@@ -384,12 +397,14 @@ static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fu
     return;
   }
 
+  push_object(this_object());
   safe_push_text(elem);
   safe_push_text(fullname);
   push_int(type);
   push_int(def);
   safe_push_text(defaultValue);
-
+  push_svalue(&THIS->user_data);
+  
   if (tree) {
     xmlEnumerationPtr   tmp = tree;
     struct array      *arr;
@@ -459,6 +474,7 @@ static void pextsElementDecl(void *ctx, const xmlChar *name, int type, xmlElemen
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   push_int(type);
   cmap = tree2mapping(content);
@@ -466,7 +482,8 @@ static void pextsElementDecl(void *ctx, const xmlChar *name, int type, xmlElemen
     push_mapping(cmap);
   else
     push_int(0);
-
+  push_svalue(&THIS->user_data);
+  
   CB_CALL(elementDeclSAX, 3);
   pop_stack();
   
@@ -482,11 +499,13 @@ static void pextsUnparsedEntityDecl(void *ctx, const xmlChar *name, const xmlCha
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   safe_push_text(publicId);
   safe_push_text(systemId);
   safe_push_text(notationName);
-
+  push_svalue(&THIS->user_data);
+  
   CB_CALL(unparsedEntityDeclSAX, 4);
   pop_stack();
   
@@ -501,6 +520,8 @@ static void pextsStartDocument(void *ctx)
     return;
   }
 
+  push_object(this_object());
+  push_svalue(&THIS->user_data);
   CB_CALL(startDocumentSAX, 0);
   pop_stack();
   
@@ -515,6 +536,8 @@ static void pextsEndDocument(void *ctx)
     return;
   }
 
+  push_object(this_object());
+  push_svalue(&THIS->user_data);
   CB_CALL(endDocumentSAX, 0);
   pop_stack();
   
@@ -531,7 +554,8 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
     DBG_FUNC_LEAVE();
     return;
   }
-  
+
+  push_object(this_object());
   safe_push_text(name);
   if (atts) {
     npairs = 0;
@@ -545,6 +569,7 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
   } else {
     push_int(0);
   }
+  push_svalue(&THIS->user_data);
   
   CB_CALL(startElementSAX, 2);
   pop_stack();
@@ -560,7 +585,9 @@ static void pextsEndElement(void *ctx, const xmlChar *name)
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
+  push_svalue(&THIS->user_data);
   CB_CALL(endElementSAX, 1);
   pop_stack();
   
@@ -575,7 +602,9 @@ static void pextsReference(void *ctx, const xmlChar *name)
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
+  push_svalue(&THIS->user_data);
   CB_CALL(referenceSAX, 1);
   pop_stack();
   
@@ -590,10 +619,12 @@ static void pextsCharacters(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  push_object(this_object());
   if (ch && len)
     push_text(make_shared_binary_string((const char*)ch, len));
   else
     push_int(0);
+  push_svalue(&THIS->user_data);
   CB_CALL(charactersSAX, 1);
   pop_stack();
   
@@ -608,10 +639,12 @@ static void pextsIgnorableWhitespace(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  push_object(this_object());
   if (ch && len)
     push_text(make_shared_binary_string((const char*)ch, len));
   else
     push_int(0);
+  push_svalue(&THIS->user_data);
   CB_CALL(ignorableWhitespaceSAX, 1);
   pop_stack();
   
@@ -626,8 +659,10 @@ static void pextsProcessingInstruction(void *ctx, const xmlChar *target, const x
     return;
   }
 
+  push_object(this_object());
   safe_push_text(target);
   safe_push_text(data);
+  push_svalue(&THIS->user_data);
   CB_CALL(processingInstructionSAX, 2);
   pop_stack();
   
@@ -642,7 +677,9 @@ static void pextsComment(void *ctx, const xmlChar *value)
     return;
   }
 
+  push_object(this_object());
   safe_push_text(value);
+  push_svalue(&THIS->user_data);
   CB_CALL(commentSAX, 1);
   pop_stack();
   
@@ -660,6 +697,7 @@ static void pextsWarning(void *ctx, const char *msg, ...)
     return;
   }
 
+  push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
   va_start(ap, msg);
@@ -669,6 +707,7 @@ static void pextsWarning(void *ctx, const char *msg, ...)
     push_text(vmsg);
     free(vmsg);
   }
+  push_svalue(&THIS->user_data);
   CB_CALL(warningSAX, 1);
   pop_stack();
   
@@ -686,6 +725,7 @@ static void pextsError(void *ctx, const char *msg, ...)
     return;
   }
 
+  push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
   va_start(ap, msg);
@@ -695,6 +735,7 @@ static void pextsError(void *ctx, const char *msg, ...)
     push_text(vmsg);
     free(vmsg);
   }
+  push_svalue(&THIS->user_data);
   CB_CALL(errorSAX, 1);
   pop_stack();
   
@@ -712,6 +753,7 @@ static void pextsFatalError(void *ctx, const char *msg, ...)
     return;
   }
 
+  push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
   va_start(ap, msg);
@@ -721,6 +763,7 @@ static void pextsFatalError(void *ctx, const char *msg, ...)
     push_text(vmsg);
     free(vmsg);
   }
+  push_svalue(&THIS->user_data);
   CB_CALL(fatalErrorSAX, 1);
   pop_stack();
   
@@ -748,10 +791,12 @@ static void pextsCdataBlock(void *ctx, const xmlChar *value, int len)
     return;
   }
 
+  push_object(this_object());
   if (value)
     push_text(make_shared_binary_string((const char*)value, len));
   else
     push_int(0);
+  push_svalue(&THIS->user_data);
   CB_CALL(cdataBlockSAX, 1);
   pop_stack();
   
@@ -766,9 +811,11 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
     return;
   }
 
+  push_object(this_object());
   safe_push_text(name);
   safe_push_text(externalId);
   safe_push_text(systemId);
+  push_svalue(&THIS->user_data);
   CB_CALL(externalSubsetSAX, 3);
   pop_stack();
   
@@ -842,7 +889,7 @@ static int is_callback_ok(struct object *callbacks)
   return 1;
 }
 
-/*! @decl void create(string|object input, object callbacks, mapping|void entities, int|void input_is_data)
+/*! @decl void create(string|object input, object callbacks, mapping|void  entities, mixed|void user_data, int|void input_is_data)
  */
 static void f_create(INT32 args)
 {
@@ -851,13 +898,18 @@ static void f_create(INT32 args)
   struct mapping     *entities = NULL;
   int                 input_is_data = 0;
   struct pike_string *input_data = NULL;
+  struct svalue      *user_data = NULL;
   
   switch(args) {
-      case 4:
-        if (ARG(4).type != T_INT)
+      case 5:
+        if (ARG(5).type != T_INT)
           Pike_error("Incorrect type for argument 4: expected an integer\n");
-        input_is_data = ARG(4).u.integer != 0;
+        input_is_data = ARG(5).u.integer != 0;
         /* fall through */
+
+      case 4:
+        user_data = &ARG(4);
+        /* fall_through */
         
       case 3:
         if (ARG(3).type != T_MAPPING)
@@ -922,6 +974,7 @@ static void f_create(INT32 args)
   }
 
   THIS->callbacks = callbacks;
+  assign_svalue_no_free(&THIS->user_data, user_data);
 }
 
 static void f_parse(INT32 args)
@@ -991,7 +1044,7 @@ int _init_xml_sax(void)
   set_exit_callback(exit_sax);
 
   ADD_FUNCTION("create", f_create,
-               tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tInt, tVoid), tVoid), 0);
+               tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tMixed, tVoid) tOr(tInt, tVoid), tVoid), 0);
   ADD_FUNCTION("parse", f_parse, tFunc(tVoid, tInt), 0);
   
   sax_program = end_program();
