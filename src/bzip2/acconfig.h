@@ -13,3 +13,7 @@
 #undef HAVE_BZLIB_H
 
 #endif
+
+void pike_module_init(void);
+void pike_module_exit(void);
+

@@ -51,7 +51,7 @@ RCSID("$Id$");
 #include <errno.h>
 #include <string.h>
 
-#define ARG(_n_) sp[-(_n_)]
+#define ARG(_n_) sp[-(args - _n_)]
 
 #ifdef HAVE_BZLIB_H
 static struct program   *inflate_program;
@@ -70,10 +70,10 @@ static void
 f_inflate_create(INT32 args)
 {
     if (args == 1) {
-	if (ARG(1).type != T_INT)
+	if (ARG(0).type != T_INT)
 	    error("bzip2.inflate->create(): argument must be of type INT\n");
 	    
-	THIS->blkSize = ARG(1).u.integer != 0;
+	THIS->blkSize = ARG(0).u.integer != 0;
     } else if (args > 1) {
 	error("bzip2.inflate->create(): expected 1 argument of type INT.\n");
     } else
@@ -92,12 +92,12 @@ f_inflate_inflate(INT32 args)
     int                 retval;
     
     if (args == 1) {
-	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+	if (ARG(0).type != T_STRING || ARG(0).u.string->size_shift > 0)
 	    error("bzip2.inflate->inflate(): argument 1 must be an 8-bit string\n");
-	if (!ARG(1).u.string->str || !strlen(ARG(1).u.string->str))
+	if (!ARG(0).u.string->str || !strlen(ARG(0).u.string->str))
 	    error("bzip2.inflate->inflate(): cannot decompress an empty string!\n");
 
-	src = ARG(1).u.string;
+	src = ARG(0).u.string;
     } else if (args != 1) {
 	error("bzip2.inflate->inflate(): expected exactly one argument of type STRING.\n");
     }
@@ -190,17 +190,17 @@ static void
 f_deflate_create(INT32 args)
 {
     if (args == 1) {
-	if (ARG(1).type != T_INT)
+	if (ARG(0).type != T_INT)
 	    error("bzip2.deflate->create(): argument must be of type INT\n");
 	    
-	if ((ARG(1).u.integer < 0) && (ARG(1).u.integer > 9))
+	if ((ARG(0).u.integer < 0) && (ARG(0).u.integer > 9))
 	    error("bzip2.deflate->create(): argument 1 must be between 0 and 9\n");
 	    
-	THIS->blkSize = ARG(1).u.integer;
+	THIS->blkSize = ARG(0).u.integer;
     } else if (args > 1) {
 	error("bzip2.deflate->create(): expected 1 argument of type INT.\n");
     } else
-	THIS->blkSize = 0;
+	THIS->blkSize = 9;
     pop_n_elems(args);
 }
 
@@ -220,27 +220,37 @@ f_deflate_deflate(INT32 args)
     struct pike_string *src;
     int                retval;
     struct pike_string *retstr;
-    
-    if ((args == 1) || (args == 2)) {
-	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	    error("bzip2.deflate->deflate(): argument 1 must be an 8-bit string.\n");
-	if (!ARG(1).u.string->str || !ARG(1).u.string->len)
-	    error("bzip2.deflate->deflate(): cannot compress an empty string!\n");
-	src = ARG(1).u.string;
-    } else if (args > 2) {
-	error("bzip2.deflate->deflate(): expected at most 2 arguments, got %d\n",
-	       args);
-    } else {
-	error("bzip2.deflate->deflate(): expect at least 1 and at most 2 arguments.\n");
+    int                verbosity = 0;
+    switch(args) {
+     case 2:
+      if(ARG(1).type != T_INT) {
+	  error("bzip2.deflate->deflate(): argument 2 not an integer.\n");
+      }
+      verbosity = ARG(1).u.integer;
+      if( verbosity > 4 || verbosity < 0 ) {
+	error("bzip2.deflate->deflate(): verbosity should be between 0 and 4.\n");
+      }
+      /* FALLTHROUGH */
+
+     case 1:
+      if (ARG(0).type != T_STRING)
+	  error("bzip2.deflate->deflate(): argument 1 must be a string.\n");
+      if (!ARG(0).u.string->str || !ARG(0).u.string->len)
+	  error("bzip2.deflate->deflate(): cannot compress an empty string!\n");
+      src = ARG(0).u.string;
+      break;
+     default:
+      error("bzip2.deflate->deflate(): expected  1 to 2 arguments.\n");
     }
     
     /*
      * We assume the worst case when the destination string doesn't compress
      * and will instead grow. The assumption is that it can grow by 1/3 of the
-     * source string.
+     * source string. We also add an extra 40 bytes since that is what the
+     * minimum size seems to be.
      */
-    dlen = src->len + 1;
-    dlen += dlen / 3;
+    dlen = (src->len << src->size_shift) + 1;
+    dlen += dlen / 3 + 40;
     
 destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
     dest = (char*)calloc(dlen, sizeof(char));
@@ -251,31 +261,35 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
     retval = BZ2_bzBuffToBuffCompress(dest,
                                       &dlen,
 				      src->str,
-				      src->len,
+				      src->len << src->size_shift,
 				      THIS->blkSize,
-				      0, 0);
+				      verbosity, 0);
     switch(retval) {
-	case BZ_CONFIG_ERROR:
-	    error("bzip2.deflate->deflate(): your copy of libbz2 is seriously damaged!\n");
-	    break; /* never reached */
+     case BZ_CONFIG_ERROR:
+      error("bzip2.deflate->deflate(): your copy of libbz2 is seriously damaged!\n");
+      break; /* never reached */
 	    
-	case BZ_MEM_ERROR:
-	    error("bzip2.deflate->deflate(): out of memory compressing block.\n");
-	    break; /* never reached */
+     case BZ_MEM_ERROR:
+      error("bzip2.deflate->deflate(): out of memory compressing block.\n");
+      break; /* never reached */
 	    
-	case BZ_OUTBUFF_FULL:
-	    if (dest)
-		free(dest);
-	    dlen <<= 1;
-	    goto destalloc;
-	    break; /* never reached */
+     case BZ_OUTBUFF_FULL:
+      if (dest)
+	free(dest);
+      dlen <<= 1;
+      goto destalloc;
+      break; /* never reached */
 	    
-	case BZ_OK:
-	    break;
+     case BZ_OK:
+      break;
 
-	default:
-	    error("bzip2.deflate->deflate(): unknown error code %d\n", retval);
-	    break; /* never reached */
+     case BZ_PARAM_ERROR:
+      error("bzip2.deflate->deflate(): Invalid parameters.\n");
+      break;
+      
+     default:
+      error("bzip2.deflate->deflate(): unknown error code %d\n", retval);
+      break; /* never reached */
     }
     
     pop_n_elems(args);
@@ -296,6 +310,7 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
 static void
 f_deflate_file(INT32 args)
 {
+  pop_n_elems(args);
 }
 
 static void
