@@ -55,7 +55,8 @@ f_create(INT32 args)
         Pike_error("OpenLDAP.Client->create():: wrong number of arguments\n");
 
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-        Pike_error("OpenLDAP.Client->create():: expecting an 8-bit string as the first argument\n");
+        Pike_error("OpenLDAP.Client->create():: expecting an 8-bit string as the first argument (%u)\n",
+                   ARG(1).u.string->size_shift);
 
     if ((THIS->lerrno = ldap_url_parse(ARG(1).u.string->str, &THIS->server_url)))
         Pike_error("OpenLDAP.Client->create():: badly formed server URL\n");

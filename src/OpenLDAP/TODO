@@ -6,7 +6,8 @@ Short term goals
  - implement the user friendly interfaces [PENDING]
  - unify error handling (either return an int or throw an error?) [PENDING]
  - documentation [PENDING]
- 
+ - cache traversed answers
+
 Long term goals:
 
  - using the asynchronous interface [PENDING]

@@ -93,16 +93,45 @@ add_attr_to_mapping(struct mapping *m, char *attr, struct berval **bvals)
     mapping_insert(m, &key, &val);
 }
 
-static void
-f_fetch(INT32 args)
+static struct mapping *
+make_attr_mapping(LDAP *conn, LDAPMessage *entry)
 {
-    int              idx = 0;
     int              cnt = 0;
     char           **values;
     char            *attr;
     BerElement      *ber;
     struct berval  **bervals;
     struct mapping  *ret = NULL;
+    
+    attr = ldap_first_attribute(THIS->conn, entry, &ber);
+    while (attr) {
+        if (!ret)
+            ret = allocate_mapping(1);
+        bervals = ldap_get_values_len(THIS->conn, entry, attr);
+/*        if (!bervals && THIS->ld_errno != LDAP_SUCCESS)
+            Pike_error("OpenLDAP.Client.Result->fetch(): %s",
+                       ldap_err2string(THIS->ld_errno));
+*/
+        add_attr_to_mapping(ret, attr, bervals);
+        if (bervals)
+            ldap_value_free_len(bervals);
+        attr = ldap_next_attribute(THIS->conn, entry, ber);
+        cnt++;
+    }
+    
+    if (!cnt) {
+        free_mapping(ret);
+        return NULL;
+    }
+    
+    return ret;
+}
+
+static void
+f_fetch(INT32 args)
+{
+    int              idx = 0;
+    struct mapping  *ret;
     
     if (args > 1)
         Pike_error("OpenLDAP.Client.Result->fetch(): requires at most one argument\n");
@@ -113,37 +142,43 @@ f_fetch(INT32 args)
         push_int(0);
         return;
     }
-    
-    attr = ldap_first_attribute(THIS->conn, THIS->cur, &ber);
-    while (attr) {
-        if (!ret)
-            ret = allocate_mapping(1);
-        bervals = ldap_get_values_len(THIS->conn, THIS->cur, attr);
-/*        if (!bervals && THIS->ld_errno != LDAP_SUCCESS)
-            Pike_error("OpenLDAP.Client.Result->fetch(): %s",
-                       ldap_err2string(THIS->ld_errno));
-*/
-        add_attr_to_mapping(ret, attr, bervals);
-        if (bervals)
-            ldap_value_free_len(bervals);
-        cnt++;
-        attr = ldap_next_attribute(THIS->conn, THIS->cur, ber);
-    }
 
-/*    if (THIS->ld_errno != LDAP_SUCCESS)
-        Pike_error("OpenLDAP.Client.Result->fetch(): %s",
-                   ldap_err2string(THIS->ld_errno));
-*/
+    ret = make_attr_mapping(THIS->conn, THIS->cur);
+
+    pop_n_elems(args);
+
+    if (!ret)
+        push_int(0);
+    else
+        push_mapping(ret);
+}
+
+static void
+f_fetch_all(INT32 args)
+{
+    int             cnt = 0;
+    BerElement     *ber;
+    struct berval **bervals;
+    struct mapping *tmp;
+    LDAPMessage    *cur;
 
     pop_n_elems(args);
     
-    if (!cnt) {
-        free_mapping(ret);
-        push_int(0);
-        return;
+    cur = ldap_first_entry(THIS->conn, THIS->msg);
+    while (cur) {
+        tmp = make_attr_mapping(THIS->conn, cur);
+        push_mapping(tmp);
+        cur = ldap_next_entry(THIS->conn, cur);
+        cnt++;
     }
-    
-    push_mapping(ret);
+
+    if (cnt) {
+        struct array  *arr;
+        
+        arr = aggregate_array(cnt);
+        push_array(arr);
+    } else
+        push_int(0);
 }
 
 static void
@@ -195,6 +230,8 @@ _ol_result_program_init(void)
                  tFunc(tVoid, tString), 0);
     ADD_FUNCTION("fetch", f_fetch,
                  tFunc(tInt, tMap(tString, tArr(tString))), 0);
+    ADD_FUNCTION("fetch_all", f_fetch_all,
+                 tFunc(tVoid, tArr(tMap(tString, tArr(tString)))), 0);
     ADD_FUNCTION("first", f_ldap_first_entry,
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("next", f_ldap_next_entry,
