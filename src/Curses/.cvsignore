@@ -1,0 +1,8 @@
+Makefile
+Makefile.pre
+config.log
+config.status
+configure
+curses_config.h
+curses_config.h.in
+
