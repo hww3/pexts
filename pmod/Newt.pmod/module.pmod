@@ -189,7 +189,7 @@ class Checkbox
     {
         string val = getValue();
         
-        return (val && val[0] != " ");
+        return (val && val[0] != ' ');
     }
 }
 
