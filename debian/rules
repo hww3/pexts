@@ -85,17 +85,20 @@ do-configure:
 build: build-stamp-7 build-stamp-72 build-stamp-74
 build-stamp-7: configure-stamp-7
 	$(MAKE) -fdebian/rules PVER=7 do-build
-	$(MAKE) -fdebian/rules inter-clean
+	$(MAKE) -fdebian/rules PVER=7 inter-install
+	$(MAKE) -fdebian/rules PVER=7 inter-clean
 	touch $@
 
 build-stamp-72: configure-stamp-72
 	$(MAKE) -fdebian/rules PVER=7.2 do-build
-	$(MAKE) -fdebian/rules inter-clean
+	$(MAKE) -fdebian/rules PVER=7.2 inter-install
+	$(MAKE) -fdebian/rules PVER=7.2 inter-clean
 	touch $@
 
 build-stamp-74: configure-stamp-74
 	$(MAKE) -fdebian/rules PVER=7.4 do-build
-	$(MAKE) -fdebian/rules inter-clean
+	$(MAKE) -fdebian/rules PVER=7.4 inter-install
+	$(MAKE) -fdebian/rules PVER=7.4 inter-clean
 	touch $@
 
 do-build:
@@ -119,18 +122,22 @@ clean: inter-clean unapply-patches
 	dh_testroot
 	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
 
+inter-install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
+	$(MAKE) install DESTDIR=`pwd`/debian/tmp/
+	install -d -m 755 `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+	cp -pr pmod/Newt.pmod/ `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+
 install: DH_OPTIONS=
 install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k
 	dh_installdirs
-
-	# Add here commands to install the package into debian/tmp.
-	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
-	$(MAKE) install DESTDIR=`pwd`/debian/tmp/
-	install -d -m 755 `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
-	cp -pr pmod/Newt.pmod/ `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
 	dh_movefiles
 
 # Build architecture-independent files here.
