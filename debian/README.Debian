@@ -12,4 +12,4 @@ needs (if any). Some of those modules are used by the Caudium WebServer
 and, therefore, are recommended by it.
 For more information regarding pexts, see http://caudium.net/faqs/pexts.html
 
--- Marek Habersack <grendel@vip.net.pl>, Wed,  6 Dec 2000 17:48:46 +0100
+-- Marek Habersack <grendel@debian.org>, Wed,  6 Dec 2000 17:48:46 +0100

@@ -1,3 +1,9 @@
+pexts (0.0.20010424-1) unstable; urgency=low
+
+  * Latest snapshot.
+
+ -- Marek Habersack <grendel@debian.org>  Tue, 24 Apr 2001 12:18:44 +0200
+
 pexts (0.0.20010227-1) unstable; urgency=low
 
   * Depends on pike7 now
@@ -38,5 +44,5 @@ pexts (0.0.20001206-1) unstable; urgency=low
 
 Local variables:
 mode: debian-changelog
-add-log-mailing-address "grendel@vip.net.pl"
+add-log-mailing-address "Marek Habersack <grendel@debian.org>"
 End:

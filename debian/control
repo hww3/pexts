@@ -1,7 +1,7 @@
 Source: pexts
 Section: interpreters
 Priority: optional
-Maintainer: Marek Habersack <grendel@vip.net.pl>
+Maintainer: Marek Habersack <grendel@debian.org>
 Build-Depends: debhelper (>= 1.1.17), pike7, libnewt-dev, libmhash-dev, libpcre3-dev, libbz2-dev
 Standards-Version: 3.1.1
 
