@@ -3,6 +3,7 @@ MODNAME=PDF
 OBJS= pdf.o
 SOURCES=pdf.c
 MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=pdf_config.h pdf_config.h.in
 
 @module_makefile@
 

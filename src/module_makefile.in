@@ -66,9 +66,14 @@ depend: force
 clean:
 	rm -f *.o *~ $(MODNAME).$(SO) 
 
-distclean: clean
+mod_clean:
+ifneq "$(EXTRA_CLEAN)" ""
+	rm -f $(EXTRA_CLEAN)
+endif
+
+distclean: clean 
 	rm -f config.* $(SRCDIR)/Makefile Makefile.pre
 
-spotless: distclean
+spotless: distclean mod_clean
 	rm -f $(SRCDIR)/configure  $(SRCDIR)/sablot_config.h.in
 

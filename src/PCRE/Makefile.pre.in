@@ -3,6 +3,7 @@ MODNAME=PCRE
 OBJS= pcre.o
 SOURCES=pcre.c
 MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=pcre_config.h pcre_config.h.in
 
 @module_makefile@
 
