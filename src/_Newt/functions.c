@@ -2998,13 +2998,13 @@ c_entryFilterWrapper(newtComponent entry, void *data, int ch, int cursor)
     push_int(cursor);
     apply_svalue(filter, 3);
 
-    switch(sp[-1].type) {
+    switch(Pike_sp[-1].type) {
         case T_INT:
-            ret = sp[-1].u.integer;
+            ret = Pike_sp[-1].u.integer;
             break;
 
         case T_STRING:
-            ret = sp[-1].u.string->str[0];
+            ret = Pike_sp[-1].u.string->str[0];
             break;
 
         default:
