@@ -882,7 +882,7 @@ static void f_FDFGetEncoding(INT32 args)
 
     pop_n_elems(args);
     
-    ret = FDFGetEncoding(THIS->theFDF, buf, bufSize, NULL);
+    ret = FDFGetEncoding(THIS->theFDF, buf, bufSize, &nBytes);
     
     if (ret == FDFErcOK)
         push_string(make_shared_string(buf));
@@ -935,7 +935,7 @@ static void f_FDFGetFile(INT32 args)
 
     pop_n_elems(args);
     
-    ret = FDFGetFile(THIS->theFDF, buf, bufSize, NULL);
+    ret = FDFGetFile(THIS->theFDF, buf, bufSize, &nBytes);
     
     if (ret == FDFErcOK)
         push_string(make_shared_string(buf));
@@ -1123,7 +1123,7 @@ static void f_FDFGetNthValue(INT32 args)
     pop_n_elems(args);
 
     ret = FDFGetNthValue(THIS->theFDF, field, idx,
-                         buf, bufSize, NULL);
+                         buf, bufSize, &nBytes);
 
     if (ret == FDFErcOK)
         push_string(make_shared_string(buf));
@@ -1274,7 +1274,7 @@ static void f_FDFGetStatus(INT32 args)
     if (!buf)
         SIMPLE_OUT_OF_MEMORY_ERROR("FDF->GetOpt", bufSize);
 
-    ret = FDFGetStatus(THIS->theFDF, buf, bufSize, NULL);
+    ret = FDFGetStatus(THIS->theFDF, buf, bufSize, &nBytes);
     pop_n_elems(args);
     
     if (ret != FDFErcOK) {
@@ -1282,9 +1282,10 @@ static void f_FDFGetStatus(INT32 args)
         free(buf);
 #endif
         push_int(ret);
+        return;
     }
 
-    push_text(buf);
+    push_string(make_shared_string(buf));
 
 #ifndef HAVE_ALLOCA
     free(buf);
@@ -1320,7 +1321,7 @@ static void f_FDFGetValue(INT32 args)
     if (!buf)
         SIMPLE_OUT_OF_MEMORY_ERROR("FDF->GetValue", bufSize);
 
-    ret = FDFGetValue(THIS->theFDF, field, buf, bufSize, NULL);
+    ret = FDFGetValue(THIS->theFDF, field, buf, bufSize, &nBytes);
     pop_n_elems(args);
     
     if (ret != FDFErcOK) {
@@ -1328,9 +1329,10 @@ static void f_FDFGetValue(INT32 args)
         free(buf);
 #endif
         push_int(ret);
+        return;
     }
 
-    push_text(buf);
+    push_string(make_shared_string(buf));
 
 #ifndef HAVE_ALLOCA
     free(buf);
@@ -1340,10 +1342,11 @@ static void f_FDFGetValue(INT32 args)
 static void f_FDFNextFieldName(INT32 args)
 {
     FDFErc           ret;
-    char            *field, *nextField;
+    char            *field = NULL, *nextField = NULL;
     ASInt32          nBytes, bufSize;
-    
-    get_all_args("FDF->NextFieldName", args, "%s", &field);
+
+    if (args)
+        get_all_args("FDF->NextFieldName", args, "%s", &field);
     
     if (!can_continue("NextFieldName", args))
         return;
@@ -1366,7 +1369,7 @@ static void f_FDFNextFieldName(INT32 args)
     if (!nextField)
         SIMPLE_OUT_OF_MEMORY_ERROR("FDF->NextFieldName", bufSize);
 
-    ret = FDFNextFieldName(THIS->theFDF, field, nextField, bufSize, NULL);
+    ret = FDFNextFieldName(THIS->theFDF, field, nextField, bufSize, &nBytes);
     pop_n_elems(args);
     
     if (ret != FDFErcOK) {
@@ -1374,9 +1377,18 @@ static void f_FDFNextFieldName(INT32 args)
         free(nextField);
 #endif
         push_int(ret);
+        return;
     }
 
-    push_text(nextField);
+    if (!strlen(nextField)) {
+#ifndef HAVE_ALLOCA
+        free(nextField);
+#endif
+        push_int(FDFErcOK);
+        return;
+    }
+    
+    push_string(make_shared_string(nextField));
 
 #ifndef HAVE_ALLOCA
     free(buf);
@@ -2320,7 +2332,7 @@ void pike_module_init(void)
     ADD_FUNCTION("GetValue", f_FDFGetValue,
                  tFunc(tString, tOr(tInt, tString)), 0);
     ADD_FUNCTION("NextFieldName", f_FDFNextFieldName,
-                 tFunc(tString, tOr(tInt, tString)), 0);
+                 tFunc(tOr(tString, tVoid), tOr(tInt, tString)), 0);
 
     /* Generating FDF functions */
     ADD_FUNCTION("AddDocJavaScript", f_FDFAddDocJavaScript,
