@@ -21,6 +21,13 @@ PIKE_VERSION=$(shell $(PIKE) -e 'string v; int rel;sscanf(version(), "Pike v%s r
 CVS_SNAPSHOT=$(shell if test -f configure; then echo no; else echo yes; fi)
 PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE7_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
 
+CFLAGS=-O2
+# Temporary workaround for hppa linker issues
+ifeq ($(DEB_BUILD_ARCH),hppa)
+CFLAGS+=-ffunction-sections
+endif
+export CFLAGS
+
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
@@ -28,7 +35,7 @@ configure-stamp:
 	if test "$(CVS_SNAPSHOT)" = "yes"; then \
 	    ./autogen.sh; \
 	fi
-	CFLAGS=-O2 ./configure --prefix=/usr \
+	 ./configure --prefix=/usr \
 	                       --with-pike=$(PIKE) \
 			       --without-_esmtp \
 			       --without-_FDF \

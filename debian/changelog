@@ -2,6 +2,7 @@ pexts (0.0.20020408-1) unstable; urgency=low
 
   * Latest snapshot
   * Recompiled with the latest pike7
+  * Added the hppa compilation workaround
 
  -- Marek Habersack <grendel@debian.org>  Tue,  9 Apr 2002 00:59:20 +0200
 
