@@ -19,6 +19,7 @@
  * Simple glue for more advanced Unix functions.
 */
 #define _GNU_SOURCE
+
 #include "global.h"
 RCSID("$Id$");
 
@@ -32,7 +33,6 @@ RCSID("$Id$");
 #include "error.h"
 #include "threads.h"
 #include "array.h"
-
 
 #include "at_config.h"
 
@@ -54,6 +54,8 @@ RCSID("$Id$");
  * calls are:
  *
  * *** Shadow passwords support ***
+ *
+ *  PORTABILITY: Linux
  *
  *  Shadow passwords are used by Pike, but only to get the shadow (see
  *  modules/system/passwords.c) password. I want more :). Note that
@@ -90,6 +92,9 @@ RCSID("$Id$");
  *    Return an array of arrays as defined in getspent() containing all
  *    the accounts found in the /etc/shadow database. Returns 0 if it is
  *    impossible to retrieve the data.
+ *
+ *
+ * *** QUOTACTL support ***
  */
 
 struct SHADOWPWDB
@@ -280,6 +285,7 @@ f_getallspents(INT32 args)
 #endif
 #endif
 }
+
 
 static void
 f_create(INT32 args)

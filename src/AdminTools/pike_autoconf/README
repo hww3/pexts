@@ -1,0 +1,2 @@
+This M4 macro file is for those who want to create Pike C modules outside of 
+PEXTS and Pike source trees. It should work just fine.
