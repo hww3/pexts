@@ -3,6 +3,13 @@ AC_CONFIG_HEADER(bz2_config.h)
 
 CAUDIUM_MODULE_INIT()
 
+AH_BOTTOM([
+#undef HAVE_OLD_LIBBZ2
+
+void pike_module_init(void);
+void pike_module_exit(void);
+])
+
 AC_CHECK_LIB(bz2, BZ2_bzCompressInit,,[
 	AC_CHECK_LIB(bz2, bzCompressInit,[
 		AC_DEFINE(HAVE_OLD_LIBBZ2)

@@ -59,7 +59,7 @@ AC_CACHE_VAL(caudium_cv_bdb_new_enough,
   }],[caudium_cv_bdb_new_enough=yes], [caudium_cv_bdb_new_enough=no],[caudium_cv_bdb_new_enough=yes])
 )
 if test "$caudium_cv_bdb_new_enough" = "yes"; then
-  AC_DEFINE(HAVE_BDB)
+  AC_DEFINE(HAVE_BDB, 1, [Define if BDB exists and is new enough])
 fi
 AC_MSG_RESULT($caudium_cv_bdb_new_enough)
 AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])

@@ -587,15 +587,15 @@ if test -z "$LDSHARED" ; then
     GNU*) LDSHARED="ld -Bshareable";;
     FreeBSD*) 
 	LDSHARED="$CC -Wl,-Bshareable"
-	AC_DEFINE(RUNNING_BSD)
+	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD...)])
 	;;
     NetBSD*) 
 	LDSHARED="ld -Bshareable"
-	AC_DEFINE(RUNNING_BSD)
+	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD...)])
 	;;
     OpenBSD*)
 	LDSHARED="ld -Bshareable"
-	AC_DEFINE(RUNNING_BSD)
+	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD...)])
 	;;
     BSD/OS*) LDSHARED="shlicc -r";;
     SCO_SV*) LDSHARED="cc -G -KPIC -Wl,-Bexport";;

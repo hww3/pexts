@@ -27,7 +27,7 @@ int main()
 
 if test "$atools_cv_func_failsafe_strerror" = yes; then
   AC_MSG_RESULT(yes)
-  AC_DEFINE(HAVE_STRERROR)
+  AC_DEFINE(HAVE_STRERROR, 1, [Define if you have strerror])
 else
   AC_MSG_RESULT(no)
 fi

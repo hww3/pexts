@@ -26,7 +26,7 @@ AC_ARG_WITH(avs,  [  --with-avs=path       Enable support for the Altavista sear
   MODULE_LDFLAGS="-R$SDKLIBDIR -L$SDKLIBDIR -R$SDKLIBDIR/doc_converters -L$SDKLIBDIR/doc_converters"
   MODULE_LIBS="$SDKLIBS $CVTLIBS $LINGLIBS -lpthread -lm -u lstat -u stat -u fstat"
   MODULE_CFLAGS="-DPTHREADS -DDOC_CONVERTERS -I$SDKINCLUDE"
-  AC_DEFINE(HAVE_AVS_SDK)
+  AC_DEFINE(HAVE_AVS_SDK, 1, [Define if the AVS SDK is installed.])
 ], [
   AC_MSG_RESULT(
 *** Not compiling Altavista SDK module. Use --with-avs=/dir/

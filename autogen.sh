@@ -2,7 +2,7 @@
 cd `dirname $0`
 mydir=`pwd`
 
-aclocal -I aclocal
+aclocal
 for a in `find src tools -name "autogen.sh" |sort`; do
   dir=`dirname $a`
   echo "Running autogen in '$dir'"

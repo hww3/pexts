@@ -3,6 +3,11 @@ AC_CONFIG_HEADER(esmtp_config.h)
 
 CAUDIUM_MODULE_INIT()
 
+AH_BOTTOM([
+void pike_module_init(void);
+void pike_module_exit(void);
+])
+
 AC_CHECK_LIB(esmtp, smtp_create_session,,)
 AC_CHECK_HEADERS(libesmtp.h)
 ACX_PATH_LIBESMTP(0.8.8, AC_DEFINE(HAVE_LIBESMTP))

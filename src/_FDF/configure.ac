@@ -3,6 +3,11 @@ AC_CONFIG_HEADER(fdf_config.h)
 
 CAUDIUM_MODULE_INIT()
 
+AH_BOTTOM([
+void pike_module_init(void);
+void pike_module_exit(void);
+])
+
 AC_CHECK_HEADERS(fdftk.h)
 AC_CHECK_LIB(fdftk, FDFOpen)
 

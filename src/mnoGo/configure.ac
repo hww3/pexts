@@ -3,6 +3,11 @@ AC_CONFIG_HEADER(mnogo_config.h)
 
 CAUDIUM_MODULE_INIT()
 
+AH_BOTTOM([
+void pike_module_init(void);
+void pike_module_exit(void);
+])
+
 AC_ARG_WITH(mnoGo,[  --with-mnoGo[=DIR]      Include mnoGoSearch support.  DIR is the mnoGoSearch 
                           base install directory, defaults to 
                           /usr/local/mnogosearch.], [
@@ -42,7 +47,7 @@ AC_ARG_WITH(mnoGo,[  --with-mnoGo[=DIR]      Include mnoGoSearch support.  DIR i
 		CFLAGS="-I$MNOGOSEARCH_INCDIR"
 		AC_SUBST(CFLAGS)
     AC_SUBST(LIBS)
-		AC_DEFINE(HAVE_MNOGOSEARCH,1,[ ])
+		AC_DEFINE(HAVE_MNOGOSEARCH,1,[Define if you have mnogosearch on your system])
 	fi
 ], [echo "*** mnoGoSearch support not enabled!"])
 

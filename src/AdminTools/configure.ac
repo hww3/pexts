@@ -3,6 +3,13 @@ AC_CONFIG_HEADER(at_config.h)
 
 CAUDIUM_MODULE_INIT()
 
+AH_TOP([#include "../../config.h"])
+AH_BOTTOM([
+#if defined(HAVE_SECURITY_PAM_APPL_H) && defined(HAVE_PAM_END)
+#define HAVE_PAM
+#endif
+])
+
 AC_CHECK_HEADERS(shadow.h dirent.h sys/quota.h mntent.h security/pam_appl.h)
 AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
 			   readdir readdir_r rewinddir seekdir telldir scandir      \
@@ -33,7 +40,7 @@ int main()
 
 if test "$atools_cv_func_failsafe_strerror" = yes; then
   AC_MSG_RESULT(yes)
-  AC_DEFINE(HAVE_STRERROR)
+  AC_DEFINE(HAVE_STRERROR, 1, [Define if you have a failsafe strerror])
 else
   AC_MSG_RESULT(no)
 fi
@@ -57,7 +64,7 @@ if test "$ac_cv_header_dirent_h" = yes; then
     
     if test "$atools_cv_struct_dirent_d_type" = yes; then
 	AC_MSG_RESULT(yes)
-	AC_DEFINE(HAVE_DIRENT_D_TYPE)
+	AC_DEFINE(HAVE_DIRENT_D_TYPE, 1, [Define if your system has the d_type member in struct dirent])
     else
 	AC_MSG_RESULT(no)
     fi
@@ -80,7 +87,7 @@ if test "$ac_cv_header_dirent_h" = yes; then
     
     if test "$atools_cv_struct_dirent_d_off" = yes; then
 	AC_MSG_RESULT(yes)
-	AC_DEFINE(HAVE_DIRENT_D_OFF)
+	AC_DEFINE(HAVE_DIRENT_D_OFF, 1, [Define if your system has the d_off member in struct dirent])
     else
 	AC_MSG_RESULT(no)
     fi
@@ -121,7 +128,7 @@ if test "$ac_cv_func_getspnam_r" = "yes"; then
   ])
   if test "$atools_cv_have_solaris_getspnam_r" = "yes"; then
     AC_MSG_RESULT([4 - Solaris])
-    AC_DEFINE(HAVE_SOLARIS_GETSPNAM_R)
+    AC_DEFINE(HAVE_SOLARIS_GETSPNAM_R, 1, [Define if you run solaris and have this func])
   else
     AC_MSG_RESULT([5 - Linux])
   fi
@@ -162,7 +169,7 @@ if test "$ac_cv_func_getspent_r" = "yes"; then
   ])
   if test "$atools_cv_have_solaris_getspnam_r" = "yes"; then
     AC_MSG_RESULT([3 - Solaris])
-    AC_DEFINE(HAVE_SOLARIS_GETSPENT_R)
+    AC_DEFINE(HAVE_SOLARIS_GETSPENT_R, 1, [Define if you have solaris and have this func])
   else
     AC_MSG_RESULT([4 - Linux])
   fi
@@ -173,7 +180,7 @@ if test "`uname`" = "Linux"; then
   if test "$ac_cv_func_quotactl" = "yes" -a \
      "$ac_cv_header_sys_quota_h" = "yes" -a \
      "$ac_cv_header_mntent_h" = "yes"; then
-    AC_DEFINE(HAVE_QUOTA_SUPPORT)
+    AC_DEFINE(HAVE_QUOTA_SUPPORT, 1, [Define if your system has known quotactl support])
     AC_MSG_RESULT(Linux)
   else
     AC_MSG_RESULT(unsupported Linux)

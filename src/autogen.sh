@@ -1,3 +1,3 @@
 #!/bin/sh
 
-autoconf --localdir=$1
+autoconf -B $1
