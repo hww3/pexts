@@ -46,7 +46,7 @@ AC_ARG_WITH(mnoGo,[  --with-mnoGo[=DIR]      Include mnoGoSearch support.  DIR i
 	fi
 ], [echo "*** mnoGoSearch support not enabled!"])
 
-AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 dnl ## Local Variables:
 dnl ## tab-width: 2
 dnl ## End:

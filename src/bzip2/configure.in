@@ -11,7 +11,7 @@ AC_CHECK_LIB(bz2, BZ2_bzCompressInit,,[
 ])
 AC_CHECK_HEADERS(bzlib.h)
 
-AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
 dnl ## Local Variables:
 dnl ## tab-width: 4

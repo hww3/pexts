@@ -44,7 +44,7 @@ AC_SUBST(MODULE_LDFLAGS)
 AC_SUBST(MODULE_LIBS)
 AC_SUBST(MODULE_CFLAGS)
 
-AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
 
 dnl ## Local Variables:

@@ -32,7 +32,7 @@ else
   AC_MSG_RESULT(no)
 fi
 
-AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
 dnl ## Local Variables:
 dnl ## tab-width: 4

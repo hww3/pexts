@@ -6,7 +6,7 @@ CAUDIUM_MODULE_INIT()
 AC_CHECK_HEADERS(fdftk.h)
 AC_CHECK_LIB(fdftk, FDFOpen)
 
-AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
