@@ -1,3 +1,16 @@
+pexts (0.0.20010210-1) unstable; urgency=low
+
+  * Latest CVS snapshot
+  * Local version of PCRE added
+
+ -- Marek Habersack <grendel@vip.net.pl>  Sat, 10 Feb 2001 19:21:00 +0100
+
+pexts (0.0.20010129-1) unstable; urgency=low
+
+  * Latest CVS snapshot
+
+ -- Marek Habersack <grendel@vip.net.pl>  Mon, 29 Jan 2001 19:15:42 +0100
+
 pexts (0.0.20010117-1) unstable; urgency=low
 
   * Latest CVS snapshot
