@@ -349,8 +349,8 @@ else
   TMP_ANY_PREFIX="no"
 fi
 
-TMP_MD_PREFIX="`$PIKE -e 'foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\"$TMP_PREFIX\",p})) == \"$TMP_PREFIX\") write(p+" ");'`"
-TMP_MD_NOPREFIX="`$PIKE -e 'foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\"$TMP_PREFIX\",p})) != \"$TMP_PREFIX\") write(p+" ");'`"
+TMP_MD_PREFIX="`$PIKE -e \"foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\\\"$TMP_PREFIX\\\",p})) == \\\"$TMP_PREFIX\\\") write(p+\\\" \\\");\"`"
+TMP_MD_NOPREFIX="`$PIKE -e \"foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\\\"$TMP_PREFIX\\\",p})) != \\\"$TMP_PREFIX\\\") write(p+\\\" \\\");\"`"
 
 for md in $TMP_MD_PREFIX; do
   echo -n "considering $md => "
