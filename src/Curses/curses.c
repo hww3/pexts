@@ -128,7 +128,7 @@ static void f_##f(INT32 args) \
   check_all_args(#f, args, BIT_INT, 0); \
   if (!curses_inited) \
     Pike_error("Can't use " #f "() before init()\n"); \
-  i = sp[-1].u.integer; \
+  i = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   push_int(f(i)); \
 }
@@ -224,9 +224,9 @@ static void f_setsyx(INT32 args)
   if (args == 1)
   {
     struct array *a;
-    if (sp[-1].type != T_ARRAY)
+    if (Pike_sp[-1].type != T_ARRAY)
       Pike_error("Bad argument 1 to setsyx\n");
-    a = sp[-1].u.array;
+    a = Pike_sp[-1].u.array;
     if (a->size != 2)
       Pike_error("An array argument to setsyze must be of size 2\n");
     if (a->item[0].type != T_INT)
@@ -240,8 +240,8 @@ static void f_setsyx(INT32 args)
   else
   {
     check_all_args("setsyx", args, BIT_INT, BIT_INT, 0);
-    y = sp[-2].u.integer;
-    x = sp[-1].u.integer;
+    y = Pike_sp[-2].u.integer;
+    x = Pike_sp[-1].u.integer;
     setsyx(y,x);
   }
   pop_n_elems(args);
@@ -255,7 +255,7 @@ static void f_init_pair(INT32 args)
 {
   int r;
   check_all_args("init_pair", args, BIT_INT, BIT_INT, BIT_INT, 0);
-  r = init_pair(sp[-3].u.integer, sp[-2].u.integer, sp[-1].u.integer);
+  r = init_pair(Pike_sp[-3].u.integer, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -264,7 +264,7 @@ static void f_init_color(INT32 args)
 {
   int r;
   check_all_args("init_color", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, 0);
-  r = init_color(sp[-4].u.integer, sp[-3].u.integer, sp[-2].u.integer, sp[-1].u.integer);
+  r = init_color(Pike_sp[-4].u.integer, Pike_sp[-3].u.integer, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
