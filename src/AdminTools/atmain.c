@@ -110,8 +110,8 @@ void pike_module_init(void)
 
     init_common("AdminTools");
 
-  #ifdef PEXTS_VERSION
-  pexts_init();
+#ifdef PEXTS_VERSION
+    pexts_init();
 #endif
     
     /* Shadow stuff */
