@@ -26,6 +26,7 @@
 @BOTTOM@
 
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
+#define HAVE_NEWT
 #include <newt.h>
 #define THIS ((struct formobj *)fp->current_object->storage)
 

@@ -48,6 +48,7 @@ RCSID("$Id$");
  */
 #include "newt_config.h"
 
+#ifdef HAVE_NEWT
 struct program * Newt_program;
 struct program * Form_program;
 
@@ -567,11 +568,12 @@ int store_component( newtComponent elem, char *nev, char *value )
   }
   return (1);
 }
-
+#endif /* HAVE_NEWT */
 //----------------------------- - - --- - -  - -
 
 void pike_module_init(void)
 {
+#ifdef HAVE_NEWT
   start_new_program();
   //ADD_FUNCTION("create", f_init, "function(void:void)", ID_PUBLIC );
   ADD_FUNCTION("create", f_init, tFunc(tVoid,tVoid), ID_PUBLIC);
@@ -616,12 +618,15 @@ void pike_module_init(void)
   end_class("Window",0);
 
   end_class("form",0);
+#endif /* HAVE_NEWT */
 }
 
 void pike_module_exit(void)
 {
+#ifdef HAVE_NEWT
    if( newt_inited ) {
       newt_inited=0;
       newtFinished();
    }
+#endif
 }
