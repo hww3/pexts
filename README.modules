@@ -27,7 +27,7 @@ PCRE:
   A glue to the Perl Compatible Regular Expression library,
   PCRE. Implements fast, extensive regexps.
   Requires: The PCRE library from http://www.pcre.org/
-  Principal Authod: David Hedbor <david@caudium.net>
+  Principal Author: David Hedbor <david@caudium.net>
   TODO: Complex functionality like regexp replacing.
 
 PDF:
