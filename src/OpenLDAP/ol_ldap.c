@@ -84,14 +84,14 @@ static void
 f_ldap_unbind(INT32 args)
 {
     if (THIS->bound) {
-        THIS->lerror = ldap_unbind_s(THIS->conn);
+        THIS->lerrno = ldap_unbind_s(THIS->conn);
         THIS->bound = 0;
     } else
-        THIS->lerror = 0;
+        THIS->lerrno = 0;
     
     pop_n_elems(args);
 
-    push_int(THIS->lerror);
+    push_int(THIS->lerrno);
 }
 
 static void
@@ -162,8 +162,8 @@ f_ldap_uncache_entry(INT32 args)
         return;
     }
 
-    if (!args || args > 1)
-        Pike_error("OpenLDAP.Client->uncache_entry() requires a single string argument\n");
+    if (args != 1)
+        Pike_error("OpenLDAP.Client->uncache_entry() requires a single 8-bit string argument\n");
 
     get_all_args("OpenLDAP.Client->uncache_entry()", args, "%s", &dn);
 
@@ -174,7 +174,7 @@ f_ldap_uncache_entry(INT32 args)
 static void
 f_ldap_set_cache_options(INT32 args)
 {
-    int   opts = LDAP_CACHE_OPT_CACHENOERRS;
+    int   opts = 0; /* LDAP_CACHE_OPT_CACHENOERRS; */
 
     get_all_args("OpenLDAP.Client->set_cache_options", args, "%i", &opts);
 
@@ -183,12 +183,68 @@ f_ldap_set_cache_options(INT32 args)
 }
 
 static void
+f_ldap_err2string(INT32 args)
+{
+    int    err;
+    char  *str;
+    
+    if (args != 1)
+        Pike_error("OpenLDAP.Client->err2string() requires a single integer argument\n");
+
+    get_all_args("OpenLDAP.Client->err2string()", args, "%i", &err);
+
+    pop_n_elems(args);
+    
+    str = ldap_err2string(err);
+    push_string(make_shared_string(str));
+}
+
+static void
+f_set_base_dn(INT32 args)
+{
+    struct pike_string  *olddn;
+    
+    if (args != 1)
+        Pike_error("OpenLDAP.Client->set_base_dn() requires a single 8-bit string parameter\n");
+
+    olddn = THIS->basedn;
+    get_all_args("OpenLDAP.Client->set_base_dn()", args, "%S", &THIS->basedn);
+    pop_n_elems(args);
+
+    if (!olddn)
+        push_string(make_shared_string(""));
+    else
+        push_string(olddn);
+}
+
+static void
+f_set_scope(INT32 args)
+{
+    int    scope = -1;
+
+    get_all_args("OpenLDAP.Client->set_scope()", args, "%i", &THIS->scope);
+    pop_n_elems(args);
+
+    THIS->scope ^= scope;
+    scope ^= THIS->scope;
+    THIS->scope ^= scope;
+
+    push_int(scope);
+}
+
+static void
+f_ldap_search(INT32 args)
+{}
+
+static void
 init_ldap(struct object *o)
 {
     THIS->conn = NULL;
     THIS->server_url = NULL;
+    THIS->basedn = NULL;
+    THIS->scope = LDAP_SCOPE_DEFAULT;
     THIS->bound = 0;
-    THIS->lerror = 0;
+    THIS->lerrno = 0;
     THIS->caching = 0;
 }
 
@@ -211,14 +267,24 @@ _ol_ldap_program_init(void)
     set_exit_callback(exit_ldap);
 
     /* LDAP constants */
+    /* AUTH stuff */
     add_integer_constant("LDAP_AUTH_NONE", LDAP_AUTH_NONE, 0);
     add_integer_constant("LDAP_AUTH_SIMPLE", LDAP_AUTH_SIMPLE, 0);
     add_integer_constant("LDAP_AUTH_SASL", LDAP_AUTH_SASL, 0);
     add_integer_constant("LDAP_AUTH_KRBV4", LDAP_AUTH_KRBV4, 0);
     add_integer_constant("LDAP_AUTH_KRBV41", LDAP_AUTH_KRBV41, 0);
     add_integer_constant("LDAP_AUTH_KRBV42", LDAP_AUTH_KRBV42, 0);
+
+    /* Cache stuff
     add_integer_constant("LDAP_CACHE_OPT_CACHENOERRS", LDAP_CACHE_OPT_CACHENOERRS, 0);
     add_integer_constant("LDAP_CACHE_OPT_CACHEALLERRS", LDAP_CACHE_OPT_CACHEALLERRS, 0);
+    */
+    
+    /* Scope stuff */
+    add_integer_constant("LDAP_SCOPE_DEFAULT", LDAP_SCOPE_DEFAULT, 0);
+    add_integer_constant("LDAP_SCOPE_BASE", LDAP_SCOPE_BASE, 0);
+    add_integer_constant("LDAP_SCOPE_ONELEVEL", LDAP_SCOPE_ONELEVEL, 0);
+    add_integer_constant("LDAP_SCOPE_SUBTREE", LDAP_SCOPE_SUBTREE, 0);
     
     ADD_FUNCTION("create", f_create,
                  tFunc(tString, tVoid), 0);
@@ -240,6 +306,12 @@ _ol_ldap_program_init(void)
                  tFunc(tString, tVoid), 0);
     ADD_FUNCTION("set_cache_options", f_ldap_set_cache_options,
                  tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("err2string", f_ldap_err2string,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("set_base_dn", f_set_base_dn,
+                 tFunc(tString, tString), 0);
+    ADD_FUNCTION("set_scope", f_set_scope,
+                 tFunc(tInt, tInt), 0);
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);

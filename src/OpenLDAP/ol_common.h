@@ -68,6 +68,9 @@ typedef struct
     LDAP                *conn;
     LDAPURLDesc         *server_url;
 
+    struct pike_string  *basedn;
+    int                  scope;
+    
     int                  lerrno;
     int                  bound:1;
     int                  caching:1;
