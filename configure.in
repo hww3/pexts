@@ -274,7 +274,7 @@ else
   exit 1;
 fi
 
-export PIKE PIKE_INCLUDE_DIRS PIKE_VERSION
+export PIKE PIKE_INCLUDE_DIRS PIKE_VERSION PIKE_MODULE_DIR
 AC_SUBST(PIKE)
 AC_SUBST(PIKE_VERSION)
 
@@ -666,5 +666,6 @@ selected, try re-running configure with
 
         Pike binary used:      $PIKE
         Pike version:          $PIKE_VERSION
-        Pike include dir:      $PIKE_INCLUDE_DIRS"
+        Pike include dir:      $PIKE_INCLUDE_DIRS
+        Pike module dir:       $PIKE_MODULE_DIR"
 
