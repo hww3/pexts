@@ -3,7 +3,7 @@ AC_CONFIG_HEADER(ol_config.h)
 
 CAUDIUM_MODULE_INIT()
 
-AC_CHECK_HEADERS(unistd.h ldap.h)
+AC_CHECK_HEADERS(unistd.h lber.h ldap.h)
 AC_CHECK_LIB(ldap, ldap_init)
 
 AC_FUNC_ALLOCA

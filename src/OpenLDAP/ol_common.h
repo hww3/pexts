@@ -26,6 +26,9 @@
 
 #include "ol_config.h"
 
+#ifdef HAVE_LBER_H
+#include <lber.h>
+#endif
 #ifdef HAVE_LDAP_H
 #include <ldap.h>
 #endif
