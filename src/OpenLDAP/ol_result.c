@@ -29,21 +29,31 @@ RCSID("$Id$");
 #ifdef HAVE_LIBLDAP
 static struct program  *result_program;
 
+#define THIS ((OLSRTORAGE*)get_storage(fp->current_object, result_program))
+
+static void
+f_create(INT32 args)
+{}
+
 static void
 init_result(struct object *o)
 {
+    THIS->conn = NULL;
+    THIS->msg = NULL;
 }
 
 static void
 exit_result(struct object *o)
 {
+    if (THIS->msg)
+        free(THIS->msg);
 }
 
 struct program*
 _ol_result_program_init(void)
 {
     start_new_program();
-    ADD_STORAGE(OLSTORAGE);
+    ADD_STORAGE(OLSRTORAGE);
 
     set_init_callback(init_result);
     set_exit_callback(exit_result);

@@ -78,8 +78,15 @@ typedef struct
     int                  bound:1;
     int                  caching:1;
 } OLSTORAGE;
+
+typedef struct
+{
+    LDAPMessage         *msg;
+    LDAP                *conn;
+} OLRSTORAGE;
 #endif
 
 struct program* _ol_ldap_program_init(void);
+struct program* _ol_result_program_init(void);
 
 #endif

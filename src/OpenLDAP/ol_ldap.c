@@ -19,10 +19,6 @@
  */
 #define _GNU_SOURCE
 
-#define MODULE_MAJOR 0
-#define MODULE_MINOR 1
-#define MODULE_BUILD 1
-
 #include "global.h"
 RCSID("$Id$");
 
@@ -42,7 +38,8 @@ RCSID("$Id$");
 
 #define THIS ((OLSTORAGE*)get_storage(fp->current_object, ldap_program))
 
-static struct program *ldap_program;
+static struct program       *ldap_program;
+static struct program       *result_program;
 
 static struct pike_string   *base_str;
 static struct pike_string   *scope_str;
@@ -299,6 +296,7 @@ f_ldap_search(INT32 args)
     struct timeval      *timeout;
     LDAPMessage         *res;
     int                  ret;
+    struct object       *obj;
     
     if (!args)
         Pike_error("OpenLDAP.Client->search() requires at least one argument\n");
@@ -440,7 +438,16 @@ f_ldap_search(INT32 args)
                       &res);
         
     pop_n_elems(args);
-    push_int(0);
+    if (ret) {
+        push_int(ret);
+        return;
+    }
+    
+    obj = clone_program(result_program, 2);
+    push_object(obj);
+
+    if (attrs)
+        free(attrs);
 }
 
 static void
@@ -531,7 +538,9 @@ _ol_ldap_program_init(void)
     ADD_FUNCTION("search", f_ldap_search,
                  tFunc(tOr(tMapping,
                            tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
-                       tObj), 0);
+                       tOr(tObj, tInt)), 0);
+
+    result_program = _ol_result_program_init();
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);

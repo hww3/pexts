@@ -1,7 +1,7 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
 MODNAME=OpenLDAP
-OBJS= ol_main.o ol_ldap.o
-SOURCES=ol_main.c ol_ldap.c
+OBJS= ol_main.o ol_ldap.o ol_result.o
+SOURCES=ol_main.c ol_ldap.c ol_result.c
 MODULE_LIBS=@LIBS@
 EXTRA_CLEAN=ol_config.h ol_config.h.in OpenLDAP.so
 
