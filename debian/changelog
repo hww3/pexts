@@ -1,3 +1,9 @@
+pexts (0.0.20021010-2) unstable; urgency=low
+
+  * Compiling with -fPIC (closes: Bug#164150)
+
+ -- Marek Habersack <grendel@debian.org>  Thu, 10 Oct 2002 19:03:01 +0200
+
 pexts (0.0.20021010-1) unstable; urgency=low
 
   * Latest CVS snapshot.
