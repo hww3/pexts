@@ -72,3 +72,6 @@ noinst_HEADERS =
 	mailbox.h
 
 
+spotless: distclean
+	@rm -f Makefile Makefile.in
+	@rm -f muttconfig.h stamp-h1

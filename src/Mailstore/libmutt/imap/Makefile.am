@@ -34,3 +34,5 @@ libimap_a_SOURCES = auth.c \
 	utf7.c \
 	util.c $(AUTHENTICATORS) $(GSSSOURCES)
 
+spotless: distclean
+	@rm -rf Makefile Makefile.in
