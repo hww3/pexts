@@ -63,24 +63,24 @@ MNOGO_API(create)
   switch(args) {
   case 1: 
     Env = UdmAllocEnv();
-    if(ARG(0).type != PIKE_T_STRING) {
+    if(ARG(1).type != PIKE_T_STRING) {
       SIMPLE_BAD_ARG_ERROR("create", 1, "string");
     }
-    UdmEnvSetDBAddr(Env, ARG(0).u.string->str);
+    UdmEnvSetDBAddr(Env, ARG(1).u.string->str);
     
     AGENT = UdmAllocAgent(Env, 0, UDM_OPEN_MODE_READ);
     break;
 			
   default:
     Env = UdmAllocEnv();				
-    if(ARG(0).type != PIKE_T_STRING) {
+    if(ARG(1).type != PIKE_T_STRING) {
       SIMPLE_BAD_ARG_ERROR("create", 1, "string");
     }
-    if(ARG(1).type != PIKE_T_STRING) {
+    if(ARG(2).type != PIKE_T_STRING) {
       SIMPLE_BAD_ARG_ERROR("create", 2, "string");
     }
-    UdmEnvSetDBAddr(Env, ARG(0).u.string->str);
-    UdmEnvSetDBMode(Env, ARG(1).u.string->str);				
+    UdmEnvSetDBAddr(Env, ARG(1).u.string->str);
+    UdmEnvSetDBMode(Env, ARG(2).u.string->str);				
     AGENT = UdmAllocAgent(Env, 0, UDM_OPEN_MODE_READ);
     break;
 			
@@ -92,7 +92,7 @@ MNOGO_API(create)
 }
 
 #define TYPE_ERROR(x) Pike_error("set_agent_param: Parameter value type invalid, expected %s.\n", x);
-#define INT(var) if(valtype != PIKE_T_INT) { TYPE_ERROR("int"); } else { var = ARG(1).u.integer; }
+#define INT(var) if(valtype != PIKE_T_INT) { TYPE_ERROR("int"); } else { var = ARG(2).u.integer; }
 #define STR() if(valtype != PIKE_T_STRING) { TYPE_ERROR("int"); } 
 
 MNOGO_API(set_param)
@@ -100,17 +100,17 @@ MNOGO_API(set_param)
   int valtype;
   int tmp;
   if(args >= 2) {
-    if(ARG(0).type != PIKE_T_INT) {
+    if(ARG(1).type != PIKE_T_INT) {
       SIMPLE_BAD_ARG_ERROR("set_param", 1, "int");
     }
-    valtype = ARG(1).type;
+    valtype = ARG(2).type;
     if(valtype != PIKE_T_STRING && valtype != PIKE_T_INT)
       SIMPLE_BAD_ARG_ERROR("set_param", 2, "string|int");
   } else {
     SIMPLE_TOO_FEW_ARGS_ERROR("set_param", 2);
   }
 	
-  switch(ARG(0).u.integer){
+  switch(ARG(1).u.integer){
   case UDM_PARAM_PAGE_SIZE:
     INT(AGENT->page_size);
     if(AGENT->page_size < 1)  AGENT->page_size = 20;
@@ -211,7 +211,7 @@ MNOGO_API(set_param)
 
   case UDM_PARAM_CHARSET:
     STR();
-    AGENT->Conf->local_charset = UdmGetCharset(ARG(1).u.string->str);
+    AGENT->Conf->local_charset = UdmGetCharset(ARG(2).u.string->str);
     AGENT->charset = AGENT->Conf->local_charset;
 
     break;
@@ -219,13 +219,13 @@ MNOGO_API(set_param)
   case UDM_PARAM_STOPTABLE:
     STR();
     strcat(AGENT->Conf->stop_tables, " ");
-    strcat(AGENT->Conf->stop_tables, ARG(1).u.string->str);
+    strcat(AGENT->Conf->stop_tables, ARG(2).u.string->str);
 
     break;
 
   case UDM_PARAM_STOPFILE:
     STR();
-    if (UdmFileLoadStopList(AGENT->Conf, ARG(1).u.string->str)) {
+    if (UdmFileLoadStopList(AGENT->Conf, ARG(2).u.string->str)) {
       Pike_error(AGENT->Conf->errstr);
     }
 			    
@@ -233,7 +233,7 @@ MNOGO_API(set_param)
 			
   case UDM_PARAM_WEIGHT_FACTOR: 
     STR();
-    AGENT->weight_factor = strdup(ARG(1).u.string->str);
+    AGENT->weight_factor = strdup(ARG(2).u.string->str);
 			    
     break;
 			
@@ -348,14 +348,14 @@ MNOGO_API(add_search_limit)
   int var;
 
   if(args >= 2) {
-    if(ARG(0).type != PIKE_T_INT) {
+    if(ARG(1).type != PIKE_T_INT) {
       SIMPLE_BAD_ARG_ERROR("add_search_limit", 1, "int");
     }
-    if(ARG(1).type != PIKE_T_STRING) {
+    if(ARG(2).type != PIKE_T_STRING) {
       SIMPLE_BAD_ARG_ERROR("add_search_limit", 2, "string");
     }
-    var = ARG(0).u.integer;
-    val = ARG(1).u.string->str;
+    var = ARG(1).u.integer;
+    val = ARG(2).u.string->str;
   } else {
     SIMPLE_TOO_FEW_ARGS_ERROR("add_search_limit", 2);
   }
@@ -453,10 +453,10 @@ MNOGO_API(fetch_row) {
   unsigned int row;
   
   if(args >= 1) {
-    if(ARG(0).type != PIKE_T_INT) {
+    if(ARG(1).type != PIKE_T_INT) {
       SIMPLE_BAD_ARG_ERROR("fetch_row", 1, "int");
     }      
-    row = ARG(0).u.integer;
+    row = ARG(1).u.integer;
   } else {
     row = RES->current_row;
   }
@@ -484,8 +484,8 @@ MNOGO_API(big_query)
   UDM_AGENT * agent;
   char *query;
   if(args >= 1) {
-    if(ARG(0).type == PIKE_T_STRING) {
-      query = ARG(0).u.string->str;
+    if(ARG(1).type == PIKE_T_STRING) {
+      query = ARG(1).u.string->str;
     } else {
       SIMPLE_BAD_ARG_ERROR("big_query", 1, "string");
     }
@@ -513,8 +513,8 @@ MNOGO_API(query)
   UDM_AGENT *agent;
   char *query;
   if(args >= 1) {
-    if(ARG(0).type == PIKE_T_STRING) {
-      query = ARG(0).u.string->str;
+    if(ARG(1).type == PIKE_T_STRING) {
+      query = ARG(1).u.string->str;
     } else {
       SIMPLE_BAD_ARG_ERROR("query", 1, "string");
     }
@@ -555,8 +555,8 @@ MNOGO_API(cat_list)
   char *buf = NULL;
   int cats = 0;
   if(args >= 1) {
-    if(ARG(0).type == PIKE_T_STRING) {
-      cat = ARG(0).u.string->str;
+    if(ARG(1).type == PIKE_T_STRING) {
+      cat = ARG(1).u.string->str;
     } else {
       SIMPLE_BAD_ARG_ERROR("cat_list", 1, "string");
     }
@@ -591,8 +591,8 @@ MNOGO_API(cat_path)
   int cats = 0;
   
   if(args >= 1) {
-    if(ARG(0).type == PIKE_T_STRING) {
-      cat = ARG(0).u.string->str;
+    if(ARG(1).type == PIKE_T_STRING) {
+      cat = ARG(1).u.string->str;
     } else {
       SIMPLE_BAD_ARG_ERROR("cat_path", 1, "string");
     }
