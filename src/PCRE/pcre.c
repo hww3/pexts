@@ -52,6 +52,7 @@ static int parse_options(char *pp, int *study)
     case 'E':	opts |= PCRE_NOTEMPTY;       break;
     case 'L':	opts |= PCRE_NOTEOL;         break;
     case 'S':	if(study != NULL) *study = 1;break;
+    case 'N':	if(study != NULL) *study = 0;break;
     case 'U':	opts |= PCRE_UNGREEDY;	     break;
     case 'X':	opts |= PCRE_EXTRA;	     break;	
     case ' ': case '\n':
@@ -77,7 +78,7 @@ void f_pcre_create(INT32 args)
   int opts = 0;           /* Regexp compile options */
   const char *errmsg;          /* Error message pointer */
   int erroffset;              /* Error offset */
-  int do_study = 0;           /* Study the regexp when it's compiled */
+  int do_study = 1;           /* Study the regexp when it's compiled */
   char *pp;                   /* Temporary char pointer */
   unsigned const char *table = NULL; /* Translation table */
 #if HAVE_SETLOCALE
