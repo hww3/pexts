@@ -61,14 +61,10 @@
 #define _GNU_SOURCE
 #endif
 
-#include "global.h"
-RCSID("$Id$");
-
 #ifdef fp
 #undef fp
 #endif
 
-#include "caudium_util.h"
 #include "xml_config.h"
 
 #ifdef HAVE_XML2
@@ -101,6 +97,63 @@ static void f_keepBlanksDefault(INT32 args)
   push_int(xmlKeepBlanksDefault(i));
 }
 
+static void f_utf8ToHTML(INT32 args)
+{
+  char *html = NULL;
+  struct pike_string *str = NULL;
+  int outlen, inlen;
+
+  str = Pike_sp[-args].u.string;
+
+  html = malloc(2*str->len*sizeof(char *));
+  outlen = 2*str->len;
+  inlen = str->len;
+  if ( UTF8ToHtml(html, &outlen, str->str, &inlen) < 0 ) {
+    pop_n_elems(args);
+    free(html);
+    Pike_error("Cannot convert to html!");
+    return;
+  }
+  html[outlen] = '\0';
+  pop_n_elems(args);
+  push_text(html);
+  free(html);
+}
+
+static void f_utf8ToISO(INT32 args)
+{
+  char *html = NULL;
+  struct pike_string *str = NULL;
+  int outlen, inlen;
+
+  str = Pike_sp[-args].u.string;
+
+  html = malloc(2*str->len*sizeof(char *));
+  outlen = 2*str->len;
+  inlen = str->len;
+  if ( UTF8Toisolat1(html, &outlen, str->str, &inlen) < 0 ) {
+    pop_n_elems(args);
+    free(html);
+    Pike_error("Cannot convert to isolat1!");
+    return;
+  }
+  html[outlen] = '\0';
+  pop_n_elems(args);
+  push_text(html);
+  free(html);
+}
+
+static void f_utf8Check(INT32 args)
+{
+  struct pike_string *str = NULL;
+  int result;
+
+  str = Pike_sp[-args].u.string;
+  result = xmlCheckUTF8(str->str);
+  pop_n_elems(args);
+  push_int(result);
+}
+
 void pike_module_init(void)
 {
 #ifdef PEXTS_VERSION
@@ -121,6 +174,9 @@ void pike_module_init(void)
                tFunc(tInt, tInt), 0);
   ADD_FUNCTION("keepBlanksDefault", f_keepBlanksDefault,
                tFunc(tInt, tInt), 0);
+  ADD_FUNCTION("utf8_to_html", f_utf8ToHTML, tFunc(tString, tString), 0);
+  ADD_FUNCTION("utf8_to_isolat1", f_utf8ToISO, tFunc(tString, tString), 0);
+  ADD_FUNCTION("utf8_check", f_utf8Check, tFunc(tString, tInt), 0);
   
   /* some contstants */
   add_integer_constant("XML_INTERNAL_GENERAL_ENTITY", XML_INTERNAL_GENERAL_ENTITY, 0);

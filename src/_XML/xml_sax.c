@@ -70,7 +70,6 @@ RCSID("$Id$");
 #undef fp
 #endif
 
-#include "caudium_util.h"
 #include "xml_config.h"
 #include "xml_sax.h"
 
@@ -275,7 +274,7 @@ static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
   safe_push_text(systemID);
   push_svalue(&THIS->user_data);
   
-  CB_CALL(endElementSAX, 5);
+  CB_CALL(internalSubsetSAX, 5);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -353,8 +352,6 @@ static xmlEntityPtr pextsGetEntity(void *ctx, const xmlChar *name)
     return NULL;
   }
 
-  THIS->ctxt = (xmlParserCtxtPtr)ctx;
-  
   DBG_FUNC_LEAVE();
   return NULL;
 }
@@ -1077,7 +1074,9 @@ static void f_parse_xml(INT32 args)
         doc = xmlSAXParseFileWithData(THIS->sax, THIS->input_data->str, 1, NULL);
         break;
   }
-  
+  if ( doc != NULL )
+    xmlFreeDoc(doc);
+
   push_int(0);
 }
 
@@ -1097,6 +1096,8 @@ static void f_parse_html(INT32 args)
         doc = htmlSAXParseFile(THIS->input_data->str, NULL, THIS->sax, NULL);
         break;
   }
+  if ( doc != NULL )
+    xmlFreeDoc(doc);
   
   push_int(0);
 }
