@@ -663,10 +663,9 @@ make_c_array(struct svalue *val)
     if (!arr || !arr->size)
         return NULL;
 
-    car = (char**)malloc((arr->size + 1) * sizeof(char*));
+    car = (char**)calloc((arr->size + 1), sizeof(char*));
     if (!car)
         Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
-    memset(car, 0, arr->size + 1);
 
     for (i = 0; i < arr->size; i++) {
         if (arr->item[i].type != T_STRING)
@@ -685,7 +684,7 @@ static struct berval **
 make_berval_array(struct svalue *val)
 {
     struct berval     **barr = NULL;
-    size_t              i = 0;
+    int                 i = 0;
     size_t              size;
     
     if (!val)
@@ -699,21 +698,21 @@ make_berval_array(struct svalue *val)
         Pike_error("OpenDAP.Client: expecting a string or an array\n");
     }
     
-    barr = (struct berval**)malloc(size * sizeof(struct berval*));
+    barr = (struct berval**)calloc(size, sizeof(struct berval*));
     if (!barr)
         Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
-    memset(barr, 0, size);
 
     if (val->type == T_STRING) {
-        barr[0] = (struct berval*)malloc(sizeof(struct berval));
-        if (!barr[i])
+        barr[0] = (struct berval*)calloc(1, sizeof(struct berval));
+        if (!barr[0])
             Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+        
         barr[0]->bv_len = val->u.string->len;
         barr[0]->bv_val = val->u.string->str;
-    } else {
+    } else if (val->type == T_ARRAY) {
         struct array  *arr = val->u.array;
         
-        for (i = 0; i < size; i++) {
+        for (i = 0; i < arr->size; i++) {
             if (arr->item[i].type != T_STRING)
                 Pike_error("OpenLDAP.Client: expecting a string, got %s\n",
                            type2string(arr->item[i].type));
@@ -721,13 +720,15 @@ make_berval_array(struct svalue *val)
             if (arr->item[i].u.string->size_shift > 0)
                 Pike_error("OpenLDAP.Client: expecting an 8-bit string\n");
 
-            barr[i] = (struct berval*)malloc(sizeof(struct berval));
+            barr[i] = (struct berval*)calloc(1, sizeof(struct berval));
             if (!barr[i])
                 Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
 
             barr[i]->bv_len = arr->item[i].u.string->len;
             barr[i]->bv_val = arr->item[i].u.string->str;
         }
+    } else {
+        Pike_error("OpenLDAP.Client: unsupported type for making the berval array\n");
     }
     
     return barr;
@@ -1069,13 +1070,12 @@ f_ldap_add(INT32 args)
         Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     get_all_args("OpenLDAP.Client->add()", args, "%S%a", &dn, &arr);
-    mods = (LDAPMod**)malloc((arr->size + 1) * sizeof(LDAPMod*));
+    mods = (LDAPMod**)calloc((arr->size + 1), sizeof(LDAPMod*));
     if (!mods)
         Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
-    memset(mods, 0, arr->size + 1);
 
     for (i = 0; i < arr->size; i++) {
-        mods[i] = (LDAPMod*)malloc(sizeof(LDAPMod));
+        mods[i] = (LDAPMod*)calloc(1, sizeof(LDAPMod));
         if (!mods[i])
             Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
         mods[i]->mod_op = LDAP_MOD_BVALUES;
@@ -1100,14 +1100,17 @@ f_ldap_add(INT32 args)
         if (val->type != T_ARRAY)
             Pike_error("OpenLDAP.Client->add(): invalid modification mapping. "
                        "The '%s' field is not an array\n", "values");
+        
         mods[i]->mod_bvalues = make_berval_array(val);
     }
 
+    printf("trying to add...\n");
     ret = ldap_add_s(THIS->conn, dn->str, mods);
     if (ret != LDAP_SUCCESS)
         Pike_error("OpenLDAP.Client->add(): %s\n",
                    ldap_err2string(ret));
-
+    printf("trying to free...\n");
+    
     ldap_mods_free(mods, 1);
     
     pop_n_elems(args);
