@@ -1,10 +1,10 @@
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
- * Copyright © 2000-2003 The Caudium Group
+ * Copyright © 2000-2005 The Caudium Group
  */
 
-/* Copyright (C) 2002-2003 The Caudium Group
- * Copyright (C) 2002-2003 Zsolt Varga
+/* Copyright (C) 2002-2005 The Caudium Group
+ * Copyright (C) 2002-2005 Zsolt Varga
  * 
  * This file is part of the Pike Extensions package.
  *
