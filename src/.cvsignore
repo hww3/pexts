@@ -1,5 +1,5 @@
-configure
-config.log
 Makefile
 config.status
+config.log
+configure
 module_makefile
