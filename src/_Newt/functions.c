@@ -2105,7 +2105,7 @@ f_checkboxTreeSetEntryValue(INT32 args)
     
     val = ARG(2).u.string->str[0];
 
-    newtCheckboxSetEntryValue(THIS_OBJ(caller)->u.component, (void*)key, val);
+    newtCheckboxTreeSetEntryValue(THIS_OBJ(caller)->u.component, (void*)key, val);
 
     pop_n_elems(args);
 
@@ -3627,7 +3627,7 @@ void init_functions()
 #endif
 
 #ifdef HAVE_NEWTCURSORON
-    ADD_FUNCTION("cursorOff", f_cursorOff,
+    ADD_FUNCTION("cursorOn", f_cursorOn,
                  tFunc(tVoid, tVoid), 0);
 #endif
 
