@@ -1,0 +1,19 @@
+
+This is the first version of Pike PDF module. It based on PDFlib 
+( http://www.pdflib.com ) you can download from their homepage.
+
+the module itself can't compile with the pure pdflib, I compiled 
+a shared-object from the libaray archive, later on it will be changed.
+I added these line to pdflib-3.02/pdflib/Makefile:
+
+LIBGCC=/usr/lib/gcc-lib/i386-linux/2.95.2/libgcc.a
+
+...
+
+$(LIBPDF).so: $(OBJS)
+    $(LD) $(LDFLAGS) -o $(LIBPDF).so $(OBJS) $(LIBGCC) -lc $(LIBGCC)
+$(PDFLIBLINKSELF) -shared
+
+
+	19-oct-2000
+	Zsolt Varga <redax@agria.hu>
