@@ -7,6 +7,7 @@ AdminTools:
   shadow files, directory access and more.
   Requires: OS Support for various systemcalls. Detected by configure.
   Principal Author: Marek Habersack <grendel@caudium.net>
+  License: LGPL
 
 Mhash:
 
@@ -38,7 +39,8 @@ _Newt:
   TODO: finish the Newt.pmod
         implement the Grid functions
 	rewrite the Newt C examples in Pike
-	
+  License: LGPL
+
 PCRE:
 
   A glue to the Perl Compatible Regular Expression library,
@@ -71,6 +73,7 @@ bzip2:
   Requires: libbz2 from http://sources.redhat.com/bzip2/
   Principal Author: Marek Habersack <grendel@caudium.net>
   TODO: File based (de)compression, possibly non-blocking operation?
+  License: LGPL
 
 AVS:
 
@@ -91,7 +94,9 @@ OpenLDAP:
   Requires: OpenLDAP v2 from http://www.openldap.org/
   Principal Author: Marek Habersack <grendel@caudium.net>
   TODO: See the TODO file in the source directory
-
+  Bugs: the module should be obsoleted.
+  License: LGPL
+  
 OpenSSL:
   Glue to OpenSSL library.
   Requires: OpenSSL 0.9.x from http://www.openssl.org/
@@ -108,6 +113,7 @@ Gzip:
          one.
   TODO: implement streamed decompression
         implement compression in all modes
+  License: LGPL
 
 _esmtp:
   Module that implements the interface to the libesmtp library that
@@ -115,14 +121,24 @@ _esmtp:
   Requires: http://www.stafford.uklinux.net/libesmtp/
   Principal Author: Marek Habersack <grendel@caudium.net>
   Notes: WIP
-  
+  License: LGPL
+
 _FDF:
   Pike glue to the Adobe FDF SDK.
   Requires: http://partners.adobe.com/asn/developer/acrosdk/forms.html
   Principal Author: Marek Habersack <grendel@caudium.net>
   Notes: WIP, Proprietary lib required
+  License: LGPL
 
 GeoIP:
   Pike glue for the Maxmind GeoIP library.
   Requires: http://www.maxmind.com/app/c/
   Principal Author: Marek Habersack <grendel@caudium.net>
+  License: LGPL
+
+GPGME:
+  Pike glue for the GNUPG GpgMe library.
+  Requires: http://www.gnupg.org/
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  License: LGPL
+  TODO: finish it :)
