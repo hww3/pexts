@@ -26,6 +26,13 @@ CFLAGS=-O2 -fPIC
 ifeq ($(DEB_BUILD_ARCH),hppa)
 CFLAGS+=-ffunction-sections
 endif
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -g
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
 export CFLAGS
 
 configure: apply-patches configure-stamp-7 configure-stamp-72 configure-stamp-74
