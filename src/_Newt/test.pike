@@ -1,4 +1,4 @@
-#!/usr/bin/pike -M./
+#!/usr/bin/pike7
 
 int|string myEntryFilter(string data, int|string ch, int cursor)
 {
@@ -15,7 +15,7 @@ int main()
     n->cls();
     n->drawRootText(0, 0, "SOME TEXT!!!!!!!!!!!!!!!!!!");
 
-    n->openWindow(20, 10, 50, 20, "Hello world");
+    n->openWindow(10, 4, 60,15, "Hello world");
     
     object form = Newt.Form("Some help text");
     form->add(Newt.Button(2, 2, "Button"));
@@ -30,7 +30,6 @@ int main()
     object(Newt.Button) ret = form->run();
     
     n->finished();    
-    
     write(sprintf("Finished by the '%s' button\n", ret->myText()));
     write(sprintf("text entry value: '%s'\n", textEntry->getValue()));
 	
