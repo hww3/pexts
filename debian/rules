@@ -75,8 +75,13 @@ do-configure:
 		     --without-gpgme \
 		     --without-mnoGo \
 		     --without-OpenSSL \
+		     --without-OpenLDAP \
 		     --without-_XML \
 		     --without-mcast \
+		     --without-Mailstore \
+		     --without-FNV \
+		     --without-ferite \
+		     --without-AVS \
 		     --with-GeoIP
 
 build: build-stamp-72 build-stamp-74
