@@ -19,6 +19,13 @@
  */
 #define _GNU_SOURCE
 
+/*
+ **| file: ol_ldap.c
+ **|  Implementation of the OpenLDAP glue.
+ **
+ **| cvs_version: $Id$
+ */
+
 #include "global.h"
 RCSID("$Id$");
 
@@ -55,6 +62,33 @@ static struct pike_string   *modify_values;
 #define MOD_DELETE_STR       "delete"
 #define MOD_REPLACE_STR      "replace"
 
+/*
+ **| method: void create(string uri);
+ **
+ **|  Create a new OpenLDAP client connection object.
+ **
+ **| name: create - create the object
+ **
+ **| arg: string uri
+ **|  An URI pointing to the LDAP host to connect to as described in
+ **|  RFC 2255. The LDAP URI has the general format:
+ **|
+ **|   # ldap://hostport/dn[?attrs[?scope[?filter[?exts]]]]
+ **|
+ **|  where
+ **|    hostport is a host name with an optional ":portnumber"
+ **|    dn is the search base
+ **|    attrs is a comma separated list of attributes to request
+ **|    scope is one of these three strings:
+ **|    base one sub (default=base)
+ **|    filter is filter
+ **|    exts are recognized set of LDAP and/or API extensions.
+ **|
+ **|  Documentation to this function has been written based on the
+ **|  OpenLDAP v2 ldap_url_parse(3) manual page.
+ **
+ **| see_also: ldap_url_parse(3), RFC 2255
+ */
 static void
 f_create(INT32 args)
 {
@@ -78,6 +112,59 @@ f_create(INT32 args)
     pop_n_elems(args);
 }
 
+/*
+ **| method: int bind();
+ **|  Bind to the server in the connectionless mode (LDAP v3).
+ **
+ **| alt: int bind(string whodn);
+ **|  Bind to the server without authentication.
+ **
+ **| alt: int bind(string whodn, string cred);
+ **|  Bind to the server with authentication.
+ **
+ **| alt: int bind(string whodn, string cred, int auth_type);
+ **|  Bind to the server with authentication and use the specified
+ **|  authentication type.
+ **
+ **| arg: string whodn
+ **|  The DN to use for authentication.
+ **
+ **| arg: string cred
+ **|  The authenticating DN's credentials (usually a password).
+ **
+ **| arg: int auth_type
+ **|  The authentication type to use for this call. The following
+ **|  types are defined:
+ **|
+ **|    - OpenLDAP.LDAP_AUTH_NONE
+ **|      No authentication is performed.
+ **|
+ **|    - OpenLDAP.LDAP_AUTH_SIMPLE
+ **|      The 'cred' parameter is the DN's password as listed in the
+ **|      userPassword field associated with the entry.
+ **|
+ **|    - OpenLDAP.LDAP_AUTH_SASL
+ **|      Use the SASL identity to authenticate the user. The OpenLDAP
+ **|      server must be configured properly to work with SASL.
+ **|
+ **|    - OpenLDAP.LDAP_AUTH_KRBV4
+ **|    - OpenLDAP.LDAP_AUTH_KRBV41
+ **|    - OpenLDAP.LDAP_AUTH_KRBV42
+ **|      If the LDAP library and LDAP server being  contacted  have
+ **|      been  compiled  with the KERBEROS option defined, Kerberos
+ **|      version 4 authentication can be  accomplished  by  calling
+ **|      the  ldap_kerberos_bind_s()  routine.  It assumes the user
+ **|      already has obtained a ticket granting ticket.   It  takes
+ **|      whodn,  the  DN  of the entry to bind as.
+ **|
+ **| returns: the LDAP error code
+ **
+ **| note: documentation written based on the ldap_bind(3) manual
+ **|       page.
+ **| note: this method uses the OpenLDAP synchronous interface.
+ **
+ **| see_also: OpenLDAP v2 ldap_bind(3) manual page.
+ */
 static void
 f_ldap_bind(INT32 args)
 {
@@ -107,7 +194,7 @@ f_ldap_bind(INT32 args)
             if (args)
                 Pike_error("OpenLDAP.Client->bind(): expects at most 3 arguments\n");
             break;
-    }    
+    }
 
     ret = ldap_bind_s(THIS->conn, who, cred, auth);
     THIS->bound = ret ? 0 : 1;
@@ -117,6 +204,16 @@ f_ldap_bind(INT32 args)
     push_int(ret);
 }
 
+/*
+ **| method: int unbind();
+ **|  Unbind from the bound server.
+ **
+ **| returns: the LDAP error code
+ **
+ **| note: this method uses the OpenLDAP synchronous interface.
+ **
+ **| see_also: the OpenLDAP v2 ldap_unbind(3) manual page.
+ */
 static void
 f_ldap_unbind(INT32 args)
 {
@@ -131,6 +228,8 @@ f_ldap_unbind(INT32 args)
     push_int(THIS->lerrno);
 }
 
+/*
+**| method */
 static void
 f_ldap_enable_cache(INT32 args)
 {
@@ -144,8 +243,24 @@ f_ldap_enable_cache(INT32 args)
         return;
     }
 
-    get_all_args("OpenLDAP.Client->enable_cache()", args, "%i%i",
-                 &timeout, &maxmem);
+    switch (args) {
+        case 2:
+            if (ARG(2).type != T_INT)
+                Pike_error("OpenLDAP.Client->enable_cache(): argument 2 must be an integer\n");
+            maxmem = ARG(2).u.string->str;
+            /* fall through */
+            
+        case 1:
+            if (ARG(1).type != T_INT)
+                Pike_error("OpenLDAP.Client->enable_cache(): argument 1 must be an integer\n");
+            timeout = ARG(1).u.string->str;
+            break;
+            
+        default:
+            if (args)
+                Pike_error("OpenLDAP.Client->enable_cache(): expects at most 2 arguments\n");
+            break;
+    }
     
     ret = ldap_enable_cache(THIS->conn,
                             timeout,
