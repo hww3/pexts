@@ -251,9 +251,9 @@ void f_stroke(INT32 args) {
 static struct program *pdf_program;
 static void free_pdf(struct object *o)
 {
-  MEMSET(THIS, 0, sizeof(PDF_storage));
   if( THIS->filename ) free(THIS->filename);
   if( THIS->storage ) free(THIS->storage);
+  MEMSET(THIS, 0, sizeof(PDF_storage));
 }
 
 static void init_pdf(struct object *o)
