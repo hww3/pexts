@@ -1,9 +1,9 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
 MODNAME=Mailstore
-OBJS= mailstore_main.o libmutt/libmutt.a libmutt/imap/libimap.a
-SOURCES=mailstore_main.c 
+OBJS= mailstore_main.o libmutt/src/libmutt.a libmutt/imap/libimap.a
+SOURCES=mailstore_main.c
 MODULE_LIBS=@LIBS@
-MODULE_CFLAGS = -Ilibmutt/src
+MODULE_CFLAGS=-I./libmutt/src -I./libmutt/imap
 
 EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so
 
@@ -11,8 +11,9 @@ EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so
 
 extrainstall:
 
-libmutt/libmutt.a:
-	(cd libmutt ; ./configure ; ${MAKE} ; cp src./libs/libmutt.a .)
+liubmutt/imap/libimap.a:
+libmutt/src/libmutt.a:
+	(cd libmutt ; ${MAKE})
 
 # DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
 

@@ -22,6 +22,8 @@
 #ifndef _IMAP_AUTH_H
 #define _IMAP_AUTH_H 1
 
+#define _(a) (a)
+
 typedef enum
 {
   IMAP_AUTH_SUCCESS = 0,

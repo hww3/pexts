@@ -55,8 +55,8 @@ struct browser_state
   int scanned : 1;
   void * rnode;        /* points to a GNode */
   void * server;       /* points to a LibBalsaServer */
-  void (*mailbox_handler)();
-  void (*folder_handler)();
+  //void (*mailbox_handler)();
+  //void (*folder_handler)();
   void* subfolders;    /* points to a GList */
   void* cb_data;       /* data passed to {mailbox,folder}_handlers */
   /* BALSA data end */

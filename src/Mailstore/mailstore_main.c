@@ -51,11 +51,11 @@ RCSID("$Id$");
 #include <errno.h>
 
 /* function specific headers */
-#include <libmutt/mutt.h>
-#include <libmutt/mutt_regex.h>
+#include <mutt.h>
+#include <mutt_regex.h>
 #include <pcreposix.h>
-#include <libmutt/mailbox.h>
-#include <libmutt/rfc822.h>
+#include <mailbox.h>
+#include <rfc822.h>
 
 /* local headers */
 #include "mailstore.h"

@@ -12,16 +12,17 @@ else
 AUTHENTICATORS = auth_anon.c auth_cram.c
 endif
 
-#EXTRA_DIST = BUGS README TODO auth_anon.c auth_cram.c auth_gss.c auth_sasl.c
+libdir = .
 
 noinst_LIBRARIES = libimap.a
 noinst_HEADERS = auth.h imap_private.h message.h
 
-libimap_a_CFLAGS = -fexceptions -fPIC -Wall \
+DEFS = \
 	-DSHAREDIR=\"$(sharedir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLIBMUTT
 
+#libmutt_a_CFLAGS = -fpic
 
 libimap_a_SOURCES = auth.c \
 	auth_login.c \
@@ -32,4 +33,3 @@ libimap_a_SOURCES = auth.c \
 	utf7.c \
 	util.c $(AUTHENTICATORS) $(GSSSOURCES)
 
-#include_HEADERS = 

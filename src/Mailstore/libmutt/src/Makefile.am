@@ -1,11 +1,6 @@
 #
 #
 #
-INCLUDES = -I../imap
-
-lib_LTLIBRARIES = libmutt.la
-
-#EXTRA_DIST = configure muttconfig.h.in mutt_ssl.c mutt_ssl.h
 
 if USE_SSL
 SSLSOURCES = mutt_ssl.c
@@ -19,15 +14,22 @@ if USE_NSS
 NSSSOURCES = mutt_ssl_nss.c
 endif
 
-libmutt_la_LDFLAGS = -version-fino `echo $(VERSION) | sed -e 's/\./:/g'`
-libmutt_la_LIBADD = $(top_builddir)/imap/libimap.a
-libmutt_la_CFLAGS = -fexceptions -fPIC -Wall \
+libdir = .
+
+INCLUDES = -I../imap
+
+noinst_LIBRARIES = libmutt.a
+
+libmutt_a_LIBADD = ../imap/libimap.a
+
+DEFS = \
 	-DSHAREDIR=\"$(sharedir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
 	-DLIBMUTT
 
 
-libmutt_la_SOURCES = \
+
+libmutt_a_SOURCES = \
 	account.c	\
 	ascii.c		\
 	attach.c 	\
@@ -63,7 +65,7 @@ libmutt_la_SOURCES = \
 	sort.c 		\
 	url.c $(SSLSOURCES) $(SASLSOURCES) $(NSSSOURCES)
 
-include_HEADERS =
+noinst_HEADERS =
 	mutt.h		\
 	mutt_regex.h	\
 	rfc822.h	\
