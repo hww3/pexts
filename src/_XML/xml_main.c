@@ -64,6 +64,10 @@
 #include "global.h"
 RCSID("$Id$");
 
+#ifdef fp
+#undef fp
+#endif
+
 #include "caudium_util.h"
 #include "xml_config.h"
 
