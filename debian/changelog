@@ -1,3 +1,11 @@
+pexts (0.2.0-1) unstable; urgency=low
+
+  * The latest upstream release
+  * Build packages for Pike 7.6 as well
+  * Updated the standards version. No changes.
+
+ -- Marek Habersack <grendel@debian.org>  Sun, 25 Jul 2004 03:08:30 +0200
+
 pexts (0.1.1-5) unstable; urgency=high
 
   * Recompiled to catch up with the dependencies

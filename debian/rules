@@ -18,10 +18,12 @@ export DH_OPTIONS
 PIKE=/usr/bin/pike$(PVER)
 PIKE72=/usr/bin/pike7.2
 PIKE74=/usr/bin/pike7.4
+PIKE76=/usr/bin/pike7.6
 PIKE_CHANGELOG=/usr/share/doc/pike$(PVER)/changelog.Debian.gz
 PIKE_VERSION=$(shell $(PIKE) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
 PIKE_VERSION72=$(shell $(PIKE72) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
 PIKE_VERSION74=$(shell $(PIKE74) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
+PIKE_VERSION76=$(shell $(PIKE76) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
 CVS_SNAPSHOT=$(shell if test -x configure; then echo no; else echo yes; fi)
 PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
 
@@ -39,7 +41,7 @@ endif
 
 export CFLAGS PVER
 
-configure: configure-stamp-72 configure-stamp-74
+configure: configure-stamp-72 configure-stamp-74 configure-stamp-76
 
 configure-stamp-72:
 	$(MAKE) -fdebian/rules PVER=7.2 do-configure-common
@@ -47,6 +49,10 @@ configure-stamp-72:
 
 configure-stamp-74:
 	$(MAKE) -fdebian/rules PVER=7.4 do-configure-common
+	touch $@
+
+configure-stamp-76:
+	$(MAKE) -fdebian/rules PVER=7.6 do-configure-common
 	touch $@
 
 apply-patches:
@@ -91,7 +97,7 @@ do-configure-common:
 		     --with-GeoIP \
 		     --with-bzip2
 
-build: apply-patches build-stamp-72 build-stamp-74
+build: apply-patches build-stamp-72 build-stamp-74 build-stamp-76
 
 build-stamp-72: configure-stamp-72
 	$(MAKE) -fdebian/rules PVER=7.2 do-build
@@ -103,6 +109,12 @@ build-stamp-74: configure-stamp-74
 	$(MAKE) -fdebian/rules PVER=7.4 do-build
 	$(MAKE) -fdebian/rules PVER=7.4 inter-install
 	$(MAKE) -fdebian/rules PVER=7.4 inter-clean
+	touch $@
+
+build-stamp-76: configure-stamp-76
+	$(MAKE) -fdebian/rules PVER=7.6 do-build
+	$(MAKE) -fdebian/rules PVER=7.6 inter-install
+	$(MAKE) -fdebian/rules PVER=7.6 inter-clean
 	touch $@
 
 do-build:
@@ -122,9 +134,10 @@ inter-clean:
 
 clean: unapply-patches inter-clean
 	dh_testdir
-	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patched-stamp
+	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 \
+	      build-stamp-76 configure-stamp-76 patched-stamp
 	rm -f configure config.h.in config.log configure.ac
-	rm -rf debian/pike7.2 debian/pike7.4 debian/pike
+	rm -rf debian/pike7.2 debian/pike7.4 debian/pike7.6 debian/pike
 
 inter-install:
 	dh_testdir
@@ -203,7 +216,7 @@ binary-arch: build install
 #	dh_makeshlibs
 #	dh_perl
 	dh_shlibdeps
-	dh_gencontrol -u"-Vpikever72=$(PIKE_VERSION72) -Vpikever74=$(PIKE_VERSION74)"
+	dh_gencontrol -u"-Vpikever72=$(PIKE_VERSION72) -Vpikever74=$(PIKE_VERSION74)" -Vpikever76=$(PIKE_VERSION76)"
 	dh_md5sums
 	dh_builddeb
 
