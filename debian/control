@@ -7,7 +7,7 @@ Standards-Version: 3.1.1
 
 Package: pexts-admintools
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike AdminTools module
  WARNING: This code is Work In Progress!
  .
@@ -19,7 +19,7 @@ Description: Pike AdminTools module
 
 Package: pexts-curses
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike (N)Curses module
  WARNING: This code is Work In Progress!
  .
@@ -31,7 +31,7 @@ Description: Pike (N)Curses module
 
 Package: pexts-mhash
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike Mhash module
  WARNING: This code is Work In Progress!
  .
@@ -43,7 +43,7 @@ Description: Pike Mhash module
 
 Package: pexts-newt
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike Newt module
  WARNING: This code is Work In Progress!
  .
@@ -55,7 +55,7 @@ Description: Pike Newt module
 
 Package: pexts-pcre
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike PCRE module
  WARNING: This code is Work In Progress!
  .
@@ -67,7 +67,7 @@ Description: Pike PCRE module
 
 Package: pexts-bzip2
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike bzip2 module
  WARNING: This code is Work In Progress!
  .
@@ -79,7 +79,7 @@ Description: Pike bzip2 module
 
 Package: pexts-openldap
 Architecture: any
-Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Depends: ${shlibs:Depends}, pike7 (<= ${pikever}-1) | pike7 (>= ${pikever}-99)
 Description: Pike OpenLDAP module
  WARNING: This code is Work In Progress!
  .

@@ -1,3 +1,10 @@
+pexts (0.0.20010607-3) unstable; urgency=low
+
+  * Incorrect dependencies
+  * Relaxed dependency upon pike
+
+ -- Marek Habersack <grendel@debian.org>  Tue, 26 Jun 2001 11:28:21 +0200
+
 pexts (0.0.20010607-2) unstable; urgency=low
 
   * Small upstream fixes
