@@ -636,16 +636,22 @@ if test "$GCC" != "yes"; then
   esac
 fi
 
-
-
 CCSHARED="$pexts_cv_sys_ccshared"
 AC_MSG_RESULT($CCSHARED)
+
+CLIBRARY_LINK="-lc"
+# In special cases we don't want -lc...
+case $caudium_cv_sys_os in
+  UnixWare*|SCO_SV*)
+    CLIBRARY_LINK=""      
+  ;;
+esac
 
 #
 # Some variables we want to export to the other configure scripts.
 #
 CFLAGS="$CFLAGS $CCSHARED $WARN $OPTIMIZE"
-export CC CFLAGS CPPFLAGS LDFLAGS LDSHARED SO 
+export CC CFLAGS CPPFLAGS LDFLAGS LDSHARED SO CLIBRARY_LINK
 
 AC_CONFIG_SUBDIRS(src)
 AC_OUTPUT(Makefile)
