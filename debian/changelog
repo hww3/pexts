@@ -1,6 +1,7 @@
 pexts (0.0.20011016-1) unstable; urgency=low
 
   * Latest upstream sources
+  * Fixed the debian depencencies
 
  -- Marek Habersack <grendel@debian.org>  Tue, 16 Oct 2001 14:07:22 +0200
 
