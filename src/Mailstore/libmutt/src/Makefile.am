@@ -16,7 +16,7 @@ endif
 
 libdir = .
 
-INCLUDES = -I../imap
+INCLUDES = -I../imap/ -I../src/
 
 noinst_LIBRARIES = libmutt.a
 
