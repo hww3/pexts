@@ -37,19 +37,60 @@ f_create(INT32 args)
 {
     THIS->conn = THIS_PARENT->conn;
     THIS->msg = (LDAPMessage*)THIS_PARENT->data;
-
+    THIS->cur = ldap_first_entry(THIS->conn, THIS->msg);
+    THIS->num_entries = ldap_count_entries(THIS->conn, THIS->msg);
+    
     pop_n_elems(args);
 }
 
 static void
 f_num_entries(INT32 args)
 {
-    int  ret;
+    pop_n_elems(args);
+    push_int(THIS->num_entries);
+}
+
+static void
+f_ldap_get_dn(INT32 args)
+{
+    char *dn;
     
     pop_n_elems(args);
-    ret = ldap_count_entries(THIS->conn, THIS->msg);
+    if (!THIS->cur) {
+        push_int(0);
+    } else {  
+        dn = ldap_get_dn(THIS->conn, THIS->cur);
+        if (!dn) {
+            push_int(0);
+        } else {
+            push_string(make_shared_string(dn));
+            ldap_memfree(dn);
+        }
+    }
+}
 
-    push_int(ret);
+static void
+f_ldap_dn2ufn(INT32 args)
+{
+    struct pike_string   *dn = NULL;
+    char                 *ufn;
+    
+    if (args != 1)
+        Pike_error("OpenLDAP.Client.Result->dn2ufn(): requires exactly one 8-bit string argument\n");
+
+    get_all_args("OpenLDAP.Client.Result->dn2ufn()", args, "%S", &dn);
+    if (!dn) {
+        push_int(0);
+        return;
+    }
+
+    ufn = ldap_dn2ufn(dn->str);
+    if (!ufn) {
+        push_int(0);
+    } else {
+        push_string(make_shared_string(ufn));
+        ldap_memfree(ufn);
+    }
 }
 
 static void
@@ -57,6 +98,8 @@ init_result(struct object *o)
 {
     THIS->conn = NULL;
     THIS->msg = NULL;
+    THIS->cur = NULL;
+    THIS->num_entries = 0;
 }
 
 static void
@@ -79,6 +122,10 @@ _ol_result_program_init(void)
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("num_entries", f_num_entries,
                  tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("get_dn", f_ldap_get_dn,
+                 tFunc(tVoid, tString), 0);
+    ADD_FUNCTION("dn2ufn", f_ldap_dn2ufn,
+                 tFunct(tString, tString), 0);
     
     result_program = end_program();
     add_program_constant("Result", result_program, 0);
