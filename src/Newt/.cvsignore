@@ -1,0 +1,8 @@
+Makefile
+Makefile.pre
+config.log
+config.status
+configure
+newt_config.h
+newt_config.h.in
+

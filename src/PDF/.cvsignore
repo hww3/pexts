@@ -1,0 +1,8 @@
+Makefile
+Makefile.pre
+config.log
+config.status
+configure
+pdf_config.h
+pdf_config.h.in
+
