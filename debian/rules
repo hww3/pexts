@@ -45,7 +45,8 @@ configure-stamp:
 			       --without-gpgme \
 			       --without-mnoGo \
 			       --without-OpenSSL \
-			       --without-_XML
+			       --without-_XML \
+			       --without-mcast
 
 	touch configure-stamp
 

@@ -1,3 +1,10 @@
+pexts (0.0.20021010-3) unstable; urgency=low
+
+  * Disabled the mcast module - it's not working yet, anyway.
+    (closes: Bug#164150)
+
+ -- Marek Habersack <grendel@debian.org>  Sat, 12 Oct 2002 00:23:03 +0200
+
 pexts (0.0.20021010-2) unstable; urgency=low
 
   * Compiling with -fPIC (closes: Bug#164150)
