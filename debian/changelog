@@ -1,3 +1,10 @@
+pexts (0.0.20021010-1) unstable; urgency=low
+
+  * Latest CVS snapshot.
+  * Fixed the build process (closes: Bug#160314)
+
+ -- Marek Habersack <grendel@debian.org>  Thu, 10 Oct 2002 10:54:02 +0200
+
 pexts (0.0.20020408-2) unstable; urgency=high
 
   * Removed GPGME glue which shouldn't be there yet... (closes #142318)
