@@ -74,7 +74,15 @@ clean_dirs
 rm -f $module_dirs
 echo "Generating the list of modules"
 
-for d in `find "./src/." -name "*" -type d -prune -print`; do
+if uname | grep 'SunOS' >/dev/null 2>&1; then
+  # Solaris doesn't have -maxdepth, let's use -prune instead
+  # but only for Solaris since it breaks on other systems like
+  # FreeBSD, some Linux and Darwin
+  tmp_find_result=`find "./src/." -name "*" -type d -prune -print`
+else
+  tmp_find_result=`find "./src/." -name "*" -type d -maxdepth 1 -print`
+fi
+for d in $tmp_find_result; do
     if [ -f $d/.pexts_module ]; then
       pexts_module_val=`cat $d/.pexts_module | head -n 1 | tr -d '\t\n'`
       module_val=""
@@ -112,6 +120,9 @@ if [ -f $module_dirs ]; then
     for cf in $config_files; do
       create_config $cf
     done
+else
+  echo "$module_dirs not found. Aborting"
+  exit 1
 fi
 
 rm -f $tmpfile
