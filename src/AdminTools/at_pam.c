@@ -58,7 +58,8 @@ typedef struct
 
 typedef struct
 {
-    char   *appname;
+    char           *appname;
+    pam_handle_t   *pamh;
 } PAM_OBJECT_DATA;
 
 static int
@@ -138,6 +139,72 @@ f_chpass(INT32 args)
     push_int(0);
 }
 
+/****
+ *
+ * Low-level PAM interface
+ *
+ ****/
+static void
+f_pam_start(INT32 args)
+{}
+
+static void
+f_pam_end(INT32 args)
+{}
+
+static void
+f_pam_set_item(INT32 args)
+{}
+
+static void
+f_pam_get_item(INT32 args)
+{}
+
+static void
+f_pam_strerror(INT32 args)
+{}
+
+static void
+f_pam_fail_delay(INT32 args)
+{}
+
+static void
+f_pam_authenticate(INT32 args)
+{}
+
+static void
+f_pam_setcred(INT32 args)
+{}
+
+static void
+f_pam_acct_mgmt(INT32 args)
+{}
+
+static void
+f_pam_chauthtok(INT32 args)
+{}
+
+static voud
+f_pam_open_session(INT32 args)
+{}
+
+static void
+f_pam_close_session(INT32 args)
+{}
+
+static void
+f_pam_putenv(INT32 args)
+{}
+
+static void
+f_pam_getenv(INT32 args)
+{}
+
+static void
+f_pam_getenvlist(INT32 args)
+{}
+
+
 static void
 f_create(INT32 args)
 {
@@ -160,6 +227,7 @@ init_pam(struct object *o)
         FERROR("init_pam", "Out of memory!");
 
     dta->appname = NULL;
+    dta->pamh = NULL;
     THIS_LOW->object_name = _object_name;
     THIS_LOW->object_data = dta;
 }
