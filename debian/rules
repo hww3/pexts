@@ -35,10 +35,7 @@ endif
 
 export CFLAGS PVER
 
-configure: configure-stamp-7 configure-stamp-72 configure-stamp-74
-configure-stamp-7: apply-patches
-	$(MAKE) -fdebian/rules PVER=7 do-configure
-	touch $@
+configure: configure-stamp-72 configure-stamp-74
 
 configure-stamp-72: apply-patches
 	$(MAKE) -fdebian/rules PVER=7.2 do-configure
@@ -80,14 +77,9 @@ do-configure:
 		     --without-OpenSSL \
 		     --without-_XML \
 		     --without-mcast \
-		     --without-GeoIP
+		     --with-GeoIP
 
-build: build-stamp-7 build-stamp-72 build-stamp-74
-build-stamp-7: configure-stamp-7
-	$(MAKE) -fdebian/rules PVER=7 do-build
-	$(MAKE) -fdebian/rules PVER=7 inter-install
-	$(MAKE) -fdebian/rules PVER=7 inter-clean
-	touch $@
+build: build-stamp-72 build-stamp-74
 
 build-stamp-72: configure-stamp-72
 	$(MAKE) -fdebian/rules PVER=7.2 do-build
@@ -120,7 +112,7 @@ inter-clean: unapply-patches
 clean: inter-clean
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
+	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
 
 inter-install:
 	dh_testdir
@@ -138,7 +130,6 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs -A
-	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7/
 	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.2/
 	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.4/
 
