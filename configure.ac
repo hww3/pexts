@@ -467,6 +467,13 @@ if test $cflags_is_set = no; then
   AC_SYS_CPU_COMPILER_FLAG(sun4m,-mv8,microsparc,OPTIMIZE)
   AC_SYS_CPU_COMPILER_FLAG(sun4d,-msupersparc,supersparc,OPTIMIZE)
   AC_SYS_CPU_COMPILER_FLAG(sun4u,-msupersparc,ultrasparc,OPTIMIZE)
+
+  AC_SYS_COMPILER_FLAG(-mpentiumpro,pentiumpro,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-faltivec,altivec,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-maltivec,altivec,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-mpowerpc,powerpc,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-malign-power,align-power,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-malign-natural,align-natural,OPTIMIZE)
  else
 
 ### Non-gcc thingies. This should probably be enhanced...
