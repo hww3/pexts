@@ -91,4 +91,14 @@ OpenLDAP:
   Requires: OpenLDAP v2 from http://www.openldap.org/
   Principal Author: Marek Habersack <grendel@caudium.net>
   TODO: See the TODO file in the source directory
+
+Gzip:
+  Module to read gzip(1)ped files directly from within Pike using
+  zlib.
+  Requires: zlib from http://www.zlib.org/
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  Notes: This module is intentionally made separate from the Pike.Gz
+         one.
+  TODO: implement streamed decompression
+        implement compression in all modes
   
