@@ -63,6 +63,8 @@
 #define OL_CACHE_MAX      8192
 #define OL_CACHE_TIMEOUT  300
 
+#define OL_DEF_FILTER     "dn=*"
+
 typedef struct 
 {
     LDAP                *conn;
