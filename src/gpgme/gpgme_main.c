@@ -195,6 +195,329 @@ static void f_get_keylist_mode(INT32 args)
     push_int(mode);
 }
 
+static int push_userid(GpgmeKey key, int i)
+{
+    const char      *userid;
+    const char      *name;
+    const char      *email;
+    const char      *comment;
+    const char      *validity;
+    unsigned long    validityu;
+    unsigned long    revoked;
+    unsigned long    invalid;
+    int              nvals = 0;
+
+    userid = gpgme_key_get_string_attr(key, GPGME_ATTR_USERID, NULL, i);
+    if (!userid)
+        return 0;
+    
+    name = gpgme_key_get_string_attr(key, GPGME_ATTR_NAME, NULL, i);
+    email = gpgme_key_get_string_attr(key, GPGME_ATTR_EMAIL, NULL, i);
+    comment = gpgme_key_get_string_attr(key, GPGME_ATTR_COMMENT, NULL, i);
+    validity = gpgme_key_get_string_attr(key, GPGME_ATTR_VALIDITY, NULL, i);
+    validityu = gpgme_key_get_ulong_attr(key, GPGME_ATTR_VALIDITY, NULL, i);
+    revoked = gpgme_key_get_ulong_attr(key, GPGME_ATTR_UID_REVOKED, NULL, i);
+    invalid = gpgme_key_get_ulong_attr(key, GPGME_ATTR_UID_INVALID, NULL, i);
+
+    if (userid) {
+        push_text("userid");
+        push_text(userid);
+        nvals++;
+    }
+
+    if (name) {
+        push_text("name");
+        push_text(name);
+        nvals++;
+    }
+
+    if (email) {
+        push_text("email");
+        push_text(email);
+        nvals++;
+    }
+
+    if (comment) {
+        push_text("comment");
+        push_text(comment);
+        nvals++;
+    }
+
+    if (validity) {
+        push_text("validity");
+        push_text(validity);
+        nvals++;
+    }
+
+    if (validityu) {
+        push_text("validitynum");
+        push_int(validityu);
+        nvals++;
+    }
+
+    if (revoked) {
+        push_text("revoked");
+        push_int(revoked);
+        nvals++;
+    }
+
+    if (invalid) {
+        push_text("invalid");
+        push_int(invalid);
+        nvals++;
+    }
+
+    nvals <<= 1;
+    f_aggregate_mapping(nvals);
+
+    return 1;
+}
+
+static void push_gpgme_key(GpgmeKey key)
+{
+    const char     *sval;
+    unsigned long   uval;
+    int             nvals = 0, i, j;
+
+    sval = gpgme_key_get_string_attr(key,
+                                     GPGME_ATTR_KEYID,
+                                     NULL, 0);
+    if (sval) {
+        push_text("keyid");
+        push_text(sval);
+        nvals++;
+    }
+
+    sval = gpgme_key_get_string_attr(key,
+                                     GPGME_ATTR_FPR,
+                                     NULL, 0);
+    if (sval) {
+        push_text("fingerprint");
+        push_text(sval);
+        nvals++;
+    }
+
+    sval = gpgme_key_get_string_attr(key,
+                                     GPGME_ATTR_ALGO,
+                                     NULL, 0);
+    if (sval) {
+        push_text("algo");
+        push_text(sval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_ALGO,
+                                    NULL, 0);
+    if (uval) {
+        push_text("algonum");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_LEN,
+                                    NULL, 0);
+    if (uval) {
+        push_text("len");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_CREATED,
+                                    NULL, 0);
+    if (uval) {
+        push_text("created");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_EXPIRE,
+                                    NULL, 0);
+    if (uval) {
+        push_text("expire");
+        push_int(uval);
+        nvals++;
+    }
+
+    i = 0;
+    push_text("userids");
+    while(1) {
+        if (!push_userid(key, i)) {
+            f_aggregate(i);
+            nvals++;
+            break;
+        }
+        i++;
+    }
+    if (!i)
+        pop_n_elems(1);
+
+    sval = gpgme_key_get_string_attr(key,
+                                     GPGME_ATTR_IS_SECRET,
+                                     NULL, 0);
+    if (sval) {
+        push_text("issecret");
+        push_text(sval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_IS_SECRET,
+                                    NULL, 0);
+    if (uval) {
+        push_text("issecretnum");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_KEY_REVOKED,
+                                    NULL, 0);
+    if (uval) {
+        push_text("revoked");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_KEY_INVALID,
+                                    NULL, 0);
+    if (uval) {
+        push_text("invalid");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_KEY_EXPIRED,
+                                    NULL, 0);
+    if (uval) {
+        push_text("expired");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_KEY_DISABLED,
+                                    NULL, 0);
+    if (uval) {
+        push_text("disabled");
+        push_int(uval);
+        nvals++;
+    }
+
+    sval = gpgme_key_get_string_attr(key,
+                                     GPGME_ATTR_KEY_CAPS,
+                                     NULL, 0);
+    if (sval) {
+        push_text("caps");
+        push_text(sval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_CAN_ENCRYPT,
+                                    NULL, 0);
+    if (uval) {
+        push_text("can_encrypt");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_CAN_SIGN,
+                                    NULL, 0);
+    if (uval) {
+        push_text("can_sign");
+        push_int(uval);
+        nvals++;
+    }
+
+    uval = gpgme_key_get_ulong_attr(key,
+                                    GPGME_ATTR_CAN_CERTIFY,
+                                    NULL, 0);
+    if (uval) {
+        push_text("can_certify");
+        push_int(uval);
+        nvals++;
+    }
+
+    nvals <<= 1;
+    f_aggregate_mapping(nvals);
+}
+
+static void f_list_keys(INT32 args)
+{
+    char           *pattern = NULL;
+    int             so = 0;
+    int             asXML = 0;
+    struct array   *ret;
+    GpgmeKey        key;
+    int             nkeys;
+    
+    switch(args) {
+        case 0:
+            break;
+            
+        case 1:
+            get_all_args("list_keys", args, "%s", &pattern);
+            break;
+
+        case 2:
+            get_all_args("list_keys", args, "%s%i", &pattern, &so);
+            break;
+
+        case 3:
+            get_all_args("list_keys", args, "%s%i%i", &pattern, &so, &asXML);
+            break;
+            
+        default:
+            Pike_error("Incorrect number of arguments (%d)", args);
+    }
+
+    pop_n_elems(args);
+
+    THIS->lasterr = gpgme_op_keylist_start(THIS->context, pattern, so);
+    if (THIS->lasterr != GPGME_No_Error) {
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    nkeys = 0;
+    while (THIS->lasterr != GPGME_EOF) {
+        THIS->lasterr = gpgme_op_keylist_next(THIS->context, &key);
+        if (THIS->lasterr != GPGME_No_Error && THIS->lasterr != GPGME_EOF) {
+            pop_n_elems(args);
+            push_int(THIS->lasterr);
+            return;
+        }
+
+        if (asXML) {
+            char   *tmp = gpgme_key_get_as_xml(key);
+
+            if (!tmp)
+                continue;
+
+            nkeys++;
+            push_string(make_shared_string(tmp));
+            free(tmp);
+        } else {
+            push_gpgme_key(key);
+            nkeys++;
+        }
+    }
+
+    THIS->lasterr = gpgme_op_keylist_end(THIS->context);
+    
+    if (nkeys)
+        f_aggregate(nkeys);
+    else
+        push_int(0);
+}
+
 static void f_create(INT32 args)
 {
     GpgmeError    err;
@@ -276,6 +599,10 @@ void pike_module_init(void)
                  tFunc(tInt, tInt), 0);
     ADD_FUNCTION("get_keylist_mode", f_get_keylist_mode,
                  tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("list_keys", f_list_keys,
+                 tFunc(tOr(tVoid, tString) tOr(tVoid, tInt) tOr(tVoid, tInt),
+                       tOr(tArray,tInt)), 0);
+    
     /*TBD: passphrase callback */
     /*TBD: progress meter callback */
     
@@ -316,6 +643,14 @@ void pike_module_init(void)
     /* Keylist constants */
     add_integer_constant("GPGME_KEYLIST_MODE_LOCAL", GPGME_KEYLIST_MODE_LOCAL, 0);
     add_integer_constant("GPGME_KEYLIST_MODE_EXTERN", GPGME_KEYLIST_MODE_EXTERN, 0);
+
+    /* Validity constants */
+    add_integer_constant("GPGME_VALIDITY_UNKNOWN", GPGME_VALIDITY_UNKNOWN, 0);
+    add_integer_constant("GPGME_VALIDITY_UNDEFINED", GPGME_VALIDITY_UNDEFINED, 0);
+    add_integer_constant("GPGME_VALIDITY_NEVER", GPGME_VALIDITY_NEVER, 0);
+    add_integer_constant("GPGME_VALIDITY_MARGINAL", GPGME_VALIDITY_MARGINAL, 0);
+    add_integer_constant("GPGME_VALIDITY_FULL", GPGME_VALIDITY_FULL, 0);
+    add_integer_constant("GPGME_VALIDITY_ULTIMATE", GPGME_VALIDITY_ULTIMATE, 0);
 }
 
 void pike_module_exit(void)
