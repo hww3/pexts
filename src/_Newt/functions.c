@@ -164,7 +164,7 @@ f_centeredWindow(INT32 args)
     if (ARG(2).type != T_INT)
         FERROR("centeredWindow", "Wrong argument type for argument %d. Expected an integer.", 2);
 
-    if (ARG(3).type != T_STRING || ARG(5).u.string->size_shift > 0)
+    if (ARG(3).type != T_STRING || ARG(3).u.string->size_shift > 0)
         FERROR("centeredWindow", "Wrong argument type for argument %d. Expected an 8-bit string.", 3);
 
     (void)newtCenteredWindow(ARG(1).u.integer, /* width */
