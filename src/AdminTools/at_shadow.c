@@ -50,7 +50,17 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
-static char *at_object_name = "Shadow";
+struct shadow_struct
+{
+    int      db_opened;
+    long     sp_buf_max;
+};
+
+static char *_object_name = "Shadow";
+
+static struct program *shadow_program;
+
+#define THIS ((struct shadow_struct*)get_storage(fp->current_object, shadow_program))
 
 static void
 push_spent(struct spwd *spent)
@@ -99,17 +109,11 @@ static void
 f_setspent(INT32 args)
 {
     pop_n_elems(args);
-    if (THIS->shadow.db_opened)
+    if (THIS->db_opened)
         return;
 
     setspent();
-    THIS->shadow.db_opened = 1;
-}
-#else
-static void
-f_setspent(INT32 args)
-{
-    error("AdminTools.Shadow->setspent(): function not supported\n");
+    THIS->db_opened = 1;
 }
 #endif
 
@@ -118,17 +122,12 @@ static void
 f_endspent(INT32 args)
 {
     pop_n_elems(args);
-    if (!THIS->shadow.db_opened) {
-      return;
+    if (!THIS->db_opened) {
+        FERROR("database not opened", "endspent");
+        return;
     }
     endspent();
-    THIS->shadow.db_opened = 0;
-}
-#else
-static void
-f_endspent(INT32 args)
-{
-    error("AdminTools.Shadow->endspent(): function not supported\n");
+    THIS->db_opened = 0;
 }
 #endif
 
@@ -137,15 +136,15 @@ static void
 f_getspent(INT32 args)
 {
     pop_n_elems(args);
-    if (!THIS->shadow.db_opened)
+    if (!THIS->db_opened)
         f_setspent(0);
 
 #if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
     {
-	LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
+	LOCAL_BUF(buf, THIS->sp_buf_max);
         struct spwd    spbuf, *spent;
 
-        LOCAL_CHECK(buf, "AdminTools.Shadow->getspent(): out of memory\n");
+        LOCAL_CHECK(buf, "getspent");
 
 	/*
 	 * There is _no_ way to tell the difference between an error
@@ -153,27 +152,21 @@ f_getspent(INT32 args)
 	 * /grendel 22-09-2000
 	 */
 #ifdef HAVE_SOLARIS_GETSPENT_R
-	if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max) != 0)
+	if (getspent_r(&spbuf, buf, THIS->sp_buf_max) != 0)
 #else
-        if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0)
+        if (getspent_r(&spbuf, buf, THIS->sp_buf_max, &spent) != 0)
 #endif
 	{
-	  push_int(0);
-	  return;
+        push_int(0);
+        return;
 	}
-        push_spent(spent);
+    push_spent(spent);
 
 	LOCAL_FREE(buf);
     }
 #else
     push_spent(getspent());
 #endif
-}
-#else
-static void
-f_getspent(INT32 args)
-{
-    error("AdminTools.Shadow->getspent(): function not supported.\n");
 }
 #endif
 
@@ -183,31 +176,31 @@ f_getspnam(INT32 args)
 {
     char           *name;
 #ifdef _REENTRANT
-    LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
+    LOCAL_BUF(buf, THIS->sp_buf_max);
     struct spwd    spbuf;
     struct spwd    *spent;
 #endif
 
     get_all_args("AdminTools.Shadow->getspnam", args, "%S", &name);
     if (args != 1)
-	error("AdminTools.Shadow->getspnam(): Invalid number of arguments. Expected 1.\n");
+        FERROR("Invalid number of arguments. Expected 1", "getspnam");
     
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	error("AdminTools.Shadow->getspnam(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+        FERROR("Wrong argument type for argument 1. Expected 8-bit string", "getspnam");
 
     name = ARG(1).u.string->str;
     
 #if defined(_REENTRANT) && defined(HAVE_GETSPNAM_R)
-    LOCAL_CHECK(buf, "AdminTools.Shadow->getspenam(): out of memory.\n");
+    LOCAL_CHECK(buf, "getspnam");
     pop_n_elems(args);
     
 #ifdef HAVE_SOLARIS_GETSPNAM_R
-    if (!(spent = getspnam_r(name, &spbuf, buf, THIS->shadow.sp_buf_max))) {
+    if (!(spent = getspnam_r(name, &spbuf, buf, THIS->sp_buf_max))) {
 #else
-    if (getspnam_r(name, &spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0) {
+    if (getspnam_r(name, &spbuf, buf, THIS->sp_buf_max, &spent) != 0) {
 #endif
-	push_int(0);
-	return;
+        push_int(0);
+        return;
     }
     push_spent(spent);
     LOCAL_FREE(buf);
@@ -215,12 +208,6 @@ f_getspnam(INT32 args)
     pop_n_elems(args);
     push_spent(getspnam(name));
 #endif
-}
-#else
-static void
-f_getspnam(INT32 args)
-{
-    error("AdminTools.Shadow->getspnam(): function not supported.\n");
 }
 #endif
 
@@ -231,24 +218,24 @@ f_getallspents(INT32 args)
     INT32          nents;
     struct array   *sp_arr;
 #ifdef _REENTRANT
-    LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
+    LOCAL_BUF(buf, THIS->sp_buf_max);
     struct spwd    spbuf;
 #endif
 
-    if(THIS->shadow.db_opened)
+    if(THIS->db_opened)
         f_endspent(0);
     f_setspent(0);
 
     nents = 0;
 
 #if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
-    LOCAL_CHECK(buf, "AdminTools.Shadow->getallspents(): out of memory\n");
+    LOCAL_CHECK(buf, "getallspents");
     pop_n_elems(args);
 
 #ifdef HAVE_SOLARIS_GETSPENT_R
-    if (!(spent = getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max))) {
+    if (!(spent = getspent_r(&spbuf, buf, THIS->sp_buf_max))) {
 #else
-    if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0) {
+    if (getspent_r(&spbuf, buf, THIS->sp_buf_max, &spent) != 0) {
 #endif
         push_int(0);
         return;
@@ -264,9 +251,9 @@ f_getallspents(INT32 args)
 
 #if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
 #ifdef HAVE_SOLARIS_GETSPENT_R
-	spent = getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max);
+	spent = getspent_r(&spbuf, buf, THIS->sp_buf_max);
 #else
-	getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent);
+	getspent_r(&spbuf, buf, THIS->sp_buf_max, &spent);
 #endif
 #else
         spent = getspent();
@@ -288,19 +275,17 @@ f_shadow_create(INT32 args)
 {
     pop_n_elems(args);
 #ifdef HAVE_SYSCONF
-    THIS->shadow.sp_buf_max = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (THIS->shadow.sp_buf_max < 0)
+    THIS->sp_buf_max = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (THIS->sp_buf_max < 0)
 #endif
-      THIS->shadow.sp_buf_max = 2048;
+      THIS->sp_buf_max = 2048;
 }
 
 struct program*
 _at_shadow_init()
 {
-    struct program   *shadow_program;
-    
     start_new_program();
-    ADD_STORAGE(struct INSTANCE);
+    ADD_STORAGE(struct shadow_struct);
 
     add_function("create", f_shadow_create, "function(void:void)", 0);
     

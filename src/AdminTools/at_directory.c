@@ -42,14 +42,40 @@ RCSID("$Id$");
 #include <unistd.h>
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <pwd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-
 #include "at_common.h"
+
+/*
+ * This is the recommended safe way of calling readdir_r
+ */
+typedef union {
+    struct dirent   d;
+    char b[offsetof(struct dirent, d_name) + NAME_MAX + 1];
+} DIRENT;
+
+struct dir_struct 
+{
+    DIR                 *dir;
+    struct pike_string  *path;
+    struct dirent       *dent; /* cache */
+#ifdef HAVE_READDIR_R
+    DIRENT              dent2;
+#endif
+    off_t               offset;
+    
+    struct svalue      select_cb;
+    struct svalue      compare_cb;    
+};
+
+static struct program *dir_program;
+
+static char *_object_name = "Directory";
+
+static struct pike_string *s_ino;
+static struct pike_string *s_off;
+static struct pike_string *s_reclen;
+static struct pike_string *s_name;
+
+#define THIS ((struct dir_struct*)get_storage(fp->current_object, dir_program))
 
 /*
  * opendir() and friends support
@@ -58,107 +84,21 @@ RCSID("$Id$");
  * a more fine-grained interface here with some more bells and whistles.
  */
 #ifdef HAVE_OPENDIR
-static DIR*
+inline static DIR*
 do_opendir(char *dirpath)
 {
     DIR   *dirent;
     
-    dirent = opendir(THIS->dir.dirname->str);
-    if (!dirent) {
-	char  *err;
-	
-#ifdef HAVE_STRERROR
-	err = strerror(errno);
-#else
-	switch(errno) {
-	    case EACCESS: 
-		err = "access denied";
-		break;
-		
-	    case EMFILE: 
-		err = "Too many file descriptors in use by process";
-		break;
-		
-	    case ENFILE:
-		err = "Too many files are currently open in the system";
-		break;
-		
-	    case ENOENT:
-		err = "Directory doesn't exist";
-		break;
-		
-	    case ENOMEM:
-		err = "Out of memory";
-		break;
-		
-	    case ENOTDIR:
-		err = "Trying to open a non-directory";
-		break;
-		
-	    default:
-		err = "Unknown error";
-	}
-#endif
-	/*
-	 * Shouldn't we leave interpreting errno to the calling
-	 * program rather than use error() here?
-	 * /grendel 26-09-2000
-	 */
-	error("AdminTools.Directory[do_opendir()]: %s\n", err);
-    }
+    dirent = opendir(dirpath);
+    if (!dirent)
+        return NULL;
     
     return dirent;
-}
-
-static void
-f_opendir(INT32 args)
-{
-    get_all_args("AdminTools.Directory->open", args, "%S", &THIS->dir.dirname);
-    if (args != 1)
-	error("AdminTools.Directory->open(): Invalid number of arguments. Expected 1.\n");
-    
-    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	error("AdminTools.Directory->open(): Wrong argument type for argument 1. Expected 8-bit string.\n");
-
-    THIS->dir.dirname = make_shared_string(ARG(1).u.string->str);
-    add_ref(THIS->dir.dirname);
-    
-    if (THIS->dir.dir)
-	error("AdminTools.Directory->open(): previous directory not closed.\n");
-	
-    pop_n_elems(args);
-    
-    THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
-}
-#else
-static void
-f_opendir(INT32 args)
-{
-    error("AdminTools.Directory->open(): function not supported\n");
-}
-#endif
-
-#ifdef HAVE_CLOSEDIR
-static void
-f_closedir(INT32 args)
-{
-    pop_n_elems(args);
-    if (!THIS->dir.dir) {
-	push_int(-1);
-	return;
-    }
-    push_int(closedir(THIS->dir.dir));
-}
-#else
-static void
-f_closedir(INT32 args)
-{
-    error("AdminTools.Directory->close(): function not supported\n");
 }
 #endif
 
 #if defined(HAVE_READDIR) || defined(HAVE_READDIR_R)
-static void
+inline static void
 push_dirent(struct dirent *dent)
 {
     struct array    *arr;
@@ -189,39 +129,39 @@ push_dirent(struct dirent *dent)
      *  which corresponds to DT_UNKNOWN.
      */
      
-     switch(dent->d_type) {
+    switch(dent->d_type) {
         case DT_UNKNOWN:
-	    push_text("U");
-	    break;
+            push_text("U");
+            break;
 	    
-	case DT_REG:
-	    push_text("R");
-	    break;
+        case DT_REG:
+            push_text("R");
+            break;
 	    
-	case DT_DIR:
-	    push_text("D");
-	    break;
+        case DT_DIR:
+            push_text("D");
+            break;
 	    
-	case DT_FIFO:
-	    push_text("F");
-	    break;
+        case DT_FIFO:
+            push_text("F");
+            break;
 	    
-	case DT_SOCK:
-	    push_text("S");
-	    break;
+        case DT_SOCK:
+            push_text("S");
+            break;
 	    
-	case DT_CHR:
-	    push_text("C");
-	    break;
+        case DT_CHR:
+            push_text("C");
+            break;
 	    
-	case DT_BLK:
-	    push_text("B");
-	    break;
+        case DT_BLK:
+            push_text("B");
+            break;
 	    
-	default:
-	    push_text("?");
-	    break;
-     };
+        default:
+            push_text("?");
+            break;
+    };
 #else
     push_text("U");
 #endif
@@ -230,29 +170,64 @@ push_dirent(struct dirent *dent)
     push_array(arr);
 }
 
-/*
- * This is the recommended safe way of calling readdir_r
- */
-typedef union {
-    struct dirent   d;
-    char b[offsetof(struct dirent, d_name) + NAME_MAX + 1];
-} DIRENT;
-
-static struct dirent*
-my_readdir(DIR *dir)
+inline static struct dirent*
+do_readdir(DIR *dir)
 {
-    struct dirent   *dent;
-    
 #if defined(_REENTRANT) && defined(HAVE_READDIR_R)
-    DIRENT          dent2;
-    
-    if (readdir_r(dir, &dent2.d, &dent) != 0)
-	error("AdminTools.Directory->read(): error reading directory.\n");
+    if (readdir_r(dir, &THIS->dent2.d, &THIS->dent) != 0)
+        FERROR("error reading directory", "read");
 #else
-    dent = readdir(dir);
+    THIS->dent = readdir(dir);
 #endif
 
-    return dent;
+#ifdef HAVE_TELLDIR
+    THIS->offset = telldir(dir);
+#endif
+    
+    return THIS->dent;
+}
+#endif
+
+#ifdef HAVE_OPENDIR
+static void
+f_opendir(INT32 args)
+{
+    if (THIS->dir)
+        FERROR("directory already opened. Close it first", "open");
+
+    if (args > 1)
+        FERROR("too many arguments. Expected 0 or 1", "open");
+    
+    if (args == 1) {
+        if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+            FERROR("wrong type of argument 1; expected 8-bit string", "open");
+        THIS->path = make_shared_string(ARG(1).u.string->str);
+    } else
+        THIS->path = make_shared_string("./");
+
+    add_ref(THIS->path);
+    THIS->dir = do_opendir(THIS->path->str);
+    if (!THIS->dir)
+        FERROR("error opening directory", "open");
+
+#ifdef HAVE_TELLDIR
+    THIS->offset = telldir(THIS->dir);
+#endif
+    
+    pop_n_elems(args);
+}
+#endif
+
+#ifdef HAVE_CLOSEDIR
+static void
+f_closedir(INT32 args)
+{
+    pop_n_elems(args);
+    if (!THIS->dir) {
+        push_int(-1);
+        return;
+    }
+    push_int(closedir(THIS->dir));
 }
 #endif
 
@@ -262,24 +237,18 @@ f_readdir(INT32 args)
 {
     struct dirent   *dent;
     
-    if (!THIS->dir.dir) {
-	push_int(0);
-	return;
+    if (!THIS->dir) {
+        push_int(0);
+        return;
     }
     
-    dent = my_readdir(THIS->dir.dir);
+    dent = do_readdir(THIS->dir);
     pop_n_elems(args);
     
     if (dent)
-	push_dirent(dent);
+        push_dirent(dent);
     else
-	push_int(0);
-}
-#else
-static void
-f_readdir(INT32 args)
-{
-    error("AdminTools.Directory->read(): function not supported\n");
+        push_int(0);
 }
 #endif
 
@@ -288,16 +257,10 @@ static void
 f_rewinddir(INT32 args)
 {
     pop_n_elems(args);
-    if (!THIS->dir.dir)
-	return;
+    if (!THIS->dir)
+        return;
 	
-    rewinddir(THIS->dir.dir);
-}
-#else
-static void
-f_rewinddir(INT32 args)
-{
-    error("AdminTools.Directory->rewind(): function not supported\n");
+    rewinddir(THIS->dir);
 }
 #endif
 
@@ -307,26 +270,25 @@ f_seekdir(INT32 args)
 {
     off_t     soff = 0;
     
-    if (!THIS->dir.dir) {
-	pop_n_elems(args);
-	return;
+    if (!THIS->dir) {
+        FERROR("Directory not opened", "seekdir");
+        pop_n_elems(args);
+        return;
     }
     
     if (args == 1) {
-	if (ARG(1).type != T_INT)
-	    error("AdminTools.Directory->seek(): Wrong argument type for argument 1 - expected int.\n");
-	soff = ARG(1).u.integer;
+        if (ARG(1).type != T_INT)
+            FERROR("Wrong argument type for argument 1 - expected int", "seek");
+        soff = ARG(1).u.integer;
     } else
-	error("AdminTools.Directory->seek(): Wrong number of arguments. Expected 1 (int).\n");
-
+        FERROR("Wrong number of arguments. Expected 1 (int)", "seek");
+    
     pop_n_elems(args);
-    seekdir(THIS->dir.dir, soff);
-}
-#else
-static void
-f_seekdir(INT32 args)
-{
-    error("AdminTools.Directory->seek(): function not supported\n");
+    seekdir(THIS->dir, soff);
+
+#ifdef HAVE_TELLDIR
+    THIS->offset = telldir(THIS->dir);
+#endif
 }
 #endif
 
@@ -334,23 +296,15 @@ f_seekdir(INT32 args)
 static void
 f_telldir(INT32 args)
 {
-    off_t     pos;
-    
     pop_n_elems(args);
-    if (!THIS->dir.dir) {
-
-	push_int(-1);
-	return;
+    if (!THIS->dir) {
+        FERROR("Directory not opened", "telldir");
+        push_int(-1);
+        return;
     }
     
-    pos = telldir(THIS->dir.dir);
-    push_int(pos);
-}
-#else
-static void
-f_telldir(INT32 args)
-{
-    error("AdminTools.Directory->tell(): function not supported\n");
+    THIS->offset = telldir(THIS->dir);
+    push_int(THIS->offset);
 }
 #endif
 
@@ -358,60 +312,131 @@ f_telldir(INT32 args)
 static void
 f_scandir(INT32 args)
 {}
-#else
-static void
-f_scandir(INT32 args)
-{
-    error("AdminTools.Directory->scandir(): function not supported\n");
-}
 #endif
 
 static void
 f_dir_create(INT32 args)
 {
-#ifdef HAVE_OPENDIR
-    if (args > 1)
-	error("AdminTools.Directory->create(): Invalid number of arguments. Expected 0 or 1.\n");
-
-    if (args == 1) {
-	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	    error("AdminTools.Directory->create(): Wrong argument type for argument 1. Expected 8-bit string.\n");
-
-	THIS->dir.dirname = make_shared_string(ARG(1).u.string->str);
-	add_ref(THIS->dir.dirname);
-
-	THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
-    } else if (args > 1) {
-	error("AdminTools.Directory->create(): too many arguments\n");
-    } else
-	THIS->dir.dir = NULL;
-#else
-    error("AdminTools.Directory->open(): function not supported\n");
+    /* Some health checks */
+#if !defined(HAVE_OPENDIR) || !defined(HAVE_CLOSEDIR) || !defined(HAVE_READDIR)
+    FERROR("OS directory interfaces not fully functional. Cannot work.", "create");
 #endif
+    if (args == 1) {
+        if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+            FERROR("Wrong argument type for argument 1. Expected 8-bit string", "create");
 
+        THIS->path = make_shared_string(ARG(1).u.string->str);
+        add_ref(THIS->path);
+
+        THIS->dir = do_opendir(THIS->path->str);
+        if (!THIS->dir)
+            FERROR("Error opening directory", "create");
+    } else if (args > 1) {
+        FERROR("too many arguments", "create");
+    } else
+    THIS->dir = NULL;
+    
     pop_n_elems(args);
-    THIS->dir.select_cb.type = T_INT;
-    THIS->dir.select_cb.u.integer = 0;
-    THIS->dir.compare_cb.type = T_INT;
-    THIS->dir.compare_cb.u.integer = 0;
-    THIS->dir.dirname = NULL;
+}
+
+static void
+f_dir_index(INT32 args)
+{
+    long int        pos;
+
+    if (!THIS->dir)
+        OPERROR("directory not opened yet", "[]");
+    
+    if (args != 1)
+        OPERROR("wrong number of arguments. Expected 1", "[]");
+
+    switch (ARG(1).type) {
+        case T_STRING:
+            if (!THIS->dent)
+                do_readdir(THIS->dir);
+            
+            if (ARG(1).u.string == s_ino) {
+                pop_n_elems(args);                
+                push_int(THIS->dent->d_ino);
+            } else if (ARG(1).u.string == s_off) {
+                pop_n_elems(args);                
+                push_int(THIS->dent->d_off);
+            } else if (ARG(1).u.string == s_reclen) {
+                pop_n_elems(args);                
+                push_int(THIS->dent->d_reclen);
+            } else if (ARG(1).u.string == s_name) {
+                pop_n_elems(args);
+                push_text(THIS->dent->d_name);
+            } else {
+                error("AdminTools.%s[]: unknown index '%s'\n", _object_name, ARG(1).u.string->str);
+                pop_n_elems(args);
+            }
+            break;
+        
+        default:
+            OPERROR("wrong type of argument 1. Expected string", "[]");
+            pop_n_elems(args);
+            break;
+    }
+}
+
+static void
+init_directory(struct object *o)
+{
+    THIS->dir = NULL;
+    THIS->path = NULL;
+    THIS->dent = NULL;
+    THIS->offset = 0;
+    THIS->select_cb.type = T_INT;
+    THIS->select_cb.u.integer = 0;
+    THIS->compare_cb.type = T_INT;
+    THIS->compare_cb.u.integer = 0;
+}
+
+static void
+exit_directory(struct object *o)
+{
+    if (THIS->dir)
+        closedir(THIS->dir);
+    
+    free_string(s_ino);
+    free_string(s_off);
+    free_string(s_reclen);
+    free_string(s_name);
 }
 
 struct program*
 _at_directory_init(void)
 {
-    struct program *dir_program;
-    
     start_new_program();
-    ADD_STORAGE(struct INSTANCE);
+    ADD_STORAGE(struct dir_struct);
+
+    set_init_callback(init_directory);
+    set_exit_callback(exit_directory);
+
+    s_ino = make_shared_string("d_ino");
+    s_off = make_shared_string("d_off");
+    s_reclen = make_shared_string("d_reclen");
+    s_name = make_shared_string("d_name");
     
-    add_function("create", f_dir_create, "function(void|string:void)", 0);
-    add_function("open", f_opendir, "function(string:void)", 0);
-    add_function("close", f_closedir, "function(void:int)", 0);
-    add_function("read", f_readdir, "function(void:array)", 0);
-    add_function("rewind", f_rewinddir, "function(void:void)", 0);
-    add_function("seek", f_seekdir, "function(void|int:void)", 0);
-    add_function("tell", f_telldir, "function(void:int)", 0);
+    add_function("create", f_dir_create,
+                 "function(void|string:void)", 0);
+    add_function("open", f_opendir,
+                 "function(void|string:void)", 0);
+    add_function("close", f_closedir,
+                 "function(void:int)", 0);
+    add_function("read", f_readdir,
+                 "function(void:array)", 0);
+    add_function("rewind", f_rewinddir,
+                 "function(void:void)", 0);
+    add_function("seek", f_seekdir,
+                 "function(void|int:void)", 0);
+    add_function("tell", f_telldir,
+                 "function(void:int)", 0);
+
+    /* Operators */
+    add_function("`[]", f_dir_index,
+                 "function(string|int:string)", 0);
     
     dir_program = end_program();
     add_program_constant("Directory", dir_program, 0);

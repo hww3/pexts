@@ -30,28 +30,6 @@
 #include <dirent.h>
 #endif
 
-struct SHADOWPWDB
-{
-    int      db_opened;
-    long     sp_buf_max;
-};
-
-struct DIRDATA
-{
-    DIR                *dir;
-    struct pike_string *dirname;
-    struct svalue      select_cb;
-    struct svalue      compare_cb;
-};
-
-struct INSTANCE
-{
-    struct SHADOWPWDB    shadow;
-    struct DIRDATA       dir;
-};
-
-#define THIS ((struct INSTANCE*) fp->current_storage)
-
 #if SIZEOF_LONG >= 8
 #define push_longint(_x_) push_int64((_x_))
 #else
@@ -60,6 +38,9 @@ struct INSTANCE
 
 #define ARG(_n_) sp[-(_n_)]
 
+#define FERROR(_msg_, _fn_) error("AdminTools.%s->%s(): %s.\n", _object_name, _fn_, _msg_)
+#define OPERROR(_msg_, _fn_) error("AdminTools.%s%s: %s.\n", _object_name, _fn_, _msg_)
+
 #if defined(__GNUC__)
 #define LOCAL_BUF(_n_, _s_) char _n_[_s_]
 #define LOCAL_FREE(_n_)
@@ -67,11 +48,11 @@ struct INSTANCE
 #elif defined(HAVE_ALLOCA)
 #define LOCAL_BUF(_n_, _s_) char *_n_ = alloca(_s_)
 #define LOCAL_FREE(_n_)
-#define LOCAL_CHECK(_n_, _msg_) if (!_n_) error(_msg)
+#define LOCAL_CHECK(_n_, _fn_) if (!_n_) FERROR("out of memory creating local buffer with alloca", _fn_)
 #else
 #define LOCAL_BUF(_n_, _s_) char *_n_ = malloc(_s_)
 #define LOCAL_FREE(_n_) if (_n_) free(_n_)
-#define LOCAL_CHECK(_n_, _msg_) if (!_n_) error(_msg)
+#define LOCAL_CHECK(_n_, _fn_) if (!_n_) FERROR("out of memory creating local buffer with malloc", _fn_)
 #endif
 
 struct program* _at_shadow_init(void);
