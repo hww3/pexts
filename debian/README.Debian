@@ -1,10 +1,6 @@
 pexts for Debian
 ----------------------
 
-*** WARNING ***
-PIKE EXTENSION MODULES IS WORK IN PROGRESS
-*** WARNING ***
-
 The pexts is a collection of modules for the Pike language created and
 maintained by the Caudium Group (http://caudium.net/). Every module
 is distributed in a separate .deb file and depends only on libraries it
