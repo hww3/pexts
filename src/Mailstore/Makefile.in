@@ -3,7 +3,7 @@ MODNAME=Mailstore
 OBJS= mailstore_main.o libmutt/src/libmutt.a libmutt/imap/libimap.a
 SOURCES=mailstore_main.c
 MODULE_LIBS=@LIBS@ @PCRE_LIBS@
-MODULE_CFLAGS=-I$(SRCDIR)/libmutt/src -I$(SRCDIR)/libmutt/imap -I. -I./libmutt/src -I./libmutt/imap @PCRE_CFLAGS@
+MODULE_CFLAGS=-I$(SRCDIR)/libmutt/src -I$(SRCDIR)/libmutt/imap -I. -I./libmutt/src -I./libmutt/imap -DLIBMUTT @PCRE_CFLAGS@
 
 EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so
 EXTRA_CLEAN_DIRS=libmutt
