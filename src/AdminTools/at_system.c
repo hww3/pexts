@@ -41,10 +41,6 @@ RCSID("$Id$");
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(HAVE_GETLOADAVG) && defined(HAVE_SYS_LOADAVG_H)
-#include <sys/loadavg.h>
-#endif
-
 #include "at_common.h"
 
 #define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, system_program))
@@ -216,14 +212,6 @@ f_mkdtemp(INT32 args)
 }
 #endif
 
-#if defined(HAVE_GETLOADAVG)
-static void
-f_getloadavg(INT32 args)
-{
-
-}
-#endif
-
 static void
 f_create(INT32 args)
 {
@@ -280,11 +268,6 @@ _at_system_init(void)
                  tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("truncate", f_temp_truncate,
                  tFunc(tVoid, tInt), 0);
-#if defined(HAVE_GETLOADAVG)
-    ADD_FUNCTION("getloadavg",f_getloadavg,
-                 tFunc(tVoid, tString),0);
-#endif
-
     mkstemp_program = end_program();
     
     return system_program;
