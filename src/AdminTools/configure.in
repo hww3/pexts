@@ -4,7 +4,7 @@ AC_CONFIG_HEADER(at_config.h)
 PEXTS_MODULE_INIT()
 
 AC_CHECK_HEADERS(shadow.h dirent.h)
-AC_CHECK_FUNCS(getspent getspent_r opendir closedir readdir readdir_r \
+AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir readdir readdir_r \
                rewinddir seekdir telldir scandir alphasort versionsort) 
 
 AC_MSG_CHECKING(for working (and failsafe) strerror)
@@ -24,12 +24,95 @@ int main()
   atools_cv_func_failsafe_strerror=no)
 ])
 
-if test "$pike_cv_func_failsafe_strerror" = yes; then
+if test "$atools_cv_func_failsafe_strerror" = yes; then
   AC_MSG_RESULT(yes)
   AC_DEFINE(HAVE_STRERROR)
 else
   AC_MSG_RESULT(no)
 fi
+
+if test "$ac_cv_func_getspnam_r" = "yes"; then
+  AC_MSG_CHECKING([if getspnam_r takes 4 (Solaris) or 5 (Linux) arguments])
+  AC_CACHE_VAL(atools_cv_have_solaris_getspnam_r, [
+    AC_TRY_LINK([
+#define _REENTRANT
+#define _THREAD_SAFE
+#ifdef HAVE_PASSWD_H
+# include <passwd.h>
+# include <group.h>
+#endif /* HAVE_PASSWD_H */
+
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif /* HAVE_PWD_H */
+
+#ifdef HAVE_GRP_H
+# include <grp.h>
+#endif /* HAVE_GRP_H */
+
+#ifdef HAVE_SHADOW_H
+# include <shadow.h>
+#endif /* HAVE_SHADOW_H */
+    ], [
+      struct spwd sbuf;
+      char buf[2048];
+      char *foo = getspnam_r("root", &sbuf, buf, sizeof(buf))->sp_pwdp;
+      return 0;
+    ], [
+      atools_cv_have_solaris_getspnam_r="yes"
+    ], [
+      atools_cv_have_solaris_getspnam_r="no"
+    ])
+  ])
+  if test "$atools_cv_have_solaris_getspnam_r" = "yes"; then
+    AC_MSG_RESULT([4 - Solaris])
+    AC_DEFINE(HAVE_SOLARIS_GETSPNAM_R)
+  else
+    AC_MSG_RESULT([5 - Linux])
+  fi
+else :; fi
+
+if test "$ac_cv_func_getspent_r" = "yes"; then
+  AC_MSG_CHECKING([if getsent_r takes 3 (Solaris) or 4 (Linux) arguments])
+  AC_CACHE_VAL(atools_cv_have_solaris_getspent_r, [
+    AC_TRY_LINK([
+#define _REENTRANT
+#define _THREAD_SAFE
+#ifdef HAVE_PASSWD_H
+# include <passwd.h>
+# include <group.h>
+#endif /* HAVE_PASSWD_H */
+
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif /* HAVE_PWD_H */
+
+#ifdef HAVE_GRP_H
+# include <grp.h>
+#endif /* HAVE_GRP_H */
+
+#ifdef HAVE_SHADOW_H
+# include <shadow.h>
+#endif /* HAVE_SHADOW_H */
+    ], [
+      struct spwd sbuf;
+      char buf[2048];
+      char *foo = getspent_r(&sbuf, buf, sizeof(buf))->sp_pwdp;
+      return 0;
+    ], [
+      atools_cv_have_solaris_getspent_r="yes"
+    ], [
+      atools_cv_have_solaris_getspent_r="no"
+    ])
+  ])
+  if test "$atools_cv_have_solaris_getspnam_r" = "yes"; then
+    AC_MSG_RESULT([3 - Solaris])
+    AC_DEFINE(HAVE_SOLARIS_GETSPENT_R)
+  else
+    AC_MSG_RESULT([4 - Linux])
+  fi
+else :; fi
+
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 
 dnl ## Local Variables:

@@ -12,4 +12,10 @@
 /* Define if you have a failsafe strerror */
 #undef HAVE_STRERROR
 
+/* Define if you run solaris and have this func */
+#undef HAVE_SOLARIS_GETSPNAM_R
+
+/* Define if you have solaris and have this func */
+#undef HAVE_SOLARIS_GETSPENT_R
+
 #endif

@@ -137,15 +137,21 @@ struct program   *dir_program;
 #define push_longint(_x_) push_int((_x_))
 #endif
 
-#if !defined(__GNUC__) && defined(HAVE_ALLOCA)
-#define LALLOC(_s_) alloca((_s_))
-#define LFREE(_s_)
-#elif !defined(__GNUC__) && !defined(HAVE_ALLOCA)
-#define LALLOC(_s_) malloc((_s_))
-#define LFREE(_s_) if ((_s_)) free(_s_)
-#endif
-
 #define ARG(_n_) sp[-(_n_)]
+
+#if defined(__GNUC__)
+#define LOCAL_BUF(_n_, _s_) char _n_[_s_]
+#define LOCAL_FREE(_n_)
+#define LOCAL_CHECK(_n_, _msg_)
+#elif defined(HAVE_ALLOCA)
+#define LOCAL_BUF(_n_, _s_) char *_n_ = alloca(_s_)
+#define LOCAL_FREE(_n_)
+#define LOCAL_CHECK(_n_, _msg_) if (!_n_) error(_msg)
+#else
+#define LOCAL_BUF(_n_, _s_) char *_n_ = malloc(_s_)
+#define LOCAL_FREE(_n_) if (_n_) free(_n_)
+#define LOCAL_CHECK(_n_, _msg_) if (!_n_) error(_msg)
+#endif
 
 static void
 push_spent(struct spwd *spent)
@@ -211,7 +217,7 @@ f_endspent(INT32 args)
     THIS->shadow.db_opened = 0;
 }
 
-
+#if defined(HAVE_GETSPENT) || defined(HAVE_GETSPENT_R)
 static void
 f_getspent(INT32 args)
 {
@@ -219,41 +225,44 @@ f_getspent(INT32 args)
     if (!THIS->shadow.db_opened)
         f_setspent(0);
 
-#ifndef     _REENTRANT
-    push_spent(getspent());
-#else
+#if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
     {
-#ifdef __GNUC__
-        char           buf[THIS->shadow.sp_buf_max];
-#else
-        char           *buf;
-#endif
+	LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
         struct spwd    spbuf, *spent;
 
-#ifndef __GNUC__
-        buf = (char*)LALLOC(THIS->shadow.sp_buf_max * sizeof(char));
-	if (!buf)
-	    error("AdminTools.Shadow->getspent(): out of memory\n");
-#endif
+        LOCAL_CHECK(buf, "AdminTools.Shadow->getspent(): out of memory\n");
 
 	/*
 	 * There is _no_ way to tell the difference between an error
 	 * and the end of DB using this function...
 	 * /grendel 22-09-2000
 	 */
+#ifdef HAVE_SOLARIS_GETSPENT_R
+	if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max) != 0)
+#else
         if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0)
+#endif
 	{
 	  push_int(0);
 	  return;
 	}
         push_spent(spent);
 
-#ifndef __GNUC__
-	LFREE(buf);
-#endif
+	LOCAL_FREE(buf);
     }
+#else
+    push_spent(getspent());
 #endif
 }
+#else
+static void
+f_getspent(INT32 args)
+{
+    pop_n_elems(args);
+    error("AdminTools.Shadow->getspent(): function not supported.\n");
+    push_int(0);
+}
+#endif
 
 static void
 f_getallspents(INT32 args)
@@ -262,11 +271,7 @@ f_getallspents(INT32 args)
     INT32          nents;
     struct array   *sp_arr;
 #ifdef _REENTRANT
-#ifdef __GNUC__
-    char           buf[1024];
-#else
-    char           *buf;
-#endif
+    LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
     struct spwd    spbuf;
 #endif
 
@@ -277,30 +282,33 @@ f_getallspents(INT32 args)
 
     nents = 0;
 
-#ifndef _REENTRANT
-    spent = getspent();
+#if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
+    LOCAL_CHECK(buf, "AdminTools.Shadow->getallspents(): out of memory\n");
+
+#ifdef HAVE_SOLARIS_GETSPENT_R
+    if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max) != 0) {
 #else
-
-#ifndef __GNUC__
-    buf = LALLOC(THIS->shadow.sp_buf_max * sizeof(char));
-    if (!buf)
-	error("AdminTools.Shadow->getallspents(): out of memory\n");
+    if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0) {
 #endif
-
-    if (getspent_r(&spbuf, buf, sizeof(buf), &spent) != 0) {
         push_int(0);
         return;
     }
+#else
+    spent = getspent();
 #endif
     
     while(spent) {
         push_spent(spent);
         nents++;
 
-#ifndef _REENTRANT
-        spent = getspent();
+#if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
+#ifdef HAVE_SOLARIS_GETSPENT_R
+	getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max);
 #else
-	getspent_r(&spbuf, buf, sizeof(buf), &spent);
+	getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent);
+#endif
+#else
+        spent = getspent();
 #endif
     }
     
@@ -310,9 +318,7 @@ f_getallspents(INT32 args)
     else
         push_int(0);
 #ifdef _REENTRANT
-#ifndef __GNUC__
-    LFREE(buf)
-#endif
+    LOCAL_FREE(buf);
 #endif
 }
 
