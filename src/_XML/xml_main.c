@@ -65,6 +65,7 @@
 #undef fp
 #endif
 
+#include "caudium_util.h"
 #include "xml_config.h"
 
 #ifdef HAVE_XML2

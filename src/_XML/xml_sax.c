@@ -63,7 +63,7 @@
 
 //#define SAX_DEBUG 1
 
-#include "global.h"
+#include "caudium_util.h"
 RCSID("$Id$");
 
 #ifdef fp
