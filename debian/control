@@ -3,7 +3,7 @@ Section: interpreters
 Priority: optional
 Maintainer: Marek Habersack <grendel@debian.org>
 Standards-Version: 3.5.10.0
-Build-Depends: debhelper (>> 4.0.0), pike7.2, pike7.4-core, pike7.4-dev, libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, libldap2-dev, autoconf, automake, libpcre3-dev, libmcrypt-dev
+Build-Depends: debhelper (>> 4.0.0), pike7.2, pike7.4-core, pike7.4-dev, libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, libldap2-dev, autoconf, automake, libpcre3-dev, libmcrypt-dev, libgeoip-dev
 
 Package: pike7.2-pexts-admintools
 Architecture: any
@@ -124,3 +124,23 @@ Description: Pike bzip2 module
  .
  This module implements a glue for the bzip2 compression
  library.
+
+Package: pike7.2-pexts-geoip
+Architecture: any
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Description: Pike GeoIP module
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the GeoIP IP to country
+ code lookup library.
+
+Package: pike7.4-pexts-geoip
+Architecture: any
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Description: Pike GeoIP module
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the GeoIP IP to country
+ code lookup library.
