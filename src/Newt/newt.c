@@ -101,9 +101,9 @@ static void f_open_window(INT32 args)
   if (args == 2)
   {
     struct array *a;
-    if (sp[-2].type != T_ARRAY)
+    if (Pike_sp[-2].type != T_ARRAY)
       Pike_error("Bad argument 1 to gotorc\n");
-    a = sp[-2].u.array;
+    a = Pike_sp[-2].u.array;
     if (a->size != 4)
       Pike_error("An array argument to open_window must be of size 4\n");
     if (a->item[0].type != T_INT)
@@ -119,16 +119,16 @@ static void f_open_window(INT32 args)
     yd= a->item[2].u.integer;
     xd= a->item[3].u.integer;
     
-    newtOpenWindow(y,x,yd,xd,sp[-1].u.string->str);
+    newtOpenWindow(y,x,yd,xd,Pike_sp[-1].u.string->str);
   }
   else
   {
     check_all_args("open_window", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, BIT_STRING, 0);
-    y = sp[-5].u.integer;
-    x = sp[-4].u.integer;
-    yd= sp[-3].u.integer;
-    xd= sp[-2].u.integer;
-    newtOpenWindow(x,y,xd,yd, sp[-1].u.string->str );
+    y = Pike_sp[-5].u.integer;
+    x = Pike_sp[-4].u.integer;
+    yd= Pike_sp[-3].u.integer;
+    xd= Pike_sp[-2].u.integer;
+    newtOpenWindow(x,y,xd,yd, Pike_sp[-1].u.string->str );
   }
   pop_n_elems(args);
 }
@@ -146,9 +146,9 @@ static void f_open_centered_window(INT32 args)
   if (args == 2)
   {
     struct array *a;
-    if (sp[-2].type != T_ARRAY)
+    if (Pike_sp[-2].type != T_ARRAY)
       Pike_error("Bad argument 1 to open_centered_window\n");
-    a = sp[-2].u.array;
+    a = Pike_sp[-2].u.array;
     if (a->size != 2)
       Pike_error("An array argument to open_centered_window must be of size 2\n");
     if (a->item[0].type != T_INT)
@@ -158,14 +158,14 @@ static void f_open_centered_window(INT32 args)
     yd= a->item[0].u.integer;
     xd= a->item[1].u.integer;
     
-    newtCenteredWindow(yd,xd,sp[-1].u.string->str);
+    newtCenteredWindow(yd,xd,Pike_sp[-1].u.string->str);
   }
   else
   {
     check_all_args("open_centered_window", args, BIT_INT, BIT_INT, BIT_STRING, 0);
-    xd= sp[-3].u.integer;
-    yd= sp[-2].u.integer;
-    newtCenteredWindow(xd,yd, sp[-1].u.string->str );
+    xd= Pike_sp[-3].u.integer;
+    yd= Pike_sp[-2].u.integer;
+    newtCenteredWindow(xd,yd, Pike_sp[-1].u.string->str );
   }
   pop_n_elems(args);
 }
@@ -181,9 +181,9 @@ static void f_draw_root_text(INT32 args)
     Pike_error("Too few arguments to draw_root_text\n");
 
   check_all_args("draw_root_text", args, BIT_INT, BIT_INT, BIT_STRING, 0);
-  y  = sp[-3].u.integer;
-  x  = sp[-2].u.integer;
-  newtDrawRootText( x, y, sp[-1].u.string->str );
+  y  = Pike_sp[-3].u.integer;
+  x  = Pike_sp[-2].u.integer;
+  newtDrawRootText( x, y, Pike_sp[-1].u.string->str );
   pop_n_elems(args);
 }
 
@@ -197,9 +197,9 @@ static void f_winmessage(INT32 args)
     Pike_error("Too few arguments to winmessage\n");
 
   check_all_args("winmessage", args, BIT_STRING, BIT_STRING, BIT_STRING, 0);
-  newtWinMessage( sp[-3].u.string->str, 
-                  sp[-2].u.string->str,
-                  sp[-1].u.string->str );
+  newtWinMessage( Pike_sp[-3].u.string->str, 
+                  Pike_sp[-2].u.string->str,
+                  Pike_sp[-1].u.string->str );
   pop_n_elems(args);
 }
 
@@ -213,10 +213,10 @@ static void f_winchoice(INT32 args)
     Pike_error("Too few arguments to winmessage\n");
 
   check_all_args("winchoice", args, BIT_STRING, BIT_STRING, BIT_STRING, BIT_STRING, 0);
-  s=newtWinChoice( sp[-4].u.string->str, 
-                  sp[-3].u.string->str,
-                  sp[-2].u.string->str,
-                  sp[-1].u.string->str );
+  s=newtWinChoice( Pike_sp[-4].u.string->str, 
+                  Pike_sp[-3].u.string->str,
+                  Pike_sp[-2].u.string->str,
+                  Pike_sp[-1].u.string->str );
   pop_n_elems(args);
   push_int(s);
 }
@@ -257,11 +257,11 @@ static void f_winmenu(INT32 args)
       Pike_error("too few arguments to winmenu()\n"); 
 
     
-    if (sp[-1].type != T_ARRAY || sp[-2].type != T_ARRAY )
+    if (Pike_sp[-1].type != T_ARRAY || Pike_sp[-2].type != T_ARRAY )
       Pike_error("Bad argument to winmenu (items or buttons must be arrays)\n");
           
-    items   = sp[-2].u.array;
-    buttons = sp[-1].u.array;
+    items   = Pike_sp[-2].u.array;
+    buttons = Pike_sp[-1].u.array;
     if ( items->size < 1 || buttons->size < 1 )
       Pike_error("too few items in items or buttons array.\n");
       
@@ -269,12 +269,12 @@ static void f_winmenu(INT32 args)
     /*                             BIT_STRING, BIT_INT, BIT_INT, BIT_INT, BIT_INT, */
     /*                             BIT_ARRAY,BIT_ARRAY, 0 ); */
 
-    maxListHeight  = sp[-3].u.integer;
-    flexUp         = sp[-4].u.integer;
-    flexDown       = sp[-5].u.integer;
-    suggestedWidth = sp[-6].u.integer;
-    text           = sp[-7].u.string->str;
-    title          = sp[-8].u.string->str;
+    maxListHeight  = Pike_sp[-3].u.integer;
+    flexUp         = Pike_sp[-4].u.integer;
+    flexDown       = Pike_sp[-5].u.integer;
+    suggestedWidth = Pike_sp[-6].u.integer;
+    text           = Pike_sp[-7].u.string->str;
+    title          = Pike_sp[-8].u.string->str;
     
     textbox = newtTextboxReflowed( -1,-1,text,suggestedWidth, flexDown,
                                    flexUp,0 );
@@ -327,7 +327,7 @@ static void f_push_help(INT32 args)
     Pike_error("newt: Use init first!\n");
 
   check_all_args("push_help",args, BIT_STRING, 0);
-  newtPushHelpLine( sp[-1].u.string->str );
+  newtPushHelpLine( Pike_sp[-1].u.string->str );
   pop_n_elems(args);
 }
 
@@ -469,15 +469,15 @@ static void f_menu(INT32 args )
    int selected;
    int x,y;
 
-   if( args < 3 && sp[-1].type != T_ARRAY 
-         && sp[-2].type != T_INT 
-	 && sp[-3].type != T_INT ) {
+   if( args < 3 && Pike_sp[-1].type != T_ARRAY 
+         && Pike_sp[-2].type != T_INT 
+	 && Pike_sp[-3].type != T_INT ) {
        Pike_error("too few or bad argument to Menu\n");
    }
 
-   a = sp[-1].u.array;
-   y = sp[-2].u.integer;
-   x = sp[-3].u.integer;
+   a = Pike_sp[-1].u.array;
+   y = Pike_sp[-2].u.integer;
+   x = Pike_sp[-3].u.integer;
    
    f = newtForm(NULL,NULL,0);
    lb = newtListbox(0,0,(a->size < 15 ? a->size : 15 ),
