@@ -1,5 +1,5 @@
 #!/bin/sh
-
+cd `dirname $0`
 mydir=`pwd`
 for a in `find src tools -name "autogen.sh" |sort`; do
   dir=`dirname $a`

@@ -277,7 +277,7 @@ VOID_INT_FN(can_change_color)
 		
 void pike_module_init(void)
 {
-  #ifdef PEXTS_VERSION
+#ifdef PEXTS_VERSION
   pexts_init();
 #endif
 

@@ -332,7 +332,7 @@ exit_deflate(struct object *o)
 
 void pike_module_init(void)
 {
-    #ifdef PEXTS_VERSION
+  #ifdef PEXTS_VERSION
   pexts_init();
 #endif
 
@@ -377,7 +377,7 @@ void pike_module_exit(void)
 #else /* !HAVE_BZLIB_H */
 void pike_module_init(void)
 {
-    #ifdef PEXTS_VERSION
+  #ifdef PEXTS_VERSION
   pexts_init();
 #endif
 }

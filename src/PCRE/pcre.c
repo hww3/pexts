@@ -306,7 +306,7 @@ static void init_regexp(struct object *o)
 /* Init the module */
 void pike_module_init(void)
 {
-  #ifdef PEXTS_VERSION
+#ifdef PEXTS_VERSION
   pexts_init();
 #endif
 

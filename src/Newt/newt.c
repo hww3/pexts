@@ -565,7 +565,7 @@ int store_component( newtComponent elem, char *nev, char *value )
 
 void pike_module_init(void)
 {
-  #ifdef PEXTS_VERSION
+#ifdef PEXTS_VERSION
   pexts_init();
 #endif
 

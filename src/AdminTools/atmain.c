@@ -107,7 +107,7 @@ void pike_module_init(void)
 
     init_common("AdminTools");
 
-    #ifdef PEXTS_VERSION
+  #ifdef PEXTS_VERSION
   pexts_init();
 #endif
     
