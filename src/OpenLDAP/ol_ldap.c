@@ -734,6 +734,41 @@ make_berval_array(struct svalue *val)
     return barr;
 }
 
+static void free_berval_array(struct berval** arr)
+{
+    struct berval   *val;
+    int              i = 1;
+    
+    if (!arr)
+        return;
+
+    val = arr[0];
+    while (val) {
+        free(val);
+        val = arr[i++];
+    }
+
+    free(arr);
+}
+
+static void free_mods(LDAPMod** mods)
+{
+    LDAPMod   *mod;
+    int        i = 1;
+
+    if (!mods)
+        return;
+    
+    mod = mods[0];
+    while (mod) {
+        free_berval_array(mod->mod_bvalues);
+        free(mod);
+        mod = mods[i++];
+    }
+
+    free(mods);
+}
+
 static struct timeval *
 make_timeout(long val)
 {
@@ -1046,7 +1081,7 @@ f_ldap_modify(INT32 args)
         Pike_error("OpenLDAP.Client->modify(): %s\n",
                    ldap_err2string(ret));
 
-    ldap_mods_free(mods, 1);
+    free_mods(mods);
     
     pop_n_elems(args);
 }
@@ -1102,13 +1137,13 @@ f_ldap_add(INT32 args)
         
         mods[i]->mod_bvalues = make_berval_array(val);
     }
-
+    
     ret = ldap_add_s(THIS->conn, dn->str, mods);
     if (ret != LDAP_SUCCESS)
         Pike_error("OpenLDAP.Client->add(): %s\n",
                    ldap_err2string(ret));
     
-    ldap_mods_free(mods, 1);
+    free_mods(mods);
     
     pop_n_elems(args);
 }
