@@ -20,7 +20,7 @@
 #define _GNU_SOURCE
 
 /*
- **| file: ol_ldap.c
+ **| file: OpenLDAP/ol_ldap.c
  **|  Implementation of the OpenLDAP glue.
  **
  **| cvs_version: $Id$
@@ -63,7 +63,7 @@ static struct pike_string   *modify_values;
 #define MOD_REPLACE_STR      "replace"
 
 /*
- **| method: void create(string uri);
+ **| method: void create ( string uri );
  **
  **|  Create a new OpenLDAP client connection object.
  **
@@ -125,6 +125,12 @@ f_create(INT32 args)
  **| alt: int bind(string whodn, string cred, int auth_type);
  **|  Bind to the server with authentication and use the specified
  **|  authentication type.
+ **
+ **| general:
+ **|  This is the interface to various methods of binding to the LDAP
+ **|  server. An LDAP bind operation must be performed before any
+ **|  other operations can be performed over the connection. There are
+ **|  several authentication methods available, as described below.
  **
  **| arg: string whodn
  **|  The DN to use for authentication.
