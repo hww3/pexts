@@ -196,7 +196,7 @@ _at_system_init(void)
 	         tFunc(tString, tInt), 0);
 #endif
 
-#ifdef HAVE_MKSTEMP
+#ifdef HAVE_MKDTEMP
     ADD_FUNCTION("mkdtemp", f_mkdtemp,
 	         tFunc(tString tOr(tString, tVoid), tString), 0);
 #endif
