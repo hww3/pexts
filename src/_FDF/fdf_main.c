@@ -161,7 +161,7 @@ static void f_FDFEmbedAndClose(INT32 args)
     FDF_STORAGE       *that;
     int                i;
     struct identifier *id;
-    struct svalue      to;
+    struct program    *fdf_file_prog;
     FDFDoc             emFDF;
     FDFErc             ret;
     
@@ -179,20 +179,15 @@ static void f_FDFEmbedAndClose(INT32 args)
     }
 
     /*
-     * Make sure it's an FDF object...
+     * Make sure it's an FDF object... or that it inherits from it
      */
-    i = find_identifier("__FDF_MAGIC", embed->prog);
-    if (i == -1)
+    push_constant_text("_FDF.File");
+    APPLY_MASTER("resolv", 1);
+    fdf_file_prog = program_from_svalue(Pike_sp - 1);
+    if (low_get_storage(embed->prog, fdf_file_prog) !=
+        low_get_storage(fdf_file_prog, fdf_file_prog))
         Pike_error("FDF->EmbedAndClose: trying to embed an object that's not FDF.File!\n");
-    id = ID_FROM_INT(embed->prog, i);
-    if (!IDENTIFIER_IS_CONSTANT(id->identifier_flags))
-        Pike_error("FDF->EmbedAndClose: trying to embed an object that's not FDF.File!\n");
-    
-    low_object_index_no_free(&to, embed, embed->prog->identifier_index[i-1]);
-    
-    if (to.type != T_INT || to.u.integer != FDF_MAGIC)
-        Pike_error("FDF->EmbedAndClose: trying to embed an object that's not FDF.File!\n");
-    
+    pop_stack();
 
     that = THAT(embed);
     if (!that->theFDF)
