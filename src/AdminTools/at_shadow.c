@@ -35,6 +35,7 @@ RCSID("$Id$");
 
 #include "at_config.h"
 
+#ifdef HAVE_SHADOW_H
 #ifndef RUNNING_BSD
 
 #ifdef HAVE_UNISTD_H
@@ -326,3 +327,4 @@ _at_shadow_init()
     return shadow_program;
 }
 #endif	/* RUNNING_BSD */
+#endif  /* HAVE_SHADOW_H */
