@@ -1,6 +1,6 @@
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
- * Copyright © 2000, 2001 The Caudium Group
+ * Copyright © 2000, 2001, 2002 The Caudium Group
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -543,26 +543,105 @@ f_getquota(INT32 args)
     push_array(arr);
 }
 
+static void qm_missing_key(char *key, int idx)
+{
+    if (idx >= 0)
+        Pike_error("Quota mapping at index %d is missing the '%s' key.",
+                   idx, "dev");
+    else
+        Pike_error("Quota mapping is missing the '%s' key.", "dev");
+}
+
+static void qm_incorrect_key_type(char *key, char *req, int idx)
+{}
+
+static int set_quota(struct mapping *m, int idx)
+{
+    struct svalue     *sv;
+    char              *dev;
+    struct dqblk       qb;
+    
+    if (!m)
+        return 1;
+
+    sv = simple_mapping_string_lookup(m, "dev");
+    if (!sv)
+        qm_missing_key("dev", idx);
+
+    if (sv->type != T_STRING || sv->u.string->size_shift > 1)
+        qm_incorrect_key_type("dev", "string", idx);
+    
+}
+
 /*
- **| method: int setall(string dev, mapping quota);
- **|    alt: int setall(string dev, mapping quota, string|int ug, int qtype);
- **|  Set both the limits and the usage.
- **|  First form sets the limits for the default user (UID == 0).
- **|  Second form lets one specify user or group and the type of quota
- **|  to set.
+ **| method: int set(mapping|array(mapping) quota);
+ **| Set all the possible quota values for the given device(s). The 'quota'
+ **| mapping, described below, contains all the values.
  *
- **| arg: string dev
- **|  Device for which to set the quota.
- *
- *| arg: mapping quota
- *|  The values to be set. Mapping contents:
- *|   <pre>
- *|   </pre>
+ **| arg: mapping quota
+ **|  The values to be set. Either inner mapping is optional. All of the
+ **|  values are optional as well and default to 0. Mapping contents:
+ **|   <pre>
+ **|     dev  - device for which to set the quota
+ **|     user - user quota settings (mapping)
+ **|       bsoft    - soft block quota (int)
+ **|       bhard    - hard block quota (int)
+ **|       btime    - block grace time (int, seconds)
+ **|       isoft    - soft inode quota (int)
+ **|       ihard    - hard inode quota (int)
+ **|       itime    - inode grace time (int)
+ **|       uid      - uid (int|string)
+ **|     group - group quota settings (mapping)
+ **|       bsoft    - soft block quota (int)
+ **|       bhard    - hard block quota (int)
+ **|       btime    - block grace time (int, seconds)
+ **|       isoft    - soft inode quota (int)
+ **|       ihard    - hard inode quota (int)
+ **|       itime    - inode grace time (int)
+ **|       gid      - gid (int|string)
+ **|   </pre>
  */
 static void
 f_setquota(INT32 args)
 {
+    struct mapping      *m = NULL;
+    struct array        *a = NULL;
+    int                  ret;
     
+    if (args != 1)
+        Pike_error("Incorrect number of arguments. Expected 1.");
+
+    switch(ARG(1).type) {
+        case T_MAPPING:
+            m = ARG(1).u.mapping;
+            break;
+
+        case T_ARRAY:
+            a = ARG(1).u.array;
+            break;
+
+        default:
+            Pike_error("Incorrect argument type. Expected array(mapping) or mapping.");
+    }
+
+    ret = 0;
+    if (a) {
+        int                i;
+        struct svalue      sv;
+        
+        for(i = 0; i < a->size; i++) {
+            array_index_no_free(&sv, a, i);
+            if (sv.type != T_MAPPING)
+                Pike_error("Index '%d' of the passed array is not a mapping.", i);
+           ret += set_quota(sv.u.mapping, i);
+        }
+    } else if (m)
+        ret = set_quota(m, -1);
+    else
+        ret = 1;
+
+    pop_n_elems(args);
+    push_int(ret != 0);
 }
 
 static void
