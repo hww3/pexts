@@ -58,8 +58,10 @@ typedef struct
 
 typedef struct
 {
-    char           *appname;
-    pam_handle_t   *pamh;
+    char             *appname;
+    pam_handle_t     *pamh;
+    struct pam_conv   conv;
+    struct program   *pike_conv;
 } PAM_OBJECT_DATA;
 
 static int
@@ -72,7 +74,8 @@ chpass_conv_func(int num_msg, const struct pam_message **msg,
     if (strstr(msg[0]->msg, "Password:") ||
         strstr(msg[0]->msg, "current")) {
         myresp->resp = (char*)strdup(((MY_CONV_DATA*)data)->oldpass);
-    } else if (strstr(msg[0]->msg, "New") || strstr(msg[0]->msg, "new")) {
+    } else if (strstr(msg[0]->msg, "New") ||
+               strstr(msg[0]->msg, "new")) {
         myresp->resp = (char*)strdup(((MY_CONV_DATA*)data)->newpass);
         myresp[1].resp = (char*)strdup(((MY_CONV_DATA*)data)->newpass);
     }
@@ -144,9 +147,21 @@ f_chpass(INT32 args)
  * Low-level PAM interface
  *
  ****/
+static int
+pike_glue_conv(int num_msg, const struct pam_message **msg,
+               struct pam_response **resp, void *data)
+{}
+
 static void
 f_pam_start(INT32 args)
-{}
+{
+    char            *username;
+    
+    get_all_args("AdminTools.PAM->start", args,
+                 "%s%p", &username, THIS->pike_conv);
+    THIS->conv.conv = pike_glue_conv;
+    THIS->conv.appdata_ptr = THIS;
+}
 
 static void
 f_pam_end(INT32 args)
@@ -184,7 +199,7 @@ static void
 f_pam_chauthtok(INT32 args)
 {}
 
-static voud
+static void
 f_pam_open_session(INT32 args)
 {}
 
@@ -228,6 +243,7 @@ init_pam(struct object *o)
 
     dta->appname = NULL;
     dta->pamh = NULL;
+    dta->pike_conv = NULL;
     THIS_LOW->object_name = _object_name;
     THIS_LOW->object_data = dta;
 }
@@ -249,6 +265,8 @@ _at_pam_init(void)
                  tFunc(tString, tVoid), 0);
     ADD_FUNCTION("chpass", f_chpass,
                  tFunc(tString tString tString tString, tInt), 0);
+    ADD_FUNCTION("start", f_pam_start,
+                 tFunc(tString tFun, tInt), 0);
     
     pam_program = end_program();
     add_program_constant("PAM", pam_program, 0);

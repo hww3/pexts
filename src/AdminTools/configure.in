@@ -10,7 +10,7 @@ AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
 			   quotactl hasmntopt getmntent setmntent \
 			   mkstemp mkdtemp) 
 AC_CHECK_LIB(pam, pam_start)
-AC_CHECK_FUNCS(pam_authenticate pam_chauthtok pam_end)
+AC_CHECK_FUNCS(pam_authenticate pam_chauthtok pam_end pam_start)
 
 AC_FUNC_ALLOCA
 
