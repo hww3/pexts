@@ -80,6 +80,51 @@ typedef struct
 static struct program   *magic_program;
 
 /* Glue */
+/*
+ * void create(void|int flags, void|int forceclose);
+ * void open(void|int flags, void|int forceclose);
+ *
+ * Create/open the connection to the library/database. 'flags' can be an
+ * OR-ed mix of the following values:
+ *
+ *  MAGIC_NONE      No special handling.
+ *
+ *  MAGIC_DEBUG     Print debugging messages to stderr.
+ *
+ *  MAGIC_SYMLINK   If the file queried is a symlink, follow it.
+ *
+ *  MAGIC_COMPRESS  If the file is compressed, unpack it and look at the
+ *                  contents.
+ *
+ *  MAGIC_DEVICES   If the file is a block or character special device,
+ *                  then open the device and try to look in its contents.
+ *
+ *  MAGIC_MIME      Return a mime string, instead of a textual
+ *                  description.
+ *
+ *  MAGIC_CONTINUE  Return all matches, not just the first.
+ *
+ *  MAGIC_CHECK     Check the magic database for consistency and print
+ *                  warnings to stderr.
+ *
+ *  MAGIC_PRESERVE_ATIME
+ *                  On systems that support utime(2) or utimes(2), attempt
+ *                  to preserve the access time of files analyzed.
+ *
+ *  MAGIC_RAW       Don't translate unprintable characters to a \ooo octal
+ *                  representation.
+ *
+ *  MAGIC_ERROR     Treat operating system errors while trying to open
+ *                  files and follow symlinks as real errors, instead of
+ *                  printing them in the magic buffer.
+ *
+ * 'forceclose' forces the method to close the existing connection to the
+ * database before attempting to open a new one.
+ *
+ * Note: after calling this method you MUST call the 'load' method in order
+ * to point the code to the right file. See the 'load' documentation for
+ * details.
+ */
 static void f_magic_open(INT32 args)
 {
   int   flags = 0, forceclose = 1;
@@ -113,6 +158,12 @@ static void f_magic_open(INT32 args)
   pop_n_elems(args);
 }
 
+/*
+ * void close();
+ *
+ * This one will catch you by surprise. It closes the open connection to
+ * the database.
+ */
 static void f_magic_close(INT32 args)
 {
   if (THIS->cookie) {
@@ -122,6 +173,11 @@ static void f_magic_close(INT32 args)
   pop_n_elems(args);
 }
 
+/*
+ * string error();
+ *
+ * Returns the string representation of the last magic error (if anything)
+ */
 static void f_magic_error(INT32 args)
 {
   char   *err;
@@ -137,6 +193,12 @@ static void f_magic_error(INT32 args)
     push_int(0);
 }
 
+/*
+ * int errno();
+ *
+ * Similar to 'error' above, but returns the errno returned from the last
+ * system call issued by the library.
+ */
 static void f_magic_errno(INT32 args)
 {
   pop_n_elems(args);
@@ -146,6 +208,20 @@ static void f_magic_errno(INT32 args)
     push_int(magic_errno(THIS->cookie));
 }
 
+/*
+ * string|int file(void|string path);
+ *
+ * This is the reason for which the glue exists. Checks the file type and
+ * returns either a mime string corresponding to the type (if MAGIC_MIME
+ * flag was set in call to 'open', 'create' or 'setflags') or a
+ * human-readable description of the file type.
+ *
+ * If the 'path' parameter is empty, this method will read the data from
+ * stdin.
+ *
+ * Returns either the file type as described above, or an integer if an
+ * error happens.
+ */
 static void f_magic_file(INT32 args)
 {
   char    *filename = NULL;
@@ -168,6 +244,14 @@ static void f_magic_file(INT32 args)
     push_text(ret);
 }
 
+/*
+ * string|int buffer(string buf);
+ *
+ * The same function as 'file' but the data is passed in a buffer which is
+ * required in this case.
+ *
+ * Returns the same stuff what 'file'
+ */
 static void f_magic_buffer(INT32 args)
 {
   struct pike_string   *buffer;
@@ -188,6 +272,13 @@ static void f_magic_buffer(INT32 args)
     push_text(ret);
 }
 
+/*
+ * int setflags(int flags);
+ *
+ * Set the flags described in the 'open' documentation.
+ *
+ * Returns the old flags.
+ */
 static void f_magic_setflags(INT32 args)
 {
   int    flags;
@@ -204,12 +295,21 @@ static void f_magic_setflags(INT32 args)
   push_int(flags);
 }
 
+/*
+ * int check(void|string files);
+ *
+ * Can be used to check the validity of entries in the colon separated
+ * database files passed in as 'files', or void for the default
+ * database. It returns 0 on success and -1 on failure.
+ */
 static void f_magic_check(INT32 args)
 {
   int    ret;
-  char  *filename;
+  char  *filename = NULL;
 
-  get_all_args("check", args, "%s", &filename);
+  if (args)
+    get_all_args("check", args, "%s", &filename);
+  
   if (!THIS->cookie) {
     pop_n_elems(args);
     push_int(-1);
@@ -221,6 +321,14 @@ static void f_magic_check(INT32 args)
   push_int(ret);
 }
 
+/*
+ * int compile(void|string files);
+ *
+ * Can be used to compile the the colon separated list of database files
+ * passed in as 'files', or void for the default database. It returns 0 on
+ * success and -1 on failure. The compiled files created are named from the
+ * basename of each file argument with ".mgc" appended to it.
+ */
 static void f_magic_compile(INT32 args)
 {
   int    ret;
@@ -239,12 +347,26 @@ static void f_magic_compile(INT32 args)
   push_int(ret);
 }
 
+/*
+ * int load(void|string files);
+ *
+ * must be used to load the the colon separated list of database files
+ * passed in as 'files', or void for the default database file before any
+ * magic queries can performed.
+ * The default database file is named by the MAGIC environment variable.
+ * If that variable is not set, the default database file name is
+ * /usr/share/misc/file/magic.
+ * load() adds ".mime" and/or ".mgc" to the database filename as
+ * appropriate, so do not pass the extension to the function.
+ */
 static void f_magic_load(INT32 args)
 {
   int    ret;
-  char  *filename;
+  char  *filename = NULL;
 
-  get_all_args("load", args, "%s", &filename);
+  if (args)
+    get_all_args("load", args, "%s", &filename);
+  
   if (!THIS->cookie) {
     pop_n_elems(args);
     push_int(-1);
@@ -326,7 +448,7 @@ void pike_module_exit(void)
 {
   free_program(magic_program);
 }
-#else /* !HAVE_LIBESMTP */
+#else /* !HAVE_LIBMAGIC */
 void pike_module_init(void)
 {
 #ifdef PEXTS_VERSION
