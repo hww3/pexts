@@ -3,12 +3,15 @@ AC_CONFIG_HEADER(at_config.h)
 
 PEXTS_MODULE_INIT()
 
-AC_CHECK_HEADERS(shadow.h dirent.h sys/quota.h mntent.h)
+AC_CHECK_HEADERS(shadow.h dirent.h sys/quota.h mntent.h security/pam_appl.h)
 AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
 			   readdir readdir_r rewinddir seekdir telldir scandir      \
 			   alphasort versionsort sysconf setspent endspent \
 			   quotactl hasmntopt getmntent setmntent \
 			   mkstemp mkdtemp) 
+AC_CHECK_LIB(pam, pam_start)
+AC_CHECK_FUNCS(pam_authenticate pam_chauthtok pam_end)
+
 AC_FUNC_ALLOCA
 
 AC_MSG_CHECKING(for working (and failsafe) strerror)

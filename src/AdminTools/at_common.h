@@ -90,6 +90,7 @@ struct program* _at_shadow_init(void);
 struct program* _at_directory_init(void);
 struct program* _at_quota_init(void);
 struct program* _at_system_init(void);
+struct program* _at_pam_init(void);
 
 void pike_module_init(void);
 void pike_module_exit(void);
