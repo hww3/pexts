@@ -184,7 +184,8 @@ static xmlEntityPtr pextsGetParameterEntity(void *ctx, const xmlChar *name);
 static void pextsCdataBlock(void *ctx, const xmlChar *value, int len);
 static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID);
   
-static struct program  *sax_program;
+static struct program  *xml_program;
+static struct program  *html_program;
 
 static pikeCallbackAPI  callback_api[] =
 {
@@ -1056,14 +1057,13 @@ static void f_create(INT32 args)
   }
 }
 
-static void f_parse(INT32 args)
+static void f_parse_xml(INT32 args)
 {
   xmlDocPtr   doc = NULL;
   
   switch (THIS->parsing_method) {
-      case PARSE_PUSH_PARSER: {
-        break;
-      }
+      case PARSE_PUSH_PARSER:
+        Pike_error("Push parser not implemented yet. Please bug grendel@caudium.net to implement it.");
         
       case PARSE_MEMORY_PARSER:
         doc = xmlSAXParseMemory(THIS->sax, THIS->input_data->str, THIS->input_data->len, 1);
@@ -1071,6 +1071,26 @@ static void f_parse(INT32 args)
 
       case PARSE_FILE_PARSER:
         doc = xmlSAXParseFileWithData(THIS->sax, THIS->input_data->str, 1, NULL);
+        break;
+  }
+  
+  push_int(0);
+}
+
+static void f_parse_html(INT32 args)
+{
+  xmlDocPtr   doc = NULL;
+  
+  switch (THIS->parsing_method) {
+      case PARSE_PUSH_PARSER:
+        Pike_error("Push parser not implemented yet. Please bug grendel@caudium.net to implement it.");
+        
+      case PARSE_MEMORY_PARSER:
+        doc = htmlSAXParseDoc(THIS->input_data->str, NULL, THIS->sax, NULL);
+        break;
+
+      case PARSE_FILE_PARSER:
+        doc = htmlSAXParseFile(THIS->input_data->str, NULL, THIS->sax, NULL);
         break;
   }
   
@@ -1124,13 +1144,28 @@ int _init_xml_sax(void)
 
   ADD_FUNCTION("create", f_create,
                tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tMixed, tVoid) tOr(tInt, tVoid), tVoid), 0);
-  ADD_FUNCTION("parse", f_parse, tFunc(tVoid, tInt), 0);
+  ADD_FUNCTION("parse", f_parse_xml, tFunc(tVoid, tInt), 0);
   ADD_FUNCTION("getLineNumber", f_getLineNumber, tFunc(tVoid, tInt), 0);
   ADD_FUNCTION("getColumnNumber", f_getColumnNumber, tFunc(tVoid, tInt), 0);
   
-  sax_program = end_program();
-  add_program_constant("SAX", sax_program, 0);
+  xml_program = end_program();
+  add_program_constant("SAX", xml_program, 0);
 
+  start_new_program();
+  ADD_STORAGE(sax_storage);
+  
+  set_init_callback(init_sax);
+  set_exit_callback(exit_sax);
+
+  ADD_FUNCTION("create", f_create,
+               tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tMixed, tVoid) tOr(tInt, tVoid), tVoid), 0);
+  ADD_FUNCTION("parse", f_parse_html, tFunc(tVoid, tInt), 0);
+  ADD_FUNCTION("getLineNumber", f_getLineNumber, tFunc(tVoid, tInt), 0);
+  ADD_FUNCTION("getColumnNumber", f_getColumnNumber, tFunc(tVoid, tInt), 0);
+  
+  html_program = end_program();
+  add_program_constant("HTML", html_program, 0);
+  
   return 1;
 }
 
