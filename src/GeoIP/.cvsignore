@@ -1,0 +1,7 @@
+Makefile
+Makefile.pre
+config.log
+config.status
+configure
+geoip_config.h
+geoip_config.h.in

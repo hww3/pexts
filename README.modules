@@ -121,3 +121,8 @@ _FDF:
   Requires: http://partners.adobe.com/asn/developer/acrosdk/forms.html
   Principal Author: Marek Habersack <grendel@caudium.net>
   Notes: WIP, Proprietary lib required
+
+GeoIP:
+  Pike glue for the Maxmind GeoIP library.
+  Requires: http://www.maxmind.com/app/c/
+  Principal Author: Marek Habersack <grendel@caudium.net>
