@@ -409,7 +409,7 @@ if test $cppflags_is_set = no -a x${C_INCLUDE_PATH-} = x ; then
   for d in `echo ${with_include_path} | sed 's/:/ /g'` \
     `echo $prefix | sed "s@^NONE@$ac_default_prefix@g"`/include \
     /usr/local/include /sw/local/include /usr/gnu/include /opt/gnu/include \
-    /sw/gnu/include /sw/include /usr/freeware/include \
+    /sw/gnu/include /sw/include /usr/freeware/include /usr/pkg/include \
     `echo /usr/X11*/include | sort -r`
   do
     AC_MSG_CHECKING($d)
@@ -430,7 +430,7 @@ if test $ldflags_is_set = no ; then
   for d in `echo ${with_lib_path} | sed 's/:/ /g'` \
     `echo $exec_prefix | sed "s@^NONE@$prefix/lib@g" | sed "s@^NONE@$ac_default_prefix/lib@g"` \
     /usr/local/lib /sw/local/lib /sw/lib \
-    /usr/gnu/lib /opt/gnu/lib /sw/gnu/lib /usr/freeware/lib \
+    /usr/gnu/lib /opt/gnu/lib /sw/gnu/lib /usr/freeware/lib /usr/pkg/lib \
     `echo /usr/X11*/lib | sort -r`
   do
     AC_MSG_CHECKING($d)
