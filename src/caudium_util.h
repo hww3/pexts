@@ -48,6 +48,9 @@
 
 #if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION == 1 && PIKE_BUILD_VERSION >= 12) || PIKE_MAJOR_VERSION > 7 || (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION > 1)
 # include "pike_error.h"
+#  ifdef fp
+#   undef fp
+#  endif
 #else
 # include "error.h"
 # ifndef Pike_error
