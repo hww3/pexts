@@ -1,7 +1,7 @@
 pexts (0.0.20021010-3) unstable; urgency=low
 
   * Disabled the mcast module - it's not working yet, anyway.
-    (closes: Bug#164150)
+    (closes: Bug#164150, closes: Bug#164332)
 
  -- Marek Habersack <grendel@debian.org>  Sat, 12 Oct 2002 00:23:03 +0200
 
