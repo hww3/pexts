@@ -18,9 +18,9 @@ case "$ac_cv_path_install" in
     AC_MSG_CHECKING(if $ac_cv_path_install works)
     AC_CACHE_VAL(caudium_cv_install_works,
 [
-    if $ac_cv_path_install "$srcdir/configure.in" ./conftest >/dev/null 2>&1
+    if $ac_cv_path_install "$srcdir/configure.ac" ./conftest >/dev/null 2>&1
     then
-      if cmp "$srcdir/configure.in" ./conftest >/dev/null 2>&1; then
+      if cmp "$srcdir/configure.ac" ./conftest >/dev/null 2>&1; then
         caudium_cv_install_works=yes;
       else
         caudium_cv_install_works=no;

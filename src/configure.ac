@@ -1,5 +1,5 @@
 # $Id$
-AC_INIT(configure.in)
+AC_INIT(configure.ac)
 
 CAUDIUM_LOW_MODULE_INIT()
 
