@@ -6,6 +6,8 @@ pexts (0.1.1-1) unstable; urgency=low
   * Packages renamed so that they are prefixed with the pike name for
     which they were compiled.
   * Removed the buggy OpenLDAP module
+  * The PCRE module now links with pcre dynamically instead of using the
+    included version of the library.
 
  -- Marek Habersack <grendel@debian.org>  Thu, 26 Dec 2002 04:08:21 +0100
 
