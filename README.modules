@@ -92,6 +92,13 @@ OpenLDAP:
   Principal Author: Marek Habersack <grendel@caudium.net>
   TODO: See the TODO file in the source directory
 
+OpenSSL:
+  Glue to OpenSSL library.
+  Requires: OpenSSL 0.9.x from http://www.openssl.org/
+  Principal Author: Paul Wankadia <junyer@gmx.net>
+  Notes: Interface similar to plain OpenSSL libs
+  TODO: Documentation as usual :)
+
 Gzip:
   Module to read gzip(1)ped files directly from within Pike using
   zlib.
