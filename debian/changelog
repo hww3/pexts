@@ -1,3 +1,9 @@
+pexts (0.1.1-5) unstable; urgency=high
+
+  * Recompiled to catch up with the dependencies
+
+ -- Marek Habersack <grendel@debian.org>  Tue,  4 Nov 2003 23:38:41 +0100
+
 pexts (0.1.1-4) unstable; urgency=low
 
   * rebuilt to get up to date with dependencies
