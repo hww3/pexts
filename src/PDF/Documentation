@@ -6,7 +6,7 @@ object PDF.pdf();
 object PDF.pdf("/path/to/file.pdf");
 	create or open a pdf file
 
->> object pdf=PDF.pdf();
+object pdf=PDF.pdf();
 
 pdf->set_info( string key, string value)
 	fill document information field <key> with <value>. The keys
@@ -78,6 +78,44 @@ pdf->show( string text, int|void len);
 	must have been set before. The current point is moved to the end of
 	the printed text.
 	An optional <len> argument specifies the maximum length.
+
+pdf->show_boxed( string text, float x, float y, float width, float height,
+				string mode, string feature )
+	Format the supplied <text> into a rectangular column. mode selects the 
+	horizontal alignment mode as discussed below.
+		If width=0 and height=0, mode can attain one of the values 
+	left, right or center, and the text will be formatted according to the 
+	chosen alignment with respect to the point (x,y), with y denoting the 
+	position of the baseline. In this mode, this function does not check  
+	whether the submitted parameters result in some text being clipped at the
+	page edges, nor does it apply any line-wrapping. It returns the value of 0
+	in this case.
+	If width or height is different from 0, mode can attain one of the values 
+	left, right justify, or fulljustify. The supplied text will be formatted 
+	into a text box deined by the lower left corner (x,y) and the supplied 
+	width and height. If the text doesn't fit into a line, a simple 
+	line-breaking algorithm is used to break the text into the next available 
+	line, using existing space characters for possible line-breaks. While the
+	left, right, and center modes align the text on the respective line, 
+	justify aligns the text on both left and right margins. According to 
+	common practice the very last line in the box will only be left-aligned
+	in justify mode, while in fulljustify mode all lines (including the last
+	one if it contains at least one space character) will be left- and 
+	right-aligned. fulljustify is useful if the text is to be continued in 
+	another column.
+		This function returns the numer of characters which could not be 
+	processed since the text didn't completely fit into the column. If the 
+	text did actually fit, it returns 0.
+	Since no formatting is performed if width=0 and height=0, this function
+	always return 0 in this case.
+		The current font must have been set before calling this function. The
+	current values of font, font size, horizontal spacing, and leading are 
+	used fpr the text.
+		If the feature parameter is <blind>, all calculations are performed, 
+	but no text output is actually generated. This can be used for size 
+	calculations and possibly trying different font sizes for fitting some 
+	amount of text into a given box by varying the font size. Otherwise 
+	feature must be empty ("").
 
 pdf->continue_text( string text, int|void len );
 	Move to the next line and print <text>. The start of the next line
@@ -155,5 +193,65 @@ pdf->stroke()
 	Stroke (draw) the current path with the current line width and the current 
 	stroke color. This operation clears the path.
 
+pdf->fill()
+	Fill the interior of the current path with the current fill color. The
+	interior of the path is determined by one of two algorithms 
+	(see pdf->setfillrule()). Open paths are implicitly closed before being
+	filled. This operation clears the path.
 
-	
+Color Functions:
+pdf->setgray_fill( float gray )
+	Set the current fill color to the <gray> value. The gray fill parameter 
+	is set to the default value of 0 at the beginning of each page.
+
+pdf->setgray_stroke( float gray )
+	Set the current stroke color to the <gray> value. The gray stroke 
+	parameter is set to the default value of 0 at the geinning of each page.
+
+pdf->setgray( float gray )
+	Set the current fill and stroke color to the <gray> value. The gray 
+	parameter is set to the default value of 0 at the geinning of each page.
+
+pdf->setrgbcolor_fill( float red, float green, float blue )
+	Set the current fill color to the supplied RGB values. The rgbcolor fill
+	parameter is set to the default value of (0,0,0) at the beginning of each
+	page.
+
+pdf->setrgbcolor_stroke( float red, float green, float blue )
+	Set the current stroke color to the supplied RGB values. The rgbcolor 
+	stroke parameter is set to the default value of (0,0,0) at the 
+	beginning of each page.
+
+pdf->setrgbcolor( float red, float green, float blue )
+	Set the current fill and stroke color to the supplied RGB values. 
+	The rgbcolor parameter is set to the default value of (0,0,0) at the 
+	beginning of each page.
+
+Parameter Handling:
+float pdf->get_value( string key, float|void modifier )
+	Get the numerical value of some internal PDFlib parameter <key>, in 
+	some cases characterized by the modifier. For parameters where the 
+	description doesn't mention modifier, it is ignored and must not given.
+
+pdf->set_value( string key, float value )
+	Set some numerical PDFlib parameter <key> to <value>.
+
+string pdf->get_parameter( string key, float|void modifier )
+	Get the string value of some PDFlib parameter <key>, in some cases further 
+	characterized by modifier.
+
+pdf->set_parameter( string key, string value )
+	Set the string value of some PDFlib parameter <key> to <value>.
+
+int pdf->add_bookmark( string text, int parent, int open )
+	Add a PDF bookmark with the supplied <text> that points to the current 
+	page. This function must not be called before starting the first page of 
+	the document with pdf->begin_page().
+	This function returns an identifier for the bookmark just generated. This
+	identifier may be used as the parent parameter is subsequent calls. In 
+	this case, a new bookmark will be generated which is a subordinate of the 
+	given parent. In this way, arbitrarily nested bookmarks can be generated. 
+	If parent = 0 a new top-level bookmark will be generated. If the open 
+	parameter has a value of 0, child bookmarks will not be visible. 
+	If open = 1, all children will be folded out.
+
