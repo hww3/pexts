@@ -39,7 +39,7 @@ SCREEN *stdterm = NULL;
 static void f_init(INT32 args)
 {
   if (args != 0)
-    error("Too many arguments to init()\n");
+    Pike_error("Too many arguments to init()\n");
   pop_n_elems(args);
 
   if (curses_mainscr != NULL)
@@ -56,7 +56,7 @@ static void f_init(INT32 args)
 
   stdterm = newterm(0,stdout,stdin);
   if (!stdterm)
-    error("newterm failed\n");
+    Pike_error("newterm failed\n");
   set_term(stdterm);
   curses_inited = 1;
 
@@ -73,9 +73,9 @@ static void f_init(INT32 args)
 static void f_root(INT32 args)
 {
   if (args > 0)
-    error("Too many arguments to root()\n");
+    Pike_error("Too many arguments to root()\n");
   if (!curses_inited)
-    error("Can't use root() before init()\n");
+    Pike_error("Can't use root() before init()\n");
   pop_n_elems(args);
   curses_rootwin->refs++;
   push_object(curses_rootwin);
@@ -84,9 +84,9 @@ static void f_root(INT32 args)
 static void f_endwin(INT32 args)
 {
   if (args > 0)
-    error("Too many arguments to endwin()\n");
+    Pike_error("Too many arguments to endwin()\n");
   if (!curses_inited)
-    error("Can't use endwin() before init()\n");
+    Pike_error("Can't use endwin() before init()\n");
   pop_n_elems(args);
   endwin();
 }
@@ -95,9 +95,9 @@ static void f_endwin(INT32 args)
 static void f_##f(INT32 args) \
 { \
   if (args>0) \
-    error("Too many arguments to " #f "()\n"); \
+    Pike_error("Too many arguments to " #f "()\n"); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   f(); \
 }
 
@@ -105,9 +105,9 @@ static void f_##f(INT32 args) \
 static void f_##f(INT32 args) \
 { \
   if (args>0) \
-    error("Too many arguments to " #f "()\n"); \
+    Pike_error("Too many arguments to " #f "()\n"); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   push_int(f()); \
 }
 
@@ -115,9 +115,9 @@ static void f_##f(INT32 args) \
 static void f_##f(INT32 args) \
 { \
   if (args>0) \
-    error("Too many arguments to " #f "()\n"); \
+    Pike_error("Too many arguments to " #f "()\n"); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   push_int(f); \
 }
 
@@ -127,7 +127,7 @@ static void f_##f(INT32 args) \
   int i; \
   check_all_args(#f, args, BIT_INT, 0); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   i = sp[-1].u.integer; \
   pop_n_elems(args); \
   push_int(f(i)); \
@@ -204,7 +204,7 @@ static void f_getsyx(INT32 args)
   struct svalue i;
   int x,y;
   if (args > 0)
-    error("Too many arguments to getsyx()\n");
+    Pike_error("Too many arguments to getsyx()\n");
   a = allocate_array(2);
   i.type = T_INT;
   i.subtype = NUMBER_NUMBER;
@@ -220,19 +220,19 @@ static void f_setsyx(INT32 args)
 {
   int x,y;
   if (args == 0)
-    error("Too few arguments to setsyx\n");
+    Pike_error("Too few arguments to setsyx\n");
   if (args == 1)
   {
     struct array *a;
     if (sp[-1].type != T_ARRAY)
-      error("Bad argument 1 to setsyx\n");
+      Pike_error("Bad argument 1 to setsyx\n");
     a = sp[-1].u.array;
     if (a->size != 2)
-      error("An array argument to setsyze must be of size 2\n");
+      Pike_error("An array argument to setsyze must be of size 2\n");
     if (a->item[0].type != T_INT)
-      error("Element 0 of argument is not an integer\n");
+      Pike_error("Element 0 of argument is not an integer\n");
     if (a->item[1].type != T_INT)
-      error("Element 1 of argument is not an integer\n");
+      Pike_error("Element 1 of argument is not an integer\n");
     y = a->item[0].u.integer;
     x = a->item[1].u.integer;
     setsyx(y,x);

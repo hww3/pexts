@@ -58,7 +58,7 @@ static void exit_screen_struct(struct object *o)
 static void f_screen_create(INT32 args)
 {
   if (args > 0)
-    error("Can't create screens yet\n");
+    Pike_error("Can't create screens yet\n");
   pop_n_elems(args);
 }
 

@@ -37,9 +37,9 @@ struct window {
 static void f_##f(INT32 args) \
 { \
   if (args>0) \
-    error("Too many arguments to " #f "()\n"); \
+    Pike_error("Too many arguments to " #f "()\n"); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   push_int(w##f(THISWIN->win)); \
 }
 
@@ -47,9 +47,9 @@ static void f_##f(INT32 args) \
 static void f_##f(INT32 args) \
 { \
   if (args>0) \
-    error("Too many arguments to " #f "()\n"); \
+    Pike_error("Too many arguments to " #f "()\n"); \
   if (!curses_inited) \
-    error("Can't use " #f "() before init()\n"); \
+    Pike_error("Can't use " #f "() before init()\n"); \
   push_int(f(THISWIN->win)); \
 }
 
@@ -121,17 +121,17 @@ static void f_window_create(INT32 args)
   if (args == 0)
   {
     if (curses_rootwin || !curses_inited)
-      error("Too few arguments to Window->create()\n");
+      Pike_error("Too few arguments to Window->create()\n");
     THISWIN->win = stdscr;
 /*     fprintf(stderr,"stdscr = %p\n",stdscr); */
     if (!THISWIN->win)
-      error("stdscr = 0 in window::create()\n");
+      Pike_error("stdscr = 0 in window::create()\n");
   }
   else
   {
     check_all_args("create", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, 0);
     if (!curses_inited)
-      error("Can't create window before Curses.init() is called\n");
+      Pike_error("Can't create window before Curses.init() is called\n");
     THISWIN->win = newwin(sp[-1].u.integer, /* nlines */
 			  sp[-2].u.integer, /* ncols */
 			  sp[-3].u.integer, /* begin_y */
@@ -146,7 +146,7 @@ static void f_##f(INT32 args) \
 { \
   int x, y; \
   if (args > 0) \
-    error("Too many arguments to "#f"\n"); \
+    Pike_error("Too many arguments to "#f"\n"); \
   f(THISWIN->win, y, x); \
   push_int(y); \
   push_int(x); \
@@ -160,7 +160,7 @@ static void f_getbegyx(INT32 args)
 {
   int x, y;
   if (args > 0)
-    error("Too many arguments to getbegyx\n");
+    Pike_error("Too many arguments to getbegyx\n");
   getbegyx(THISWIN->win, y, x);
   push_int(y);
   push_int(x);
@@ -171,7 +171,7 @@ static void f_getmaxyx(INT32 args)
 {
   int x, y;
   if (args > 0)
-    error("Too many arguments to getmaxyx\n");
+    Pike_error("Too many arguments to getmaxyx\n");
   getmaxyx(THISWIN->win, y, x);
   push_int(y);
   push_int(x);
@@ -355,7 +355,7 @@ static void f_getch(INT32 args)
 {
   int c;
   if (args != 0)
-    error("Too many arguments to getch()\n");
+    Pike_error("Too many arguments to getch()\n");
   /* THREADS_ALLOW(); */
   c = wgetch(THISWIN->win);
   /* THREADS_DISALLOW(); */
@@ -367,7 +367,7 @@ static void f_border(INT32 args)
   int i;
   int a[8];
   if (args > 8)
-    error("Too many arguments to border()\n");
+    Pike_error("Too many arguments to border()\n");
   for (i=0;i<8;i++)
     if (i<args)
     {
@@ -375,7 +375,7 @@ static void f_border(INT32 args)
       {
 	char s[100];
 	sprintf(s, "Bad argumend %d in border(), expected int\n", i);
-	error(s);
+	Pike_error(s);
       }
       a[i] = sp[-args+i].u.integer;
     }
@@ -392,7 +392,7 @@ static void f_box(INT32 args)
   int i;
   int a[2];
   if (args > 2)
-    error("Too many arguments to box()\n");
+    Pike_error("Too many arguments to box()\n");
   for (i=0;i<2;i++)
     if (i<args)
     {
@@ -400,7 +400,7 @@ static void f_box(INT32 args)
       {
 	char s[100];
 	sprintf(s, "Bad argumend %d in box(), expected int\n", i);
-	error(s);
+	Pike_error(s);
       }
       a[i] = sp[-args+i].u.integer;
     }
