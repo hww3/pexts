@@ -625,9 +625,5 @@ _ol_ldap_program_init(void)
     add_program_constant("Client", ldap_program, 0);
 }
 #else /* !HAVE_LIBLDAP */
-struct program*
-_ol_ldap_program_init(void)
-{
-    return NULL;
-}
+void _ol_ldap_program_init(void) { }
 #endif

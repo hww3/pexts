@@ -34,20 +34,6 @@ RCSID("$Id$");
 
 #define MNOGO_API(NAME) static void PIKE_CONCAT(f_mnogo_,NAME)(INT32 args)
 
-#define UDM_FIELD_URLID		1
-#define UDM_FIELD_URL		2
-#define UDM_FIELD_CONTENT	3	
-#define UDM_FIELD_TITLE		4
-#define UDM_FIELD_KEYWORDS	5
-#define UDM_FIELD_DESC		6
-#define UDM_FIELD_TEXT		7
-#define UDM_FIELD_SIZE		8
-#define UDM_FIELD_RATING	9
-#define UDM_FIELD_MODIFIED	10
-#define UDM_FIELD_ORDER		11
-#define UDM_FIELD_CRC		12
-#define UDM_FIELD_CATEGORY	13
-
 /* udm_set_agent_param constants */
 #define UDM_PARAM_PAGE_SIZE		1
 #define UDM_PARAM_PAGE_NUM		2
@@ -187,19 +173,19 @@ MNOGO_API(create)
 #define INT(var) if(valtype != PIKE_T_INT) { TYPE_ERROR("int"); } else { var = ARG(1).u.integer; }
 #define STR() if(valtype != PIKE_T_STRING) { TYPE_ERROR("int"); } 
 
-MNOGO_API(set_agent_param)
+MNOGO_API(set_param)
 {
   int valtype;
   int tmp;
   if(args >= 2) {
     if(ARG(0).type != PIKE_T_INT) {
-      SIMPLE_BAD_ARG_ERROR("set_agent_param", 1, "int");
+      SIMPLE_BAD_ARG_ERROR("set_param", 1, "int");
     }
     valtype = ARG(1).type;
     if(valtype != PIKE_T_STRING && valtype != PIKE_T_INT)
-      SIMPLE_BAD_ARG_ERROR("set_agent_param", 2, "string|int");
+      SIMPLE_BAD_ARG_ERROR("set_param", 2, "string|int");
   } else {
-    SIMPLE_TOO_FEW_ARGS_ERROR("set_agent_param", 2);
+    SIMPLE_TOO_FEW_ARGS_ERROR("set_param", 2);
   }
 	
   switch(ARG(0).u.integer){
@@ -233,7 +219,7 @@ MNOGO_API(set_agent_param)
       break;
 						
     default:
-      Pike_error("set_agent_param: Unknown search mode.\n");
+      Pike_error("set_param: Unknown search mode.\n");
     }
 			
     break;
@@ -258,7 +244,7 @@ MNOGO_API(set_agent_param)
       break;
 						
     default:
-      Pike_error("set_agent_param: Unknown word match mode.\n");
+      Pike_error("set_param: Unknown word match mode.\n");
       break;
     }
 			
@@ -350,7 +336,7 @@ MNOGO_API(set_agent_param)
 #endif
 			
   default:
-    Pike_error("set_agent_param: Unknown agent session parameter.\n");
+    Pike_error("set_param: Unknown agent session parameter.\n");
     break;
   }
   RETURN_TRUE;
@@ -446,7 +432,7 @@ MNOGO_API(add_search_limit)
     if(ARG(1).type != PIKE_T_STRING) {
       SIMPLE_BAD_ARG_ERROR("add_search_limit", 2, "string");
     }
-    var = ARG(1).u.integer;
+    var = ARG(0).u.integer;
     val = ARG(1).u.string->str;
   } else {
     SIMPLE_TOO_FEW_ARGS_ERROR("add_search_limit", 2);
@@ -572,7 +558,8 @@ MNOGO_API(fetch_rows) {
 
 MNOGO_API(big_query)
 {
-  UDM_RESULT * Res;
+  UDM_RESULT * result;
+  UDM_AGENT * agent;
   char *query;
   if(args >= 1) {
     if(ARG(0).type == PIKE_T_STRING) {
@@ -583,10 +570,14 @@ MNOGO_API(big_query)
   } else {
     SIMPLE_TOO_FEW_ARGS_ERROR("big_query", 1);
   }
-  if ( (Res = UdmFind(AGENT, UdmTolower(query, AGENT->charset))) ) {
+  agent = AGENT;
+  THREADS_ALLOW();
+  result = UdmFind(agent, UdmTolower(query, agent->charset));
+  THREADS_DISALLOW();
+  if(result) {
     pop_n_elems(args);
     struct object *resobj = clone_object(mnogo_result_program, 0);
-    ((mnogo_result_storage *)PIKE_OBJ_STORAGE(resobj))->mnogo_result = Res;
+    ((mnogo_result_storage *)PIKE_OBJ_STORAGE(resobj))->mnogo_result = result;
     push_object(resobj);
   } else {
     RETURN_FALSE;
@@ -596,7 +587,8 @@ MNOGO_API(big_query)
 MNOGO_API(query)
 {
   unsigned int row;
-  UDM_RESULT * Res;
+  UDM_RESULT *result;
+  UDM_AGENT *agent;
   char *query;
   if(args >= 1) {
     if(ARG(0).type == PIKE_T_STRING) {
@@ -607,13 +599,17 @@ MNOGO_API(query)
   } else {
     SIMPLE_TOO_FEW_ARGS_ERROR("query", 1);
   }
-  if ( (Res = UdmFind(AGENT, UdmTolower(query, AGENT->charset))) ) {
+  agent = AGENT;
+  THREADS_ALLOW();
+  result = UdmFind(agent, UdmTolower(query, agent->charset));
+  THREADS_DISALLOW();
+  if(result) {
     pop_n_elems(args);
-    for(row = 0; row < Res->num_rows; row++) {
-      push_result_field(&Res->Doc[row]);
+    for(row = 0; row < result->num_rows; row++) {
+      push_result_field(&result->Doc[row]);
     }
-    f_aggregate(Res->num_rows);
-    UdmFreeResult(Res);
+    f_aggregate(result->num_rows);
+    UdmFreeResult(result);
   } else {
     RETURN_FALSE;
   }	
@@ -721,33 +717,14 @@ void pike_module_init()
   UdmInit();
 
 #define INTCONST(X,Y)   add_integer_constant(X,	Y, 0)
-  INTCONST("FIELD_URLID", UDM_FIELD_URLID);
-  INTCONST("FIELD_URL", UDM_FIELD_URL);
-  INTCONST("FIELD_CONTENT", UDM_FIELD_CONTENT);
-  INTCONST("FIELD_TITLE", UDM_FIELD_TITLE);
-  INTCONST("FIELD_KEYWORDS", UDM_FIELD_KEYWORDS);
-  INTCONST("FIELD_DESC", UDM_FIELD_DESC);
-  INTCONST("FIELD_DESCRIPTION", UDM_FIELD_DESC);
-  INTCONST("FIELD_TEXT", UDM_FIELD_TEXT);
-  INTCONST("FIELD_SIZE", UDM_FIELD_SIZE);
-  INTCONST("FIELD_RATING", UDM_FIELD_RATING);
-  INTCONST("FIELD_SCORE", UDM_FIELD_RATING);
-  INTCONST("FIELD_MODIFIED", UDM_FIELD_MODIFIED);
-  INTCONST("FIELD_ORDER", UDM_FIELD_ORDER);
-  INTCONST("FIELD_CRC", UDM_FIELD_CRC);
-  INTCONST("FIELD_CATEGORY", UDM_FIELD_CATEGORY);
-  
-  /* udm_set_agent_param constants */
+  /* set_param constants */
   INTCONST("PARAM_PAGE_SIZE", UDM_PARAM_PAGE_SIZE);
   INTCONST("PARAM_PAGE_NUM", UDM_PARAM_PAGE_NUM);
-  
   INTCONST("PARAM_SEARCH_MODE", UDM_PARAM_SEARCH_MODE);
   INTCONST("PARAM_CACHE_MODE", UDM_PARAM_CACHE_MODE);
   INTCONST("PARAM_TRACK_MODE", UDM_PARAM_TRACK_MODE);
   INTCONST("PARAM_PHRASE_MODE", UDM_PARAM_PHRASE_MODE);
-  
   INTCONST("PARAM_CHARSET", UDM_PARAM_CHARSET);
-  
   INTCONST("PARAM_STOPTABLE", UDM_PARAM_STOPTABLE);
   INTCONST("PARAM_STOP_TABLE", UDM_PARAM_STOPTABLE);
   INTCONST("PARAM_STOPFILE", UDM_PARAM_STOPFILE);
@@ -772,41 +749,18 @@ void pike_module_init()
   INTCONST("PARAM_FIRST_DOC", UDM_PARAM_FIRST_DOC);
   INTCONST("PARAM_LAST_DOC", UDM_PARAM_LAST_DOC);
 
+  INTCONST("LIMIT_URL", UDM_LIMIT_URL);
+  INTCONST("LIMIT_TAG", UDM_LIMIT_TAG);
+  INTCONST("LIMIT_LANG", UDM_LIMIT_LANG);
+  INTCONST("LIMIT_CAT", UDM_LIMIT_CAT);
+  INTCONST("LIMIT_DATE", UDM_LIMIT_DATE);
+  
   /* search modes */
   INTCONST("MODE_ALL", UDM_MODE_ALL);
   INTCONST("MODE_ANY", UDM_MODE_ANY);
   INTCONST("MODE_BOOL", UDM_MODE_BOOL);
   INTCONST("MODE_PHRASE", UDM_MODE_PHRASE);
 
-  /* search cache params */
-  INTCONST("CACHE_ENABLED", UDM_CACHE_ENABLED);
-  INTCONST("CACHE_DISABLED", UDM_CACHE_DISABLED);
-	
-  /* track mode params */
-  INTCONST("TRACK_ENABLED", UDM_TRACK_ENABLED);
-  INTCONST("TRACK_DISABLED", UDM_TRACK_DISABLED);
-	
-  /* phrase mode params */
-  INTCONST("PHRASE_ENABLED", UDM_PHRASE_ENABLED);
-  INTCONST("PHRASE_DISABLED", UDM_PHRASE_DISABLED);
-	
-  /* crosswords mode params */
-  INTCONST("CROSS_WORDS_ENABLED", UDM_CROSS_WORDS_ENABLED);
-  INTCONST("CROSSWORDS_ENABLED", UDM_CROSS_WORDS_ENABLED);
-  INTCONST("CROSS_WORDS_DISABLED", UDM_CROSS_WORDS_DISABLED);
-  INTCONST("CROSSWORDS_DISABLED", UDM_CROSS_WORDS_DISABLED);
-	
-  /* prefixes mode params */
-  INTCONST("PREFIXES_ENABLED", UDM_PREFIXES_ENABLED);
-  INTCONST("PREFIX_ENABLED", UDM_PREFIXES_ENABLED);
-  INTCONST("ISPELL_PREFIXES_ENABLED", UDM_PREFIXES_ENABLED);
-  INTCONST("ISPELL_PREFIX_ENABLED", UDM_PREFIXES_ENABLED);
-	
-  INTCONST("PREFIXES_DISABLED", UDM_PREFIXES_DISABLED);
-  INTCONST("PREFIX_DISABLED", UDM_PREFIXES_DISABLED);
-  INTCONST("ISPELL_PREFIXES_DISABLED", UDM_PREFIXES_DISABLED);
-  INTCONST("ISPELL_PREFIX_DISABLED", UDM_PREFIXES_DISABLED);
-	
   /* ispell type params */
   INTCONST("ISPELL_TYPE_AFFIX", UDM_ISPELL_TYPE_AFFIX);
   INTCONST("ISPELL_TYPE_SPELL", UDM_ISPELL_TYPE_SPELL);
@@ -818,6 +772,7 @@ void pike_module_init()
   INTCONST("MATCH_BEGIN", UDM_MATCH_BEGIN);
   INTCONST("MATCH_SUBSTR", UDM_MATCH_SUBSTR);
   INTCONST("MATCH_END", UDM_MATCH_END);
+
 #undef INTCONST
 
   start_new_program();
@@ -826,7 +781,7 @@ void pike_module_init()
   set_init_callback(init_mnogo_storage);
   ADD_FUNCTION("create", f_mnogo_create,
 	       tFunc(tString tOr(tVoid, tString), tVoid), 0);
-  ADD_FUNCTION("set_agent_param", f_mnogo_set_agent_param,
+  ADD_FUNCTION("set_param", f_mnogo_set_param,
 	       tFunc(tInt tOr(tString, tInt), tVoid), 0);
   ADD_FUNCTION("load_ispell_data", f_mnogo_load_ispell_data,
 	       tFunc(tInt tString tString tInt, tInt), OPT_SIDE_EFFECT);
