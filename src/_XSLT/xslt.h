@@ -1,7 +1,7 @@
 #ifndef __XSLT_H
 #define __XSLT_H
 
-#include <malloc.h>
+#include <unistd.h>
 
 /* This allows execution of c-code that requires the Pike interpreter to 
  * be locked from the Sablotron callback functions.
