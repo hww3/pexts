@@ -93,7 +93,7 @@ MNOGO_API(create)
 
 #define TYPE_ERROR(x) Pike_error("set_agent_param: Parameter value type invalid, expected %s.\n", x);
 #define INT(var) if(valtype != PIKE_T_INT) { TYPE_ERROR("int"); } else { var = ARG(2).u.integer; }
-#define STR() if(valtype != PIKE_T_STRING) { TYPE_ERROR("int"); } 
+#define STR() if(valtype != PIKE_T_STRING) { TYPE_ERROR("string"); } 
 
 MNOGO_API(set_param)
 {
