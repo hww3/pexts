@@ -33,7 +33,7 @@ ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
 	INSTALL_PROGRAM += -s
 endif
 
-export CFLAGS
+export CFLAGS PVER
 
 configure: apply-patches configure-stamp-7 configure-stamp-72 configure-stamp-74
 configure-stamp-7:
@@ -126,19 +126,21 @@ inter-install:
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	dh_installdirs
-	install -d -m 755 `pwd`/debian/pike$(PVER)/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
-	$(MAKE) install DESTDIR=`pwd`/debian/pike$(PVER)/
-	install -d -m 755 `pwd`/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
-	cp -pr pmod/Newt.pmod/ `pwd`/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+	dh_installdirs -A
+	install -d -m 755 $(CURDIR)/debian/pike$(PVER)/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/pike$(PVER)/
+	install -d -m 755 $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+	cp -pr pmod/Newt.pmod/ $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
 
 install: DH_OPTIONS=
 install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	dh_installdirs
-	dh_movefiles
+	dh_installdirs -A
+	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7/
+	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.2/
+	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.4/
 
 # Build architecture-independent files here.
 # Pass -i to all debhelper commands in this target to reduce clutter.
