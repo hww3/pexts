@@ -1,0 +1,9 @@
+configure
+xslt_config.h
+xslt_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+_XSLT.so
+autom4te.cache

@@ -19,6 +19,7 @@
 
 #include <string.h>
 #include <stdarg.h>
+#if defined(HAVE_XML2) && defined(HAVE_XSLT)
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
 #include <libxml/HTMLtree.h>
@@ -712,5 +713,14 @@ void pike_module_exit( void )
     if ( stylesheet_program )
 	free_program(stylesheet_program);
 }
+#else
+void pike_module_init(void)
+{
+#ifdef PEXTS_VERSION
+  pexts_init();
+#endif
+}
 
- 
+void pike_module_exit(void)
+{}
+#endif
