@@ -246,7 +246,10 @@ static xmlSAXHandler   pextsSAX = {
   .fatalError = pextsFatalError,
   .getParameterEntity = pextsGetParameterEntity,
   .cdataBlock = pextsCdataBlock,
-  .externalSubset = pextsExternalSubset
+  .externalSubset = pextsExternalSubset,
+  .startElementNsSAX2Func = NULL,
+  .endElementNsSAX2Func = NULL,
+  .xmlStructuredErrorFunc = NULL
 };
 
 static struct pike_string  *econtent_type;
