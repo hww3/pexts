@@ -59,7 +59,7 @@
 
 #if !defined(NAME_MAX) && defined(_PC_NAME_MAX)
 #define NAME_MAX _PC_NAME_MAX
-#else
+#elif !defined(NAME_MAX)
 #define NAME_MAX 1024
 #endif
 
