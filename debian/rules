@@ -35,16 +35,16 @@ endif
 
 export CFLAGS PVER
 
-configure: apply-patches configure-stamp-7 configure-stamp-72 configure-stamp-74
-configure-stamp-7:
+configure: configure-stamp-7 configure-stamp-72 configure-stamp-74
+configure-stamp-7: apply-patches
 	$(MAKE) -fdebian/rules PVER=7 do-configure
 	touch $@
 
-configure-stamp-72:
+configure-stamp-72: apply-patches
 	$(MAKE) -fdebian/rules PVER=7.2 do-configure
 	touch $@
 
-configure-stamp-7.4:
+configure-stamp-7.4: apply-patches
 	$(MAKE) -fdebian/rules PVER=7.4 do-configure
 	touch $@
 
@@ -108,7 +108,7 @@ do-build:
 
 	touch build-stamp
 
-inter-clean:
+inter-clean: unapply-patches
 	-$(MAKE) spotless
 	-$(MAKE) -C src/PCRE/pcrelib/ clean
 	-rm -f src/PCRE/pcrelib/dftables
@@ -117,7 +117,7 @@ inter-clean:
 	-rm -f smartlink statuslock
 	dh_clean
 
-clean: inter-clean unapply-patches
+clean: inter-clean
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp

@@ -18,7 +18,7 @@ diff -U3 --new-file -r pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure
 -AC_CHECK_FUNCS( setlocale )
 -AC_CONFIG_SUBDIRS(pcrelib)
 +PCRE_LIBS="`pcre-config --libs`"
-+PCRE_CFLAGS=`pcre-config --cflags`"
++PCRE_CFLAGS="`pcre-config --cflags`"
 +
 +AC_SUBST(PCRE_LIBS)
 +AC_SUBST(PCRE_CFLAGS)
