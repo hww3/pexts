@@ -88,8 +88,6 @@ typedef struct
 #define THIS_OBJ(_o_) ((NEWT_DATA*)get_storage((_o_), (_o_)->prog))
 #define THIS ((NEWT_DATA*)get_storage(fp->current_object, fp->current_object->prog))
 
-#define ARG(_n_) sp[-((args - _n_) + 1)]
-
 #define DICT_OK                    0
 #define DICT_NULL_DATA            -1
 #define DICT_NULL_OBJECT          -2

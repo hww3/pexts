@@ -38,8 +38,6 @@
 #define push_longint(_x_) push_int((_x_))
 #endif
 
-#define ARG(_n_) sp[-((args - _n_) + 1)]
-
 #if defined(__GNUC__)
 #define LOCAL_BUF(_n_, _s_) char _n_[_s_]
 #define LOCAL_FREE(_n_)
