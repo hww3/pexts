@@ -171,6 +171,7 @@ void f_stat(INT32 args);
 void push_headers(HEADER *header);
 void f_set_flag(INT32 args);
 void f_reset_flag(INT32 args);
+void f_check_mailbox(INT32 args);
 
 /* LibMutt.Message */
 void init_message_storage(struct object *);
@@ -293,6 +294,14 @@ void f_reset_flag(INT32 args) {
 	pop_n_elems(args);
 }
 
+void f_check_mailbox(INT32 args) {
+	int index_hint;
+	int ret;
+
+	index_hint=THIS->ctx->msgcount-1;
+	ret=mx_check_mailbox(THIS->ctx, &index_hint, 0);
+	push_int(ret);
+}
 
 void f_get_header(INT32 args) {
 	int idx;
@@ -440,6 +449,11 @@ void pike_module_init() {
 	ADD_INT_CONSTANT("M_TAG",M_TAG,0);
 	ADD_INT_CONSTANT("M_NEW",M_NEW,0);
 
+	/* constants for mx_check_mailbox() */
+	ADD_INT_CONSTANT("M_NEW_MAIL",M_NEW_MAIL,0);
+	ADD_INT_CONSTANT("M_REOPENED",M_REOPENED,0);
+	ADD_INT_CONSTANT("M_FLAGS",M_FLAGS,0);
+
 	start_new_program();
 	 ADD_STORAGE(MAILSTORE_STORAGE);
 	
@@ -462,6 +476,8 @@ void pike_module_init() {
 		tFunc(tInt tInt, tVoid), 0);
 	ADD_FUNCTION("reset_flag", f_reset_flag,
 		tFunc(tInt tInt, tVoid), 0);
+	ADD_FUNCTION("check_mailbox", f_check_mailbox,
+		tFunc(tVoid, tInt), 0);
 
 	/* Mailbox.Message */
 	start_new_program();
