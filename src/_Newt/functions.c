@@ -270,8 +270,10 @@ f_defaultColors(INT32 args)
     make_color("selListbox", &key, &val, newtDefaultColorPalette.selListboxFg, newtDefaultColorPalette.selListboxBg);
     mapping_insert(colors, &key, &val);
 
+#if 0
     make_color("threeDbox", &key, &val, newtDefaultColorPalette.threeDboxFg, newtDefaultColorPalette.threeDboxBg);
     mapping_insert(colors, &key, &val);
+#endif
 
     pop_n_elems(args);
     
