@@ -27,7 +27,6 @@ AC_SUBST(SO)
 AC_SUBST(LIBGCC)
 
 AC_DEFINE(POSIX_SOURCE)
-AC_SUBST_FILE(module_makefile)
 ])
 
 
@@ -52,6 +51,7 @@ define([PEXTS_MODULE_INIT],
     fi
     module_makefile=../$module_makefile
   done
+  AC_SUBST_FILE(module_makefile)
   AC_MSG_RESULT(found)
 ])
 
