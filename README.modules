@@ -16,6 +16,13 @@ Mhash:
   Principal Author: David Hedbor <david@caudium.net>
   TODO: Hashed password support.
 
+mcrypt:
+
+  A glue to the mcrypt library, which provides a large number of
+  encryption routines using a plugin based architecture.
+  Requires: libmcrypt from http://mcrypt.hellug.gr/#_libmcrypt
+  Principal Author: David Hedbor <david@caudium.net>
+
 Newt:
 
   A module adding Newt support for Pike.
