@@ -1,6 +1,6 @@
 #!/bin/sh
 
-autoheader
 aclocal
 automake -a
+autoheader
 autoconf --include=$1
