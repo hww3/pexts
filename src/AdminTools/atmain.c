@@ -1,26 +1,25 @@
-/* Copyright (C) 2000 Marek Habersack <grendel@vip.net.pl>.
-   This file is part of the AdminTools Pike extension module.
-
-   The AdminTools module is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
-
-   The AdminTools module is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public
-   License along with the AdminTools module; see the COPYING file.  If not,
-   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
-
-   $Id$
+/*
+ * Pike Extension Modules - A collection of modules for the Pike Language
+ * Copyright © 2000 The Caudium Group
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * Simple glue for more advanced Unix functions.
 */
 #define _GNU_SOURCE
-
-#include "at_config.h"
+RCSID("$Id$");
 
 /*
  * Pike includes
@@ -36,6 +35,8 @@
 #include "object.h"
 #include "svalue.h"
 #include "interpret.h"
+
+#include "at_config.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
