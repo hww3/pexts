@@ -71,7 +71,7 @@ static void mcast_join(INT32 args)
    
    if(args!=1)
       Pike_error("mcast->join(): número de argumentos inválido\n");
-   if(sp[-1].type!=T_STRING)
+   if(Pike_sp[-1].type!=T_STRING)
       Pike_error("mcast->join(): Tipo del argumento inválido\n");
    
    /* Verifica el estado del socket */
@@ -80,7 +80,7 @@ static void mcast_join(INT32 args)
      Pike_error("mcast->join(): Port not bound! (call \"bind\" first)\n");
    
    
-   mc_addr = inet_addr(sp[-1].u.string->str);
+   mc_addr = inet_addr(Pike_sp[-1].u.string->str);
    if(mc_addr == -1)
      Pike_error("mcast->join(): Invalid mcast group\n");
    
@@ -103,7 +103,7 @@ static void mcast_leave(INT32 args)
 
    if(args!=1)
       Pike_error("mcast->leave(): número de argumentos inválido\n");
-   if(sp[-1].type!=T_STRING)
+   if(Pike_sp[-1].type!=T_STRING)
       Pike_error("mcast->leave(): Tipo del argumento inválido\n");
    
    /* Verifica el estado del socket */
@@ -111,7 +111,7 @@ static void mcast_leave(INT32 args)
      /* El objeto no está inicializado... */
      Pike_error("mcast->leave(): Port not bound! (call \"bind\" first)\n");
    
-   mc_addr = inet_addr(sp[-1].u.string->str);
+   mc_addr = inet_addr(Pike_sp[-1].u.string->str);
    if(mc_addr == -1)
      Pike_error("mcast->leave(): Invalid mcast group\n");
    
@@ -133,10 +133,10 @@ static void mcast_setTTL(INT32 args)
    
    if( args != 1 )
       Pike_error("mcast->setTTL(): número de argumentos inválido\n");
-   if(sp[-1].type != T_INT)
+   if(Pike_sp[-1].type != T_INT)
       Pike_error("mcast->setTTL(): Tipo del argumento inválido\n");
    
-   ttl = sp[-args].u.integer;
+   ttl = Pike_sp[-args].u.integer;
    
    if( setsockopt(FD ,IPPROTO_IP,IP_MULTICAST_TTL,(char *) &ttl,
 		  sizeof(u_char)) == -1 )
@@ -153,10 +153,10 @@ static void mcast_loopback(INT32 args)
    
    if( args != 1 )
       Pike_error("mcast->setLoopback(): número de argumentos inválido\n");
-   if(sp[-1].type != T_INT)
+   if(Pike_sp[-1].type != T_INT)
       Pike_error("mcast->setLoopback(): Tipo del argumento inválido\n");
    
-   loop = sp[-args].u.integer;
+   loop = Pike_sp[-args].u.integer;
    
    if( setsockopt(FD ,IPPROTO_IP,IP_MULTICAST_LOOP,(char *) &loop,
 		  sizeof(u_char)) == -1 )
@@ -173,11 +173,11 @@ static void mcast_setif(INT32 args)
    
    if(args!=1)
       Pike_error("mcast->setInterface(): número de argumentos inválido\n");
-   if(sp[-1].type!=T_STRING)
+   if(Pike_sp[-1].type!=T_STRING)
       Pike_error("mcast->setInterface(): Tipo del argumento inválido\n");
    
    
-   ifaddr = inet_addr(sp[-1].u.string->str);
+   ifaddr = inet_addr(Pike_sp[-1].u.string->str);
    if(ifaddr == -1)
      Pike_error("mcast->setInterface(): Invalid interface address\n");
    
@@ -214,11 +214,11 @@ void pike_module_init(void)
    /* Resuelve el objeto (encuentra el archivo) */
    push_text("files.UDP");
    SAFE_APPLY_MASTER("resolv",1);
-   if(sp[-1].type != T_FUNCTION)
+   if(Pike_sp[-1].type != T_FUNCTION)
      Pike_error("Error al resolver Stdio.UDP!\n");
    
    /* Obtiene el programa */
-   stdio_udp = program_from_function(&sp[-1]);
+   stdio_udp = program_from_function(&Pike_sp[-1]);
    pop_n_elems(1);
    
    /* Hereda */

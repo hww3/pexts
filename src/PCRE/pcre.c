@@ -90,14 +90,14 @@ void f_pcre_create(INT32 args)
   switch(args)
   {
    case 2:
-    switch(sp[-1].type) {
+    switch(Pike_sp[-1].type) {
      case T_STRING:
-      opts = parse_options(sp[-1].u.string->str, &do_study);
+      opts = parse_options(Pike_sp[-1].u.string->str, &do_study);
       if(opts < 0)
 	Pike_error("PCRE.Regexp->create(): Unknown option modifier '%c'.\n", -opts);
       break;
      case T_INT:
-      if(sp[-1].u.integer == 0) {
+      if(Pike_sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
@@ -107,10 +107,10 @@ void f_pcre_create(INT32 args)
     }
     /* Fall through */
    case 1:
-    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
+    if(Pike_sp[-args].type != T_STRING || Pike_sp[-args].u.string->size_shift > 0) {
       Pike_error("PCRE.Regexp->create(): Invalid argument 1. Expected 8-bit string.\n");
     }
-    regexp = sp[-args].u.string;
+    regexp = Pike_sp[-args].u.string;
     if((INT32)strlen(regexp->str) != regexp->len)
       Pike_error("PCRE.Regexp->create(): Regexp pattern contains null characters. Use \\0 instead.\n");
     
@@ -163,14 +163,14 @@ void f_pcre_match(INT32 args)
   switch(args)
   {
    case 2:
-    switch(sp[-1].type) {
+    switch(Pike_sp[-1].type) {
      case T_STRING:
-      opts = parse_options(sp[-1].u.string->str, NULL);
+      opts = parse_options(Pike_sp[-1].u.string->str, NULL);
       if(opts < 0)
 	Pike_error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", -opts);
       break;
      case T_INT:
-      if(sp[-1].u.integer == 0) {
+      if(Pike_sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
@@ -180,10 +180,10 @@ void f_pcre_match(INT32 args)
     }
     /* Fall through */
    case 1:
-    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
+    if(Pike_sp[-args].type != T_STRING || Pike_sp[-args].u.string->size_shift > 0) {
       Pike_error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
-    data = sp[-args].u.string;
+    data = Pike_sp[-args].u.string;
     break;
    default:
     Pike_error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");
@@ -224,14 +224,14 @@ void f_pcre_split(INT32 args)
   get_all_args("PCRE.Regexp->split", args, "%S", &data);
   switch(args) {
   case 2:
-    switch(sp[-1].type) {
+    switch(Pike_sp[-1].type) {
     case T_STRING:
-      opts = parse_options(sp[-1].u.string->str, NULL);
+      opts = parse_options(Pike_sp[-1].u.string->str, NULL);
       if(opts < 0)
 	Pike_error("PCRE.Regexp->split(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
-      if(sp[-1].u.integer == 0) {
+      if(Pike_sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
@@ -241,10 +241,10 @@ void f_pcre_split(INT32 args)
     }
     /* Fallthrough */
   case 1:
-    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
+    if(Pike_sp[-args].type != T_STRING || Pike_sp[-args].u.string->size_shift > 0) {
       Pike_error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
-    data = sp[-args].u.string;
+    data = Pike_sp[-args].u.string;
     break;
   default:
     Pike_error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");    

@@ -15,7 +15,7 @@ RCSID("$Id$");
 
 #ifndef ARG
 /* Get argument # _n_ */
-#define ARG(_n_) sp[-((args - _n_) + 1)]
+#define ARG(_n_) Pike_sp[-((args - _n_) + 1)]
 #endif
 
 #define MODE_NONE    0
