@@ -41,10 +41,12 @@
 #include "version.h"
 
 #if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION == 1 && PIKE_BUILD_VERSION >= 12) || PIKE_MAJOR_VERSION > 7 || (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION > 1)
-#include "pike_error.h"
+# include "pike_error.h"
 #else
-#include "error.h"
-#define Pike_error error
+# include "error.h"
+# ifndef Pike_error
+#  define Pike_error error
+# endif
 #endif
 
 /* Pexts version */
