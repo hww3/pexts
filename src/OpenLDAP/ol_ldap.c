@@ -41,6 +41,13 @@ RCSID("$Id$");
 
 static struct program *ldap_program;
 
+static struct pike_string   *base_str;
+static struct pike_string   *scope_str;
+static struct pike_string   *filter_str;
+static struct pike_string   *attrs_str;
+static struct pike_string   *attrsonly_str;
+static struct pike_string   *timeout_str;
+
 static void
 f_create(INT32 args)
 {
@@ -232,9 +239,112 @@ f_set_scope(INT32 args)
     push_int(scope);
 }
 
+static char**
+make_c_array(struct svalue *arr)
+{
+    return NULL;
+}
+
 static void
 f_ldap_search(INT32 args)
-{}
+{
+    char                *filter;
+    int                  scope;
+    struct pike_string  *base;
+    char               **attrs;
+    int                  attrsonly;
+    struct timeval      *timeout;
+    
+    if (!args)
+        Pike_error("OpenLDAP.Client->search() requires at least one argument\n");
+
+    if (args == 1) {
+        switch(ARG(1).type) {
+            case T_MAPPING:
+            {
+                /* the new style case */
+                struct svalue  *val;
+                struct mapping *m = ARG(1).u.mapping;
+
+                /*
+                 * m->base
+                 */
+                val = low_mapping_string_lookup(m,
+                                                base_str);
+                if (!val || val->type != T_STRING)
+                    base = THIS->basedn;
+                else
+                    base = val->u.string;
+
+                /*
+                 * m->scope
+                 */
+                val = low_mapping_string_lookup(m,
+                                                scope_str);
+                if (!val || val->type != T_INT)
+                    scope = THIS->scope;
+                else
+                    scope = val->u.integer;
+
+                /*
+                 * m->filter
+                 */
+                val = low_mapping_string_lookup(m,
+                                                filter_str);
+                if (!val || val->type != T_STRING)
+                    filter = OL_DEF_FILTER;
+                else
+                    filter = val->u.string->str;
+
+                /*
+                 * m->attrs
+                 */
+                val = low_mapping_string_lookup(m,
+                                                attrs_str);
+                if (!val || val->type != T_ARRAY)
+                    attrs = NULL;
+                else
+                    attrs = make_c_array(val);
+
+                /*
+                 * m->attrsonly
+                 */
+                val = low_mapping_string_lookup(m,
+                                                attrsonly_str);
+                if (!val || val->type != T_INT)
+                    attrsonly = 0;
+                else
+                    attrsonly = val->u.integer != 0;
+
+                /*
+                 * m->timeout
+                 */
+                val = low_mapping_string_lookup(m,
+                                                timeout_str);
+                if (!val || val->type != T_INT)
+                    timeout = NULL;
+                else
+                    timeout = NULL; /*TEMPORARY*/
+                
+                break;
+            }
+
+            case T_STRING:
+                /* the old style case */
+                base = THIS->basedn;
+                scope = THIS->scope;
+                filter = ARG(1).u.string->str;
+                attrs = NULL;
+                attrsonly = 0;
+                timeout = NULL;
+                break;
+
+            default:
+                Pike_error("OpenLDAP.Client->search() with single argument requires either a mapping or a string\n");
+                break;
+        }
+    }
+}
 
 static void
 init_ldap(struct object *o)
@@ -246,6 +356,24 @@ init_ldap(struct object *o)
     THIS->bound = 0;
     THIS->lerrno = 0;
     THIS->caching = 0;
+
+    base_str = make_shared_string("base");
+    add_ref(base_str);
+
+    scope_str = make_shared_string("scope");
+    add_ref(scope_str);
+
+    filter_str = make_shared_string("filter");
+    add_ref(filter_str);
+
+    attrs_str = make_shared_string("attrs");
+    add_ref(attrs_str);
+
+    attrsonly_str = make_shared_string("attrsonly");
+    add_ref(attrsonly_str);
+
+    timeout_str = make_shared_string("timeout");
+    add_ref(timeout_str);
 }
 
 static void
@@ -255,6 +383,13 @@ exit_ldap(struct object *o)
         ldap_free_urldesc(THIS->server_url);
         THIS->server_url = NULL;
     }
+
+    free_string(base_str);
+    free_string(scope_str);
+    free_string(filter_str);
+    free_string(attrs_str);
+    free_string(attrsonly_str);
+    free_string(timeout_str);
 }
 
 struct program*
@@ -312,6 +447,10 @@ _ol_ldap_program_init(void)
                  tFunc(tString, tString), 0);
     ADD_FUNCTION("set_scope", f_set_scope,
                  tFunc(tInt, tInt), 0);
+    ADD_FUNCTION("search", f_ldap_search,
+                 tFunc(tOr(tMapping,
+                           tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
+                       tInt), 0);
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);
