@@ -1,0 +1,227 @@
+/* src/muttconfig.h.in.  Generated from configure.in by autoheader.  */
+
+/* Defined when file size is to be used to discover changes to mailbox. */
+#undef BUFFY_SIZE
+
+/* Defined if email adresses can be regenerated. */
+#undef EXACT_ADDRESS
+
+/* Define to path to an alternate shell. */
+#undef EXECSHELL
+
+/* Define to 1 if you have the `bind_textdomain_codeset' function. */
+#undef HAVE_BIND_TEXTDOMAIN_CODESET
+
+/* Define to 1 if you have the declaration of `sys_siglist', and to 0 if you
+   don't. */
+#undef HAVE_DECL_SYS_SIGLIST
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the `fchdir' function. */
+#undef HAVE_FCHDIR
+
+/* Define to 1 if you have the `fgetpos' function. */
+#undef HAVE_FGETPOS
+
+/* Define to 1 if you have the `ftruncate' function. */
+#undef HAVE_FTRUNCATE
+
+/* Define to 1 if you have the `getaddrinfo' function. */
+#undef HAVE_GETADDRINFO
+
+/* Define to 1 if you have the <gssapi/gssapi_generic.h> header file. */
+#undef HAVE_GSSAPI_GSSAPI_GENERIC_H
+
+/* Define to 1 if you have the <gssapi/gssapi.h> header file. */
+#undef HAVE_GSSAPI_GSSAPI_H
+
+/* Define to 1 if you have the <gssapi.h> header file. */
+#undef HAVE_GSSAPI_H
+
+/* Define if GSS C NT hostbased service is available. */
+#undef HAVE_GSS_C_NT_HOSTBASED_SERVICE
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define to 1 if you have the <iconv.h> header file. */
+#undef HAVE_ICONV_H
+
+/* Define if <iconv.h> defines iconv_t. */
+#undef HAVE_ICONV_T_DEF
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `crypto' library (-lcrypto). */
+#undef HAVE_LIBCRYPTO
+
+/* Define to 1 if you have the `intl' library (-lintl). */
+#undef HAVE_LIBINTL
+
+/* Define to 1 if you have the `nsl' library (-lnsl). */
+#undef HAVE_LIBNSL
+
+/* Define to 1 if you have the `sasl' library (-lsasl). */
+#undef HAVE_LIBSASL
+
+/* Define to 1 if you have the `socket' library (-lsocket). */
+#undef HAVE_LIBSOCKET
+
+/* Define to 1 if you have the `ssl' library (-lssl). */
+#undef HAVE_LIBSSL
+
+/* Define to 1 if you have the `x' library (-lx). */
+#undef HAVE_LIBX
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define if PCRE library is available.a< */
+#undef HAVE_PCRE
+
+/* Define to 1 if you have the `RAND_egd' function. */
+#undef HAVE_RAND_EGD
+
+/* Define to 1 if you have the `RAND_status' function. */
+#undef HAVE_RAND_STATUS
+
+/* Define to 1 if you have the `setegid' function. */
+#undef HAVE_SETEGID
+
+/* Define to 1 if you have the `srand48' function. */
+#undef HAVE_SRAND48
+
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strcasecmp' function. */
+#undef HAVE_STRCASECMP
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the `strftime' function. */
+#undef HAVE_STRFTIME
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sysexits.h> header file. */
+#undef HAVE_SYSEXITS_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define if Home spool is to be used. */
+#undef HOMESPOOL
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
+
+/* iconv parameter list, v.2 */
+#undef ICONV_NONTRANS
+
+/* Path to ispell program. */
+#undef ISPELL
+
+/* Enable locales hack. */
+#undef LOCALES_HACK
+
+/* Define to the path to the home spool. */
+#undef MAILPATH
+
+/* Define if libmutt should try to work around NFS issues. */
+#undef NFS_ATTRIBUTE_HACK
+
+/* No idea. */
+#undef NO_IDEA
+
+/* No RC5. */
+#undef NO_RC5
+
+/* No RSA. */
+#undef NO_RSA
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define as the return type of signal handlers (`int' or `void'). */
+#undef RETSIGTYPE
+
+/* Path to sendmail program. */
+#undef SENDMAIL
+
+/* The size of a `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if dotlock is to be used. */
+#undef USE_DOTLOCK
+
+/* Define if fcntl locking should be used. */
+#undef USE_FCNTL
+
+/* Define if flock locking should be used. */
+#undef USE_FLOCK
+
+/* Always compile IMAP support. */
+#undef USE_IMAP
+
+/* Define if you want support for SSL via the NSS library. */
+#undef USE_NSS
+
+/* Defined if SASL library is to be used. */
+#undef USE_SASL
+
+/* Always use flexible socket code. */
+#undef USE_SOCKET
+
+/* Define if SSL support is to be compiled. */
+#undef USE_SSL
+
+/* Version number of package */
+#undef VERSION
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t

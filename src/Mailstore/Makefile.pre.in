@@ -1,0 +1,19 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=Mailstore
+OBJS= mailstore_main.o libmutt/libmutt.a libmutt/imap/libimap.a
+SOURCES=mailstore_main.c 
+MODULE_LIBS=@LIBS@
+MODULE_CFLAGS = -Ilibmutt/src
+
+EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so
+
+@module_makefile@
+
+extrainstall:
+
+libmutt/libmutt.a:
+	(cd libmutt ; ./configure ; ${MAKE} ; cp src./libs/libmutt.a .)
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+
