@@ -1,3 +1,3 @@
 #!/bin/sh
 
-autoconf -B $1
+autoconf --include=$1

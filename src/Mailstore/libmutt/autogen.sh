@@ -3,4 +3,4 @@
 autoheader
 aclocal
 automake -a
-autoconf -B $1
+autoconf --include=$1

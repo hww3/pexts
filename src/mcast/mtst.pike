@@ -13,7 +13,7 @@ void pa( array(string) a )
 
 int main(int argc, array(string) argv)
 {
-   object o = Stdio.MultiCastUDP();
+   object o = MultiCastUDP();
    
    o->bind((int)argv[2]);
    o->join(argv[1]);
