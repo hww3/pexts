@@ -319,7 +319,7 @@ void pike_module_init(void)
   set_init_callback(init_regexp);
   set_exit_callback(free_regexp);
   end_class("Regexp", 0);
-  add_integer_constant("version", 2);
+  add_integer_constant("version", 2, 0);
 }
 
 
