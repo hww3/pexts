@@ -76,9 +76,11 @@ void ERROR(char *fn, char *format, ...)
               format, args);
     strcat(myformat, "\n");
 
+#ifdef __DEBUG__
     LOG_TO_FILE(myformat);
-    
-    Pike_error(myformat);
+#endif     
+
+	Pike_error(myformat);
     va_end(args);
 }
 
@@ -97,16 +99,19 @@ void FERROR(char *fn, char *format, ...)
               format, args);
     strcat(myformat, "\n");
 
+#ifdef __DEBUG__
     LOG_TO_FILE(myformat);
-        
+#endif
+
     Pike_error(myformat);
     va_end(args);
 }
 
 void pike_module_init(void)
 {
-    lf = fopen("Newt.log", "w+");
-    
+#ifdef __DEBUG__
+	lf = fopen("Newt.log", "w+");
+#endif    
     init_dictionary();
 
     init_component_base();
