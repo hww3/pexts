@@ -3,7 +3,7 @@ MODNAME=AdminTools
 OBJS= atmain.o at_common.o at_shadow.o at_directory.o at_quota.o at_system.o
 SOURCES=atmain.c at_common.c at_shadow.c at_directory.c at_quota.c at_system.c
 MODULE_LIBS=@LIBS@
-EXTRA_CLEAN=at_config.h at_config.h.in
+EXTRA_CLEAN=at_config.h at_config.h.in AdminTools.so
 
 @module_makefile@
 

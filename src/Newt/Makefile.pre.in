@@ -3,7 +3,7 @@ MODNAME=Newt
 OBJS= newt.o
 SOURCES=newt.c
 MODULE_LIBS=@LIBS@
-EXTRA_CLEAN=newt_config.h newt_config.h.in
+EXTRA_CLEAN=newt_config.h newt_config.h.in Newt.so
 
 @module_makefile@
 

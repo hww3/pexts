@@ -3,7 +3,7 @@ MODNAME=Curses
 OBJS=curses.o window.o screen.o
 SOURCES=curses.c window.c screen.c
 MODULE_LIBS=@LIBS@
-EXTRA_CLEAN=curses_config.h curses_config.h.in
+EXTRA_CLEAN=curses_config.h curses_config.h.in Curses.so
 
 @module_makefile@
 

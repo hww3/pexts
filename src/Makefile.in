@@ -44,7 +44,7 @@ depend:
 
 install:
 	for a in $(MODULES) ; do \
-	  ( cd $$a && ${MAKE} $(MAKE_FLAGS) MODNAME=$$a install ) ; \
+	  ( cd $$a && ${MAKE} $(MAKE_FLAGS) DESTDIR="$(DESTDIR)" MODNAME=$$a install ) ; \
 	done
 
 clean:

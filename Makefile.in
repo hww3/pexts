@@ -33,7 +33,7 @@ install: all install_only
 	-@$(BIN_TRUE)
 
 install_only: 
-	@(cd src;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" install)
+	@(cd src;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" DESTDIR="$(DESTDIR)" install)
 	@echo "Pike Extension modules installed."
 
 spotless:  clean

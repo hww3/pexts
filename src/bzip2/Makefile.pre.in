@@ -3,7 +3,7 @@ MODNAME=bzip2
 OBJS= bz2main.o
 SOURCES=bz2main.c
 MODULE_LIBS=@LIBS@
-EXTRA_CLEAN=bz2_config.h bz2_config.h.in
+EXTRA_CLEAN=bz2_config.h bz2_config.h.in bzip2.so
 
 @module_makefile@
 
