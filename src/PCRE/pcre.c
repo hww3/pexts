@@ -103,9 +103,7 @@ void f_pcre_create(INT32 args)
 #endif
 
   /* Compile the pattern and handle errors */
-  THREADS_ALLOW();
   re = pcre_compile(regexp->str, opts, &errmsg, &erroffset, table);
-  THREADS_DISALLOW();
   if(re == NULL) {
     error("Failed to compile regexp: %s at offset %d\n", errmsg, erroffset);
   }
@@ -113,9 +111,7 @@ void f_pcre_create(INT32 args)
   /* If study option was specified, study the pattern and
      store the result in extra for passing to pcre_exec. */
   if (do_study) {
-    THREADS_ALLOW();
     extra = pcre_study(re, 0, &errmsg);
-    THREADS_DISALLOW();
     if (errmsg != NULL) {
       error("Error while studying pattern: %s", errmsg);
     }
@@ -179,12 +175,9 @@ void f_pcre_match(INT32 args)
   re = THIS->regexp;
   extra = THIS->extra;
 
-  //  THREADS_ALLOW();
-  
   /* Do the pattern matching */
   is_match = pcre_exec(re, extra, data->str, data->len, 0,
 		       opts, NULL, 0);
-  //  THREADS_DISALLOW();
   pop_n_elems(args);
   switch(is_match) {
   case PCRE_ERROR_NOMATCH:   push_int(0);  break;
@@ -256,15 +249,13 @@ void f_pcre_split(INT32 args)
   /* Calculate the size of the offsets array, and allocate memory for it. */
   pcre_fullinfo(re, extra, PCRE_INFO_CAPTURECOUNT, &ovecsize);
   ovecsize = (ovecsize + 1) * 3;
-  ovector = (int *)alloca(ovecsize * sizeof(int));
+  ovector = (int *)malloc(ovecsize * sizeof(int));
   if(ovector == NULL)
     error("PCRE.Regexp->split(): Out of memory.\n");
 
   /* Do the pattern matching */
-  //  THREADS_ALLOW();
   ret = pcre_exec(re, extra, data->str, data->len, 0,
 		       opts, ovector, ovecsize);
-  //  THREADS_DISALLOW();
   switch(ret) {
   case PCRE_ERROR_NOMATCH:   pop_n_elems(args); push_int(0);  break;
   case PCRE_ERROR_NULL:      error("Invalid argumens passed to pcre_exec.\n");
@@ -284,7 +275,7 @@ void f_pcre_split(INT32 args)
     push_array(arr);
     break;
   }
-  //  free(ovector);
+  free(ovector);
 }
 
 static struct program *pcre_regexp_program;
