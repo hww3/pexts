@@ -16,7 +16,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id$
  */
 #ifndef __newt_global_h
 #define __newt_global_h
@@ -26,11 +25,21 @@
  * within Pike and also all stuff we need to know to appropriately manage
  * forms and components in OOP manner.
  */
+#define WHOAMI_DUNNO     0x00
+#define WHOAMI_COMPONENT 0x01
+#define WHOAMI_GRID      0x02
+
 typedef struct
 {
-    newtComponent      component;
+    union 
+    {
+        newtComponent      component;
+        newtGrid           grid;
+    } u;
+    
     char               *name; /* class name, e.g. "Form" */
     unsigned           id;    /* class ID -> see below */
+    int                whoami; /* WHOAMI_GRID || WHOAMI_COMPONENT || WHOAMI_DUNNO*/
     int                created;
     int                destroyed;
     unsigned           pflags; /* Private flags for the class */
@@ -64,9 +73,36 @@ typedef struct
 
 #define ARG(_n_) sp[-((args - _n_) + 1)]
 
+#define DICT_OK                    0
+#define DICT_NULL_DATA            -1
+#define DICT_NULL_OBJECT          -2
+#define DICT_NULL_DICT            -3
+#define DICT_UNKNOWN_TYPE         -4
+#define DICT_EXISTS               -5
+
+typedef void (*dict_cb_fn)(struct object *);
+
+typedef struct _DICT
+{
+    struct mapping       *dict;
+    char                 *name;
+    INT32                 used;
+
+    /*
+     * Functions
+     */
+    int                  (*insert)(struct _DICT*, struct object *, void *data);
+    struct object*       (*lookup)(struct _DICT*, void *data);
+    void                 (*foreach)(struct _DICT*, dict_cb_fn);
+} DICT;
+
 /* Initialization functions */
 void init_functions(void);
 void init_component_base(void);
+void init_dictionary(void);
+
+/* Dictionary functions */
+DICT* dict_create(char *fn, char *name);
 
 /* Common functions */
 void ERROR(char *fn, char *format, ...);

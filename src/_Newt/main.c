@@ -17,8 +17,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Newt Support - This module adds Newt support to Pike. 
- *
- * $Id$
  */
 
 /*
@@ -88,19 +86,14 @@ void FERROR(char *fn, char *format, ...)
 
 void pike_module_init(void)
 {
-    newtInit();
-    
-    start_new_program();
-    init_functions();
-    end_class("Newt", 0);
+    init_dictionary();
 
     init_component_base();
+    init_functions();
 }
 
 void pike_module_exit(void)
-{
-    newtFinished();
-}
+{}
 #else
 void pike_module_init(void)
 {}

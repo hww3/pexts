@@ -17,8 +17,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Newt Support - This module adds Newt support to Pike. 
- *
- * $Id$
  */
 
 /*
@@ -36,8 +34,14 @@ RCSID("$Id$");
 #include "newt_config.h"
 #include "newt_global.h"
 
-
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
+static char *dictname = "NewtFunctions";
+static DICT *dict;
+
+#define dict_insert(_obj_, _data_) dict->insert(dict, _obj_, _data_)
+#define dict_lookup(_data_) dict->lookup(dict, _data_)
+#define dict_foreach(_cb_) dict->foreach(dict, _cb_)
+
 static void
 f_setThreeD(INT32 args)
 {
@@ -536,23 +540,22 @@ func_prolog(char *fn,
     /* Search the array */
     {
         unsigned *tmp = classids;
-
-        while(*tmp) {
+        
+        while(tmp && *tmp) {
             if (*tmp == myId) {
                 if (id)
-                    *id = myId;
+                    *id = myId;                
 
                 if (!is_create &&
-                    (!THIS_OBJ(obj)->component || !THIS_OBJ(obj)->created || THIS_OBJ(obj)->destroyed))
+                    (!THIS_OBJ(obj)->u.component || !THIS_OBJ(obj)->created || THIS_OBJ(obj)->destroyed))
                     FERROR(fn, "Caller object hasn't got the associated component created yet!");
-                
                 return;
             }
+            
             tmp++;
         }
     }
     
-
     FERROR(fn, "Function called from an incorrect class instance '%s'",
            get_class_name(obj));
 }
@@ -577,7 +580,7 @@ button_create(char *fn, int isCompact, INT32 args)
     if (ARG(3).type != T_STRING || ARG(3).u.string->size_shift > 0)
         FERROR(fn, "Wrong argument type for argument %d. Expected an 8-bit string.", 3);
 
-    THIS_OBJ(caller)->component =
+    THIS_OBJ(caller)->u.component =
         isCompact ? newtCompactButton(ARG(1).u.integer,
                                       ARG(2).u.integer,
                                       ARG(3).u.string->str)
@@ -587,6 +590,8 @@ button_create(char *fn, int isCompact, INT32 args)
     
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
+
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
 }
 
 static void
@@ -645,10 +650,12 @@ f_checkbox(INT32 args)
         defValue = '\x0';
     }
     
-    THIS_OBJ(caller)->component = newtCheckbox(left, top, text, defValue, seq, NULL);
+    THIS_OBJ(caller)->u.component = newtCheckbox(left, top, text, defValue, seq, NULL);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -663,7 +670,7 @@ f_checkboxGetValue(INT32 args)
 
     pop_n_elems(args);
 
-    result[0] = newtCheckboxGetValue(THIS_OBJ(caller)->component);
+    result[0] = newtCheckboxGetValue(THIS_OBJ(caller)->u.component);
     push_string(make_shared_string(result));
 }
 
@@ -684,7 +691,7 @@ f_checkboxSetValue(INT32 args)
     if (!ARG(1).u.string->len)
         FERROR("checkboxSetValue", "Cannot set value from an empty string");
 
-    newtCheckboxSetValue(THIS_OBJ(caller)->component, ARG(1).u.string->str[0]);
+    newtCheckboxSetValue(THIS_OBJ(caller)->u.component, ARG(1).u.string->str[0]);
     pop_n_elems(args);
 }
 
@@ -735,7 +742,7 @@ f_radiobutton(INT32 args)
             if (!id || id != CLASS_RADIOBUTTON)
                 FERROR("radiobutton", "Incorrect object type in argument %d", 5);
 
-            prev = THIS_OBJ(ARG(5).u.object)->component;
+            prev = THIS_OBJ(ARG(5).u.object)->u.component;
         } else {
             prev = NULL;
         }
@@ -745,10 +752,12 @@ f_radiobutton(INT32 args)
     
 
     
-    THIS_OBJ(caller)->component = newtRadiobutton(left, top, text, isDefault, prev);
+    THIS_OBJ(caller)->u.component = newtRadiobutton(left, top, text, isDefault, prev);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -772,7 +781,7 @@ f_radioGetCurrent(INT32 args)
     if (!id || (id != CLASS_RADIOBUTTON || id != CLASS_RADIOBAR))
         FERROR("radioGetCurrent", "Incorrect object type in argument %d", 1);
 
-    cur = newtRadioGetCurrent(THIS_OBJ(ARG(1).u.object)->component);
+    cur = newtRadioGetCurrent(THIS_OBJ(ARG(1).u.object)->u.component);
 
     /*
      * TODO: Implement searching of a button group/bar for the object that
@@ -853,10 +862,12 @@ f_label(INT32 args)
         FERROR("label", "Wrong argument type for argument %d. Expected an 8-bit string.", 3);
     text = ARG(3).u.string->str;
 
-    THIS_OBJ(caller)->component = newtLabel(left, top, text);
+    THIS_OBJ(caller)->u.component = newtLabel(left, top, text);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -876,7 +887,7 @@ f_labelSetText(INT32 args)
         FERROR("labelSetText", "Wrong argument type for argument %d. Expected an 8-bit string.", 1);
     text = ARG(1).u.string->str;
 
-    newtLabelSetText(THIS_OBJ(caller)->component, text);
+    newtLabelSetText(THIS_OBJ(caller)->u.component, text);
 
     pop_n_elems(args);
 }
@@ -918,10 +929,12 @@ f_verticalScrollbar(INT32 args)
         }
     }
 
-    THIS_OBJ(caller)->component = newtVerticalScrollbar(left, top, height, normalColor, thumbColor);
+    THIS_OBJ(caller)->u.component = newtVerticalScrollbar(left, top, height, normalColor, thumbColor);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -945,7 +958,7 @@ f_scrollbarSet(INT32 args)
         FERROR("scrollbarSet", "Wrong argument type for argument %d. Expected an integer.", 2);
     total = ARG(2).u.integer;
 
-    newtScrollbarSet(THIS_OBJ(caller)->component, where, total);
+    newtScrollbarSet(THIS_OBJ(caller)->u.component, where, total);
 
     pop_n_elems(args);
 }
@@ -983,10 +996,12 @@ f_listbox(INT32 args)
         flags = 0;
     }
 
-    THIS_OBJ(caller)->component = newtListbox(left, top, height, flags);
+    THIS_OBJ(caller)->u.component = newtListbox(left, top, height, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -999,7 +1014,7 @@ f_listboxGetCurrent(INT32 args)
     
     func_prolog("listboxGetCurrent", ids, caller, NULL, 0);
 
-    cur = newtListboxGetCurrent(THIS_OBJ(caller)->component);
+    cur = newtListboxGetCurrent(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 
@@ -1021,7 +1036,7 @@ f_listboxSetCurrent(INT32 args)
         FERROR("listboxSetCurrent", "Wrong argument type for argument %d. Expected an integer.", 1);
     cur = ARG(1).u.integer;
 
-    newtListboxSetCurrent(THIS_OBJ(caller)->component, cur);
+    newtListboxSetCurrent(THIS_OBJ(caller)->u.component, cur);
 
     pop_n_elems(args);
 }
@@ -1041,7 +1056,7 @@ f_listboxSetCurrentByKey(INT32 args)
         FERROR("listboxSetCurrentByKey", "Wrong argument type for argument %d. Expected an integer.", 1);
     cur = (void*)(ARG(1).u.integer);
 
-    newtListboxSetCurrentByKey(THIS_OBJ(caller)->component, cur);
+    newtListboxSetCurrentByKey(THIS_OBJ(caller)->u.component, cur);
 
     pop_n_elems(args);
 }
@@ -1067,7 +1082,7 @@ f_listboxSetEntry(INT32 args)
         FERROR("listboxSetEntry", "Wrong argument type for argument %d. Expected an 8-bit string.", 2);
     text = ARG(2).u.string->str;
 
-    newtListboxSetEntry(THIS_OBJ(caller)->component, num, text);
+    newtListboxSetEntry(THIS_OBJ(caller)->u.component, num, text);
 
     pop_n_elems(args);
 }
@@ -1088,7 +1103,7 @@ f_listboxSetWidth(INT32 args)
         FERROR("listboxSetWidth", "Wrong argument type for argument %d. Expected an integer.", 1);
     width = ARG(1).u.integer;
 
-    newtListboxSetWidth(THIS_OBJ(caller)->component, width);
+    newtListboxSetWidth(THIS_OBJ(caller)->u.component, width);
 
     pop_n_elems(args);
 }
@@ -1113,7 +1128,7 @@ f_listboxSetData(INT32 args)
         FERROR("listboxSetData", "Wrong argument type for argument %d. Expected an integer.", 2);
     key = ARG(2).u.integer;
 
-    newtListboxSetData(THIS_OBJ(caller)->component, num, (void*)key);
+    newtListboxSetData(THIS_OBJ(caller)->u.component, num, (void*)key);
 
     pop_n_elems(args);
 }
@@ -1144,7 +1159,7 @@ f_listboxAppendEntry(INT32 args)
      * Return value seems to be unused in the Newt sources, but we will
      * return it to the caller anyway.
      */
-    ret = newtListboxAppendEntry(THIS_OBJ(caller)->component, text, (void*)key);
+    ret = newtListboxAppendEntry(THIS_OBJ(caller)->u.component, text, (void*)key);
 
     pop_n_elems(args);
 
@@ -1177,7 +1192,7 @@ f_listboxInsertEntry(INT32 args)
         FERROR("listboxInsertEntry", "Wrong argument type for argument %d. Expected an integer.", 3);
     keyAfter = ARG(3).u.integer;
 
-    ret = newtListboxInsertEntry(THIS_OBJ(caller)->component, text, (void*)key, (void*)keyAfter);
+    ret = newtListboxInsertEntry(THIS_OBJ(caller)->u.component, text, (void*)key, (void*)keyAfter);
 
     pop_n_elems(args);
 
@@ -1201,7 +1216,7 @@ f_listboxDeleteEntry(INT32 args)
         FERROR("listboxDeleteEntry", "Wrong argument type for argument %d. Expected an integer.", 1);
     key = ARG(1).u.integer;
 
-    ret = newtListboxDeleteEntry(THIS_OBJ(caller)->component, (void*)key);
+    ret = newtListboxDeleteEntry(THIS_OBJ(caller)->u.component, (void*)key);
 
     pop_n_elems(args);
 
@@ -1216,7 +1231,7 @@ f_listboxClear(INT32 args)
 
     func_prolog("listboxClear", ids, caller, NULL, 0);
 
-    newtListboxClear(THIS_OBJ(caller)->component);
+    newtListboxClear(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 }
@@ -1243,7 +1258,7 @@ f_listboxGetEntry(INT32 args)
 
     pop_n_elems(args);
     
-    newtListboxGetEntry(THIS_OBJ(caller)->component, num, &text, &key);
+    newtListboxGetEntry(THIS_OBJ(caller)->u.component, num, &text, &key);
 
     ret = allocate_mapping(2);
     skey.type = T_STRING;
@@ -1271,7 +1286,7 @@ f_listboxGetSelection(INT32 args)
     
     func_prolog("listboxGetSelection", ids, caller, NULL, 0);
 
-    (void**)items = newtListboxGetSelection(THIS_OBJ(caller)->component, &numitems);
+    (void**)items = newtListboxGetSelection(THIS_OBJ(caller)->u.component, &numitems);
 
     pop_n_elems(args);
     
@@ -1295,7 +1310,7 @@ f_listboxClearSelection(INT32 args)
     
     func_prolog("listboxClearSelection", ids, caller, NULL, 0);
 
-    newtListboxClearSelection(THIS_OBJ(caller)->component);
+    newtListboxClearSelection(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 }
@@ -1321,7 +1336,7 @@ f_listboxSelectItem(INT32 args)
         FERROR("listboxSelectItem", "Wrong argument type for argument %d. Expected an integer.", 2);
     flags = ARG(1).u.integer;
 
-    newtListboxSelectItem(THIS_OBJ(caller)->component, (void*)key, flags);
+    newtListboxSelectItem(THIS_OBJ(caller)->u.component, (void*)key, flags);
 
     pop_n_elems(args);
 }
@@ -1354,10 +1369,12 @@ f_checkboxTree(INT32 args)
         FERROR("checboxTree", "Wrong argument type for argument %d. Expected an integer.", 4);
     flags = ARG(4).u.integer;
 
-    THIS_OBJ(caller)->component = newtCheckboxTree(left, top, height, flags);
+    THIS_OBJ(caller)->u.component = newtCheckboxTree(left, top, height, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -1394,10 +1411,12 @@ f_checkboxTreeMulti(INT32 args)
         FERROR("checboxTreeMulti", "Wrong argument type for argument %d. Expected an integer.", 5);
     flags = ARG(5).u.integer;
 
-    THIS_OBJ(caller)->component = newtCheckboxTreeMulti(left, top, height, seq, flags);
+    THIS_OBJ(caller)->u.component = newtCheckboxTreeMulti(left, top, height, seq, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -1412,7 +1431,7 @@ f_checkboxTreeGetSelection(INT32 args)
     
     func_prolog("checkboxTreeGetSelection", ids, caller, NULL, 0);
 
-    (void**)items = newtCheckboxTreeGetSelection(THIS_OBJ(caller)->component, &numitems);
+    (void**)items = newtCheckboxTreeGetSelection(THIS_OBJ(caller)->u.component, &numitems);
 
     pop_n_elems(args);
     
@@ -1437,7 +1456,7 @@ f_checkboxTreeGetCurrent(INT32 args)
     
     func_prolog("checkboxTreeGetCurrent", ids, caller, NULL, 0);
 
-    (void*)ret = newtCheckboxTreeGetCurrent(THIS_OBJ(caller)->component);
+    (void*)ret = newtCheckboxTreeGetCurrent(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 
@@ -1469,7 +1488,7 @@ f_checkboxTreeGetMultiSelection(INT32 args)
     
     pop_n_elems(args);
 
-    (void**)items = newtCheckboxTreeGetMultiSelection(THIS_OBJ(caller)->component, &numitems, seqnum);
+    (void**)items = newtCheckboxTreeGetMultiSelection(THIS_OBJ(caller)->u.component, &numitems, seqnum);
     
     /* Use numitems, as item can also be NULL... */
     for(i = 0; i < numitems; i++)
@@ -1526,7 +1545,7 @@ f_checkboxTreeAddArray(INT32 args)
     }
     indexes[i] = NEWT_ARG_LAST;
     
-    i = newtCheckboxTreeAddArray(THIS_OBJ(caller)->component, text, (void*)key, flags, indexes);
+    i = newtCheckboxTreeAddArray(THIS_OBJ(caller)->u.component, text, (void*)key, flags, indexes);
 
     free(indexes);
     
@@ -1555,7 +1574,7 @@ f_checkboxTreeFindItem(INT32 args)
 
     pop_n_elems(args);
     
-    ret = newtCheckboxTreeFindItem(THIS_OBJ(caller)->component, (void*)key);
+    ret = newtCheckboxTreeFindItem(THIS_OBJ(caller)->u.component, (void*)key);
 
     if (!ret) {
         push_int(0);
@@ -1593,7 +1612,7 @@ f_checkboxTreeSetEntry(INT32 args)
         FERROR("checkboxTreeSetEntry", "Wrong argument type for argument %d. Expected an 8-bit string.", 2);
     text = ARG(2).u.string->str;
 
-    newtCheckboxTreeSetEntry(THIS_OBJ(caller)->component, (void*)key, text);
+    newtCheckboxTreeSetEntry(THIS_OBJ(caller)->u.component, (void*)key, text);
 
     pop_n_elems(args);
 }
@@ -1617,7 +1636,7 @@ f_checkboxTreeGetEntryValue(INT32 args)
         FERROR("checboxTreeGetEntryValue", "Wrong argument type for argument %d. Expected an integer.", 1);
     key = ARG(1).u.integer;
 
-    ret[0] = newtCheckboxTreeGetEntryValue(THIS_OBJ(caller)->component, (void*)key);
+    ret[0] = newtCheckboxTreeGetEntryValue(THIS_OBJ(caller)->u.component, (void*)key);
 
     pop_n_elems(args);
 
@@ -1651,7 +1670,7 @@ f_checkboxTreeSetEntryValue(INT32 args)
     
     val = ARG(2).u.string->str[0];
 
-    newtCheckboxSetEntryValue(THIS_OBJ(caller)->component, (void*)key, val);
+    newtCheckboxSetEntryValue(THIS_OBJ(caller)->u.component, (void*)key, val);
 
     pop_n_elems(args);
 }
@@ -1705,10 +1724,12 @@ f_textboxReflowed(INT32 args)
             flexDown = ARG(5).u.integer;
     }
 
-    THIS_OBJ(caller)->component = newtTextboxReflowed(left, top, text, width, flexDown, flexUp, flags);
+    THIS_OBJ(caller)->u.component = newtTextboxReflowed(left, top, text, width, flexDown, flexUp, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -1746,10 +1767,12 @@ f_textbox(INT32 args)
         height = ARG(5).u.integer;
     }
 
-    THIS_OBJ(caller)->component = newtTextbox(left, top, width, height, flags);
+    THIS_OBJ(caller)->u.component = newtTextbox(left, top, width, height, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -1769,7 +1792,7 @@ f_textboxSetText(INT32 args)
         FERROR("textboxSetText", "Wrong argument type for argument %d. Expected an 8-bit string.", 1);
     text = ARG(1).u.string->str;
 
-    newtTextboxSetText(THIS_OBJ(caller)->component, text);
+    newtTextboxSetText(THIS_OBJ(caller)->u.component, text);
 
     pop_n_elems(args);
 }
@@ -1790,7 +1813,7 @@ f_textboxSetHeight(INT32 args)
         FERROR("textboxSetHeight", "Wrong argument type for argument %d. Expected an integer.", 1);
     height = ARG(1).u.integer;
 
-    newtTextboxSetHeight(THIS_OBJ(caller)->component, height);
+    newtTextboxSetHeight(THIS_OBJ(caller)->u.component, height);
 
     pop_n_elems(args);
 }
@@ -1804,7 +1827,7 @@ f_textboxGetNumLines(INT32 args)
     
     func_prolog("textboxGetNumLines", ids, caller, NULL, 0);
 
-    ret = newtTextboxGetNumLines(THIS_OBJ(caller)->component);
+    ret = newtTextboxGetNumLines(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 
@@ -1909,8 +1932,8 @@ f_form(INT32 args)
                 if (!id || id != CLASS_VSCROLLBAR)
                     FERROR("form", "Incorrect object type in argument %d. Expected a VScrollBar.", 1);
 
-                if (THIS_OBJ(ARG(1).u.object)->component)
-                    vertBar = THIS_OBJ(ARG(1).u.object)->component;
+                if (THIS_OBJ(ARG(1).u.object)->u.component)
+                    vertBar = THIS_OBJ(ARG(1).u.object)->u.component;
                 else
                     vertBar = NULL; /* Or should we yell? */
             } else {
@@ -1925,10 +1948,12 @@ f_form(INT32 args)
             break;
     }
 
-    THIS_OBJ(caller)->component = newtForm(vertBar, help, flags);
+    THIS_OBJ(caller)->u.component = newtForm(vertBar, help, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
@@ -1948,13 +1973,13 @@ f_formSetTimer(INT32 args)
         FERROR("formSetTimer", "Wrong argument type for argument %d. Expected an integer.", 1);
     msecs = ARG(1).u.integer;
 
-    newtFormSetTimer(THIS_OBJ(caller)->component, msecs);
+    newtFormSetTimer(THIS_OBJ(caller)->u.component, msecs);
 
     pop_n_elems(args);
 }
 
 /* IMPLEMENT */
-/* We need to take a Stdio.File or an int as the arg */
+/* We need to take a Stdio.File or an int as the arg (?)*/
 static void
 f_formWatchFd(INT32 args)
 {}
@@ -1967,16 +1992,29 @@ f_formSetSize(INT32 args)
             
     func_prolog("formSetSize", ids, caller, NULL, 0);
 
-    newtFormSetSize(THIS_OBJ(caller)->component);
+    newtFormSetSize(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 }
 
-/* IMPLEMENT */
-/* Need to implement the object dictionary first */
 static void
 f_formGetCurrent(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_FORM, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    struct object   *obj;
+    newtComponent    comp;
+    
+    func_prolog("formGetCurrent", ids, caller, NULL, 0);
+
+    comp = newtFormGetCurrent(THIS_OBJ(caller)->u.component);
+    
+    obj = dict_lookup(comp);
+
+    pop_n_elems(args);
+
+    push_object(obj);
+}
 
 static void
 f_formSetBackground(INT32 args)
@@ -1994,7 +2032,7 @@ f_formSetBackground(INT32 args)
         FERROR("formSetBackground", "Wrong argument type for argument %d. Expected an integer.", 1);
     color = ARG(1).u.integer;
 
-    newtFormSetBackground(THIS_OBJ(caller)->component, color);
+    newtFormSetBackground(THIS_OBJ(caller)->u.component, color);
 
     pop_n_elems(args);
 }
@@ -2020,10 +2058,10 @@ f_formSetCurrent(INT32 args)
     if (!id)
         FERROR("formSetCurrent", "Wrong object type for argument %d. Expected a Newt class.", 1);
     
-    if (!THIS_OBJ(ARG(1).u.object)->component)
+    if (!THIS_OBJ(ARG(1).u.object)->u.component)
         FERROR("formSetCurrent", "Cannot use a destroyed object for argument %d.", 1);
     
-    newtFormSetCurrent(THIS_OBJ(caller)->component, THIS_OBJ(ARG(1).u.object)->component);
+    newtFormSetCurrent(THIS_OBJ(caller)->u.component, THIS_OBJ(ARG(1).u.object)->u.component);
 
     pop_n_elems(args);
 }
@@ -2048,10 +2086,10 @@ f_formAddComponent(INT32 args)
     if (!id)
         FERROR("formAddComponent", "Wrong object type for argument %d. Expected a Newt class.", 1);
     
-    if (!THIS_OBJ(ARG(1).u.object)->component)
+    if (!THIS_OBJ(ARG(1).u.object)->u.component)
         FERROR("formAddComponent", "Cannot use a destroyed object for argument %d.", 1);
 
-    newtFormAddComponent(THIS_OBJ(caller)->component, THIS_OBJ(ARG(1).u.object)->component);
+    newtFormAddComponent(THIS_OBJ(caller)->u.component, THIS_OBJ(ARG(1).u.object)->u.component);
 
     pop_n_elems(args);
 }
@@ -2072,7 +2110,7 @@ f_formSetHeight(INT32 args)
         FERROR("formSetHeight", "Wrong argument type for argument %d. Expected an integer.", 1);
     height = ARG(1).u.integer;
 
-    newtFormSetHeight(THIS_OBJ(caller)->component, height);
+    newtFormSetHeight(THIS_OBJ(caller)->u.component, height);
 
     pop_n_elems(args);
 }
@@ -2093,23 +2131,68 @@ f_formSetWidth(INT32 args)
         FERROR("formSetWidth", "Wrong argument type for argument %d. Expected an integer.", 1);
     width = ARG(1).u.integer;
 
-    newtFormSetWidth(THIS_OBJ(caller)->component, width);
+    newtFormSetWidth(THIS_OBJ(caller)->u.component, width);
 
     pop_n_elems(args);
 }
 
 /* THIS IS OBSOLETE */
-/* IMPLEMENT */
-/* Need to implement the object dictionary first */
 static void
 f_runForm(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_FORM, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    struct object   *obj;
+    newtComponent    comp;
+    
+    func_prolog("runForm", ids, caller, NULL, 0);
 
-/* IMPLEMENT */
-/* Need to implement the object dictionary first */
+    comp = newtRunForm(THIS_OBJ(caller)->u.component);
+
+    obj = dict_lookup(comp);
+
+    pop_n_elems(args);
+
+    push_object(obj);
+}
+
 static void
 f_formRun(INT32 args)
-{}
+{
+    static unsigned         ids[] = {CLASS_FORM, 0};
+    struct object          *caller = Pike_fp->next->current_object;
+    struct object          *obj;
+    struct newtExitStruct   es;
+    
+    func_prolog("formRun", ids, caller, NULL, 0);
+
+    newtFormRun(THIS_OBJ(caller)->u.component, &es);
+
+    pop_n_elems(args);
+    
+    switch(es.reason) {
+        case NEWT_EXIT_HOTKEY:
+            push_int(es.u.key);
+            break;
+
+        case NEWT_EXIT_COMPONENT:
+            obj = dict_lookup(es.u.co);
+            push_object(obj);
+            break;
+
+        case NEWT_EXIT_FDREADY:
+            push_string(make_shared_string("EXIT_FDREADY"));
+            break;
+
+        case NEWT_EXIT_TIMER:
+            push_string(make_shared_string("EXIT_TIMER"));
+            break;
+
+        default:
+            push_int(0);
+            break;
+    }
+}
 
 static void
 f_drawForm(INT32 args)
@@ -2119,7 +2202,7 @@ f_drawForm(INT32 args)
         
     func_prolog("drawForm", ids, caller, NULL, 0);
 
-    newtDrawForm(THIS_OBJ(caller)->component);
+    newtDrawForm(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 }
@@ -2140,7 +2223,7 @@ f_formAddHotKey(INT32 args)
         FERROR("formAddHotKey", "Wrong argument type for argument %d. Expected an integer.", 1);
     key = ARG(1).u.integer;
 
-    newtFormAddHotKey(THIS_OBJ(caller)->component, key);
+    newtFormAddHotKey(THIS_OBJ(caller)->u.component, key);
 
     pop_n_elems(args);
 }
@@ -2187,25 +2270,65 @@ f_entry(INT32 args)
      * Newt will create the result buffer in the pdata member of the
      * NEWT_DATA structure.
      */
-    THIS_OBJ(caller)->component = newtEntry(left, top, initVal, width,
-                                            (char**)&THIS_OBJ(caller)->pdata, flags);
+    THIS_OBJ(caller)->u.component = newtEntry(left, top, initVal, width,
+                                              (char**)&THIS_OBJ(caller)->pdata, flags);
     THIS_OBJ(caller)->created = 1;
     THIS_OBJ(caller)->destroyed = 0;
 
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+    
     pop_n_elems(args);
 }
 
 static void
 f_entrySet(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_ENTRY, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    char            *value;
+    int              cursorAtEnd = 1;
+    
+    func_prolog("entrySet", ids, caller, NULL, 0);
 
+    if (args < 1 || args > 2)
+        FERROR("entrySet", "Wrong number of arguments. Expected %d-%d got %d.", 1, 2, args);
+
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+                FERROR("entrySet", "Wrong argument type for argument %d. Expected an 8-bit string.", 1);
+    value = ARG(1).u.string->str;
+
+    if (args > 1) {
+        if (ARG(2).type != T_INT)
+            FERROR("entrySet", "Wrong argument type for argument %d. Expected an integer.", 2);
+        cursorAtEnd = ARG(2).u.integer;
+    }
+
+    newtEntrySet(THIS_OBJ(caller)->u.component, value, cursorAtEnd);
+
+    pop_n_elems(args);
+}
+
+/* IMPLEMENT */
+/* We need a C callback which will chain up to the correct Pike function */
 static void
 f_entrySetFilter(INT32 args)
 {}
 
 static void
 f_entryGetValue(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_ENTRY, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    char            *value;
+
+    func_prolog("entryGetValue", ids, caller, NULL, 0);
+
+    value = newtEntryGetValue(THIS_OBJ(caller)->u.component);
+
+    pop_n_elems(args);
+
+    push_string(make_shared_string(value));
+}
 
 static void
 f_entrySetFlags(INT32 args)
@@ -2213,23 +2336,128 @@ f_entrySetFlags(INT32 args)
 
 static void
 f_scale(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_SCALE, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              left, top, width, fvLow, fvHigh = 0;
+    long long        fullValue;
+
+    func_prolog("scale", ids, caller, NULL, 1);
+
+    if (args < 4 || args > 5)
+        FERROR("scale", "Wrong number of arguments. Expected %d-%d got %d.", 4, 5, args);
+
+    if (ARG(1).type != T_INT)
+        FERROR("scale", "Wrong argument type for argument %d. Expected an integer.", 1);
+    left = ARG(1).u.integer;
+
+    if (ARG(2).type != T_INT)
+        FERROR("scale", "Wrong argument type for argument %d. Expected an integer.", 2);
+    top = ARG(2).u.integer;
+
+    if (ARG(3).type != T_INT)
+        FERROR("scale", "Wrong argument type for argument %d. Expected an integer.", 3);
+    width = ARG(3).u.integer;
+
+    if (ARG(4).type != T_INT)
+        FERROR("scale", "Wrong argument type for argument %d. Expected an integer.", 4);
+    fvLow = ARG(4).u.integer;
+
+    if (args > 4) {
+        if (ARG(5).type != T_INT)
+        FERROR("scale", "Wrong argument type for argument %d. Expected an integer.", 5);
+        fvHigh = ARG(5).u.integer;
+    }
+
+    fullValue = (fvHigh << 31) | fvLow;
+
+    THIS_OBJ(caller)->u.component = newtScale(left, top, width, fullValue);
+    THIS_OBJ(caller)->created = 1;
+    THIS_OBJ(caller)->destroyed = 0;
+
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
+
+    pop_n_elems(args);   
+}
 
 static void
 f_scaleSet(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_SCALE, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              amLow, amHigh = 0;
+    long long        amount;
 
+    func_prolog("scaleSet", ids, caller, NULL, 0);
+
+    if (args < 1 || args > 2)
+        FERROR("scaleSet", "Wrong number of arguments. Expected %d-%d got %d.", 1, 2, args);
+
+    if (ARG(1).type != T_INT)
+        FERROR("scaleSet", "Wrong argument type for argument %d. Expected an integer.", 1);
+    amLow = ARG(1).u.integer;
+
+    if (args > 1) {
+        if (ARG(2).type != T_INT)
+        FERROR("scaleSet", "Wrong argument type for argument %d. Expected an integer.", 2);
+        amHigh = ARG(2).u.integer;
+    }
+
+    amount = (amHigh << 31) | amLow;
+
+    newtScaleSet(THIS_OBJ(caller)->u.component, amount);
+
+    pop_n_elems(args);
+}
+
+/* IMPLEMENT */
 static void
 f_componentAddCallback(INT32 args)
 {}
 
 static void
 f_componentTakesFocus(INT32 args)
-{}
+{
+    struct object   *caller = Pike_fp->next->current_object;
+    int              val = 1;
+
+    func_prolog("componentTakesFocus", NULL, caller, NULL, 0);
+
+    if (args > 1)
+        FERROR("componentTakesFocus", "Wrong number of arguments. Expected %d-%d got %d.", 0, 1, args);
+
+    if (args != 0) {
+        if (ARG(1).type != T_INT)
+        FERROR("componentTakesFocus", "Wrong argument type for argument %d. Expected an integer.", 1);
+        val = ARG(1).u.integer ? 1 : 0;
+    }
+
+    newtComponentTakesFocus(THIS_OBJ(caller)->u.component, val);
+
+    pop_n_elems(args);
+}
+
+static void
+dict_foreach_cb(struct object *obj)
+{
+    THIS_OBJ(obj)->u.component = NULL;
+    THIS_OBJ(obj)->destroyed = 0;
+}
 
 static void
 f_formDestroy(INT32 args)
-{}
+{
+    static unsigned  ids[] = {CLASS_FORM, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+
+    func_prolog("formDestroy", ids, caller, NULL, 0);
+
+    newtFormDestroy(THIS_OBJ(caller)->u.component);
+
+    dict_foreach(dict_foreach_cb);
+
+    pop_n_elems(args);
+}
 
 static void
 f_createGrid(INT32 args)
@@ -2323,8 +2551,38 @@ static void
 f_winEntries(INT32 args)
 {}
 
+static void
+f_init(INT32 args)
+{
+    static unsigned  ids[] = {CLASS_SCREEN, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+
+    func_prolog("init", ids, caller, NULL, 1);
+
+    newtInit();
+    
+    pop_n_elems(args);
+}
+
+static void
+f_finished(INT32 args)
+{
+    static unsigned  ids[] = {CLASS_SCREEN, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+
+    func_prolog("finished", ids, caller, NULL, 1);
+
+    newtFinished();
+
+    pop_n_elems(args);
+}
+
 void init_functions()
 {
+    dict = dict_create("init_functions", dictname);
+    
+//    start_new_program();
+    
     /*
      * Color constants
      */
@@ -2409,73 +2667,122 @@ void init_functions()
     add_integer_constant("KEY_F12", NEWT_KEY_F12, 0);
     add_integer_constant("KEY_RESIZE", NEWT_KEY_RESIZE, 0);
     
-    ADD_FUNCTION("setThreeD", f_setThreeD, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("cls", f_cls, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("resizeScreen", f_resizeScreen, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("waitForKey", f_waitForKey, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("clearKeyBuffer", f_clearKeyBuffer, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("delay", f_delay, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("openWindow", f_openWindow, tFunc(tInt tInt tInt tInt tString, tVoid), 0);
-    ADD_FUNCTION("centeredWindow", f_centeredWindow, tFunc(tInt tInt tString, tVoid), 0);
-    ADD_FUNCTION("popWindow", f_popWindow, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("defaultColors", f_defaultColors, tFunc(tVoid, tMap(tString, tMap(tString, tString))), 0);
-    ADD_FUNCTION("setColors", f_setColors, tFunc(tMap(tString, tMap(tString, tString)), tVoid), 0);
-    ADD_FUNCTION("refresh", f_refresh, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("suspend", f_suspend, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("setThreeD", f_setThreeD,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("cls", f_cls,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("resizeScreen", f_resizeScreen,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("waitForKey", f_waitForKey,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("clearKeyBuffer", f_clearKeyBuffer,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("delay", f_delay,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("openWindow", f_openWindow,
+                 tFunc(tInt tInt tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("centeredWindow", f_centeredWindow,
+                 tFunc(tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("popWindow", f_popWindow,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("defaultColors", f_defaultColors,
+                 tFunc(tVoid, tMap(tString, tMap(tString, tString))), 0);
+    ADD_FUNCTION("setColors", f_setColors,
+                 tFunc(tMap(tString, tMap(tString, tString)), tVoid), 0);
+    ADD_FUNCTION("refresh", f_refresh,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("suspend", f_suspend,
+                 tFunc(tVoid, tVoid), 0);
     /* ADD_FUNCTION("setSuspendCallback", f_setSuspendCallback, */
-    ADD_FUNCTION("resume", f_resume, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("pushHelpLine", f_pushHelpLine, tFunc(tString, tVoid), 0);
-    ADD_FUNCTION("redrawHelpLine", f_redrawHelpLine, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("popHelpLine", f_popHelpLine, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("drawRootText", f_drawRootText, tFunc(tInt tInt tString, tVoid), 0);
-    ADD_FUNCTION("bell", f_bell, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("resume", f_resume,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("pushHelpLine", f_pushHelpLine,
+                 tFunc(tString, tVoid), 0);
+    ADD_FUNCTION("redrawHelpLine", f_redrawHelpLine,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("popHelpLine", f_popHelpLine,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("drawRootText", f_drawRootText,
+                 tFunc(tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("bell", f_bell,
+                 tFunc(tVoid, tVoid), 0);
 
 #ifdef HAVE_NEWTCURSOROFF
-    ADD_FUNCTION("cursorOff", f_cursorOff, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("cursorOff", f_cursorOff,
+                 tFunc(tVoid, tVoid), 0);
 #endif
 
 #ifdef HAVE_NEWTCURSORON
-    ADD_FUNCTION("cursorOn", f_cursorOff, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("cursorOff", f_cursorOff,
+                 tFunc(tVoid, tVoid), 0);
 #endif
 
-    ADD_FUNCTION("compactButton", f_compactButton, tFunc(tInt tInt tString, tVoid), 0);
-    ADD_FUNCTION("button", f_button, tFunc(tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("compactButton", f_compactButton,
+                 tFunc(tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("button", f_button,
+                 tFunc(tInt tInt tString, tVoid), 0);
     ADD_FUNCTION("checkbox", f_checkbox,
                  tFunc(tInt tInt tString tOr(tString, tVoid) tOr(tString, tVoid), tVoid), 0);
-    ADD_FUNCTION("checkboxGetValue", f_checkboxGetValue, tFunc(tVoid, tString), 0);
-    ADD_FUNCTION("checkboxSetValue", f_checkboxSetValue, tFunc(tString, tVoid), 0);
+    ADD_FUNCTION("checkboxGetValue", f_checkboxGetValue,
+                 tFunc(tVoid, tString), 0);
+    ADD_FUNCTION("checkboxSetValue", f_checkboxSetValue,
+                 tFunc(tString, tVoid), 0);
 
     ADD_FUNCTION("radiobutton", f_radiobutton,
                  tFunc(tInt tInt tString tOr(tInt, tVoid) tOr(tObj, tVoid), tVoid), 0);
-    ADD_FUNCTION("radioGetCurrent", f_radioGetCurrent, tFunc(tObj, tObj), 0);
-    ADD_FUNCTION("getScreenSize", f_getScreenSize, tFunc(tVoid, tMap(tString, tInt)), 0);
-    ADD_FUNCTION("label", f_label, tFunc(tInt tInt tString, tVoid), 0);
-    ADD_FUNCTION("labelSetText", f_labelSetText, tFunc(tString, tVoid), 0);
+    ADD_FUNCTION("radioGetCurrent", f_radioGetCurrent,
+                 tFunc(tObj, tObj), 0);
+    ADD_FUNCTION("getScreenSize", f_getScreenSize,
+                 tFunc(tVoid, tMap(tString, tInt)), 0);
+    ADD_FUNCTION("label", f_label,
+                 tFunc(tInt tInt tString, tVoid), 0);
+    ADD_FUNCTION("labelSetText", f_labelSetText,
+                 tFunc(tString, tVoid), 0);
 
     ADD_FUNCTION("verticalScrollBar", f_verticalScrollbar,
                  tFunc(tInt tInt tInt tInt tInt, tVoid), 0);
-    ADD_FUNCTION("scrollbarSet", f_scrollbarSet, tFunc(tInt tInt, tVoid), 0);
+    ADD_FUNCTION("scrollbarSet", f_scrollbarSet,
+                 tFunc(tInt tInt, tVoid), 0);
 
-    ADD_FUNCTION("listbox", f_listbox, tFunc(tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);
-    ADD_FUNCTION("listboxGetCurrent", f_listboxGetCurrent, tFunc(tVoid, tInt), 0);
-    ADD_FUNCTION("listboxSetCurrent", f_listboxSetCurrent, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("listboxSetCurrentByKey", f_listboxSetCurrentByKey, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("listboxSetEntry", f_listboxSetEntry, tFunc(tInt tString, tVoid), 0);
-    ADD_FUNCTION("listboxSetWidth", f_listboxSetWidth, tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("listboxSetData", f_listboxSetData, tFunc(tInt tInt, tVoid), 0);
-    ADD_FUNCTION("listboxAppendEntry", f_listboxAppendEntry, tFunc(tString tInt, tInt), 0);
-    ADD_FUNCTION("listboxInsertEntry", f_listboxInsertEntry, tFunc(tString tInt tInt, tInt), 0);
-    ADD_FUNCTION("listboxDeleteEntry", f_listboxDeleteEntry, tFunc(tInt, tInt), 0);
-    ADD_FUNCTION("listboxClear", f_listboxClear, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("listboxGetEntry", f_listboxGetEntry, tFunc(tInt, tMap(tString, tOr(tInt, tString))), 0);
-    ADD_FUNCTION("listboxGetSelection", f_listboxGetSelection, tFunc(tVoid, tOr(tArr(tInt), tInt)), 0);
-    ADD_FUNCTION("listboxClearSelection", f_listboxClearSelection, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("listboxSelectItem", f_listboxSelectItem, tFunc(tInt tInt, tVoid), 0);
+    ADD_FUNCTION("listbox", f_listbox,
+                 tFunc(tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("listboxGetCurrent", f_listboxGetCurrent,
+                 tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("listboxSetCurrent", f_listboxSetCurrent,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("listboxSetCurrentByKey", f_listboxSetCurrentByKey,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("listboxSetEntry", f_listboxSetEntry,
+                 tFunc(tInt tString, tVoid), 0);
+    ADD_FUNCTION("listboxSetWidth", f_listboxSetWidth,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("listboxSetData", f_listboxSetData,
+                 tFunc(tInt tInt, tVoid), 0);
+    ADD_FUNCTION("listboxAppendEntry", f_listboxAppendEntry,
+                 tFunc(tString tInt, tInt), 0);
+    ADD_FUNCTION("listboxInsertEntry", f_listboxInsertEntry,
+                 tFunc(tString tInt tInt, tInt), 0);
+    ADD_FUNCTION("listboxDeleteEntry", f_listboxDeleteEntry,
+                 tFunc(tInt, tInt), 0);
+    ADD_FUNCTION("listboxClear", f_listboxClear,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("listboxGetEntry", f_listboxGetEntry,
+                 tFunc(tInt, tMap(tString, tOr(tInt, tString))), 0);
+    ADD_FUNCTION("listboxGetSelection", f_listboxGetSelection,
+                 tFunc(tVoid, tOr(tArr(tInt), tInt)), 0);
+    ADD_FUNCTION("listboxClearSelection", f_listboxClearSelection,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("listboxSelectItem", f_listboxSelectItem,
+                 tFunc(tInt tInt, tVoid), 0);
 
-    ADD_FUNCTION("checkboxTree", f_checkboxTree, tFunc(tInt tInt tInt tInt, tVoid), 0);
-    ADD_FUNCTION("checkboxTreeMulti", f_checkboxTreeMulti, tFunc(tInt tInt tInt tString tInt, tVoid), 0);
-    ADD_FUNCTION("checkboxTreeGetSelecion", f_checkboxTreeGetSelection, tFunc(tVoid, tOr(tArr(tInt), tInt)), 0);
-    ADD_FUNCTION("checkboxTreeGetCurrent", f_checkboxTreeGetCurrent, tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("checkboxTree", f_checkboxTree,
+                 tFunc(tInt tInt tInt tInt, tVoid), 0);
+    ADD_FUNCTION("checkboxTreeMulti", f_checkboxTreeMulti,
+                 tFunc(tInt tInt tInt tString tInt, tVoid), 0);
+    ADD_FUNCTION("checkboxTreeGetSelecion", f_checkboxTreeGetSelection,
+                 tFunc(tVoid, tOr(tArr(tInt), tInt)), 0);
+    ADD_FUNCTION("checkboxTreeGetCurrent", f_checkboxTreeGetCurrent,
+                 tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("checkboxTreeGeMultitSelecion", f_checkboxTreeGetMultiSelection,
                  tFunc(tString, tOr(tArr(tInt), tInt)), 0);
 
@@ -2528,7 +2835,8 @@ void init_functions()
     /* formWatchFd here */
     ADD_FUNCTION("formSetSize", f_formSetSize,
                  tFunc(tVoid, tVoid), 0);
-    /* formGetCurrent here */
+    ADD_FUNCTION("formGetCurent", f_formGetCurrent,
+                 tFunc(tVoid, tObj), 0);
     ADD_FUNCTION("formSetBackground", f_formSetBackground,
                  tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("formSetCurrent", f_formSetCurrent,
@@ -2539,8 +2847,10 @@ void init_functions()
                  tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("formSetWidth", f_formSetWidth,
                  tFunc(tInt, tVoid), 0);
-    /* runForm here */
-    /* formRun here */
+    ADD_FUNCTION("runForm", f_runForm,
+                 tFunc(tVoid, tObj), 0);
+    ADD_FUNCTION("formRun", f_formRun,
+                 tFunc(tVoid, tOr(tObj, tOr(tInt, tString))), 0);
     ADD_FUNCTION("drawForm", f_drawForm,
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("formAddHotKey", f_formAddHotKey,
@@ -2548,7 +2858,30 @@ void init_functions()
     
     ADD_FUNCTION("entry", f_entry,
                  tFunc(tInt tInt tInt tOr(tString, tVoid) tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("entrySet", f_entrySet,
+                 tFunc(tString tOr(tInt, tVoid), tVoid), 0);
+    /* entrySetFilter here */
+    ADD_FUNCTION("entryGetValue", f_entryGetValue,
+                 tFunc(tVoid, tString), 0);
+    /* entrySetFlags here */
+
+    ADD_FUNCTION("scale", f_scale,
+                 tFunc(tInt tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("scaleSet", f_scaleSet,
+                 tFunc(tInt tOr(tInt, tVoid), tVoid), 0);
+
+    ADD_FUNCTION("componentTakesFocus", f_componentTakesFocus,
+                 tFunc(tOr(tInt, tVoid), tVoid), 0);
+
+    ADD_FUNCTION("formDestroy", f_formDestroy,
+                 tFunc(tVoid, tVoid), 0);
+
+    ADD_FUNCTION("init", f_init,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("finished", f_finished,
+                 tFunc(tVoid, tVoid), 0);
     
+//    end_class("Newt", 0);
 }
 #else
 void init_functions()
