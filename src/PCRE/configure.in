@@ -6,7 +6,7 @@ PEXTS_MODULE_INIT()
 
 AC_CHECK_HEADERS(  locale.h)
 AC_CHECK_FUNCS( setlocale )
-AC_CONFIG_SUBDIRS(libpcre)
+AC_CONFIG_SUBDIRS(pcrelib)
 
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 

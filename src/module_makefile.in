@@ -75,5 +75,5 @@ distclean: clean
 	rm -f config.* $(SRCDIR)/Makefile Makefile.pre
 
 spotless: distclean mod_clean
-	rm -f $(SRCDIR)/configure  $(SRCDIR)/sablot_config.h.in
+	rm -f $(SRCDIR)/configure  
 

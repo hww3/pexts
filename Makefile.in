@@ -43,8 +43,6 @@ spotless:  clean
         -o -name '.pine-debug*' -o -name '.*.bak' -o -name core -o -name \
 	config.cache -o -name config.status -o -name config.log -o -name \
 	"*.a" -o -name configure ')'  -print -exec /bin/rm '{}'  ';'
-	rm -rf server/logs
-	rm -rf logs
 
 ./Makefile: $(SRCDIR)/Makefile.in config.status
 	CONFIG_FILES=Makefile CONFIG_HEADERS="" ./config.status
