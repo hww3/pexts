@@ -278,6 +278,53 @@ f_getspent(INT32 args)
 }
 #endif
 
+#if defined(HAVE_GETSPNAM) || defined(HAVE_GETSPNAM_R)
+static void
+f_getspnam(INT32 args)
+{
+    char           *name;
+#ifdef _REENTRANT
+    LOCAL_BUF(buf, THIS->shadow.sp_buf_max);
+    struct spwd    spbuf;
+    struct spwd    *spent;
+#endif
+
+    get_all_args("AdminTools.Shadow->getspnam", args, "%S", &name);
+    if (args != 1)
+	error("AdminTools.Shadow->getspnam(): Invalid number of arguments. Expected 1.\n");
+    
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+	error("AdminTools.Shadow->getspnam(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+
+    name = ARG(1).u.string->str;
+    
+#if defined(_REENTRANT) && defined(HAVE_GETSPNAM_R)
+    LOCAL_CHECK(buf, "AdminTools.Shadow->getspenam(): out of memory.\n");
+    pop_n_elems(args);
+    
+#ifdef HAVE_SOLARIS_GETSPNAM_R
+    if (!(spent = getspnam_r(name, &spbuf, buf, THIS->shadow.sp_buf_max))) {
+#else
+    if (getspnam_r(name, &spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0) {
+#endif
+	push_int(0);
+	return;
+    }
+    push_spent(spent);
+    LOCAL_FREE(buf);
+#else
+    pop_n_elems(args);
+    push_spent(getspnam(name));
+#endif
+}
+#else
+static void
+f_getspnam(INT32 args)
+{
+    error("AdminTools.Shadow->getspnam(): function not supported.\n");
+}
+#endif
+
 static void
 f_getallspents(INT32 args)
 {
@@ -289,7 +336,6 @@ f_getallspents(INT32 args)
     struct spwd    spbuf;
 #endif
 
-    pop_n_elems(args);
     if(THIS->shadow.db_opened)
         f_endspent(0);
     f_setspent(0);
@@ -298,9 +344,10 @@ f_getallspents(INT32 args)
 
 #if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
     LOCAL_CHECK(buf, "AdminTools.Shadow->getallspents(): out of memory\n");
+    pop_n_elems(args);
 
 #ifdef HAVE_SOLARIS_GETSPENT_R
-    if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max) != 0) {
+    if (!(spent = getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max))) {
 #else
     if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0) {
 #endif
@@ -308,6 +355,7 @@ f_getallspents(INT32 args)
         return;
     }
 #else
+    pop_n_elems(args);
     spent = getspent();
 #endif
     
@@ -317,7 +365,7 @@ f_getallspents(INT32 args)
 
 #if defined(_REENTRANT) && defined(HAVE_GETSPENT_R)
 #ifdef HAVE_SOLARIS_GETSPENT_R
-	getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max);
+	spent = getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max);
 #else
 	getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent);
 #endif
@@ -353,6 +401,7 @@ f_shadow_create(INT32 args)
  * Note that opendir/readdir is used by get_dir as well, we just provide 
  * a more fine-grained interface here with some more bells and whistles.
  */
+#ifdef HAVE_OPENDIR
 static DIR*
 do_opendir(char *dirpath)
 {
@@ -408,7 +457,6 @@ do_opendir(char *dirpath)
 static void
 f_opendir(INT32 args)
 {
-#ifdef HAVE_OPENDIR
     get_all_args("AdminTools.Directory->open", args, "%S", &THIS->dir.dirname);
     if (args != 1)
 	error("AdminTools.Directory->open(): Invalid number of arguments. Expected 1.\n");
@@ -416,22 +464,23 @@ f_opendir(INT32 args)
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
 	error("AdminTools.Directory->open(): Wrong argument type for argument 1. Expected 8-bit string.\n");
 
-    /*
-     * Do I have to make a copy of the string that's on the
-     * stack to preserve it for later use?? Guess not...
-     * /grendel 26-09-2000
-     */	
-    THIS->dir.dirname = ARG(1).u.string;
-    pop_n_elems(args);
-
+    THIS->dir.dirname = make_shared_string(ARG(1).u.string->str);
+    add_ref(THIS->dir.dirname);
+    
     if (THIS->dir.dir)
 	error("AdminTools.Directory->open(): previous directory not closed.\n");
-
+	
+    pop_n_elems(args);
+    
     THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
-#else
-    error("AdminTools.Directory->open(): function not supported\n");
-#endif
 }
+#else
+static void
+f_opendir(INT32 args)
+{
+    error("AdminTools.Directory->open(): function not supported\n");
+}
+#endif
 
 #ifdef HAVE_CLOSEDIR
 static void
@@ -544,34 +593,24 @@ f_dir_create(INT32 args)
 	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
 	    error("AdminTools.Directory->create(): Wrong argument type for argument 1. Expected 8-bit string.\n");
 
-	THIS->dir.dirname = ARG(1).u.string;
-	pop_n_elems(args);
+	THIS->dir.dirname = make_shared_string(ARG(1).u.string->str);
+	add_ref(THIS->dir.dirname);
 
 	THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
-    } else if (args > 1)
+    } else if (args > 1) {
 	error("AdminTools.Directory->create(): too many arguments\n");
-    else
+    } else
 	THIS->dir.dir = NULL;
-
 #else
     error("AdminTools.Directory->open(): function not supported\n");
 #endif
 
+    pop_n_elems(args);
     THIS->dir.select_cb.type = T_INT;
     THIS->dir.select_cb.u.integer = 0;
     THIS->dir.compare_cb.type = T_INT;
     THIS->dir.compare_cb.u.integer = 0;
     THIS->dir.dirname = NULL;
-}
-
-static void
-f_dir_destroy(INT32 args)
-{
-#ifdef HAVE_CLOSEDIR
-    if (THIS->dir.dir)
-	closedir(THIS->dir.dir);
-#endif
-    pop_n_elems(args);
 }
 
 void pike_module_init(void)
@@ -588,9 +627,10 @@ void pike_module_init(void)
 
     add_function("endspent", f_endspent, "function(void:void)", 0);
 		 
-    add_function("getspent", f_getspent, 
-                 "function(void:array)", 0);
+    add_function("getspent", f_getspent, "function(void:array)", 0);
 		 
+    add_function("getspnam", f_getspnam, "function(string:array)", 0);
+    
     add_function("getallspents", f_getallspents,
                  "function(void:array(array))", 0);
     
@@ -605,7 +645,6 @@ void pike_module_init(void)
     add_function("open", f_opendir, "function(string:void)", 0);
     add_function("close", f_closedir, "function(void:int)", 0);
     add_function("read", f_readdir, "function(void:array)", 0);
-    add_function("destroy", f_dir_destroy, "function(void:void)", 0);
 
     dir_program = end_program();
     add_program_constant("Directory", dir_program, 0);
