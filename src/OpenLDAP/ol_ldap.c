@@ -246,7 +246,7 @@ f_ldap_dn2ufn(INT32 args)
         Pike_error("OpenLDAP.Client->dn2ufn(): requires exactly one 8-bit string argument\n");
 
     get_all_args("OpenLDAP.Client->dn2ufn()", args, "%S", &dn);
-
+    
     pop_n_elems(args);
     
     if (!dn) {
@@ -732,6 +732,21 @@ f_ldap_add(INT32 args)
 }
 
 static void
+f_ldap_delete(INT32 args)
+{
+    struct pike_string   *dn;
+    int                   ret;
+    
+    get_all_args("OpenLDAP.Client->delete()", args, "%S", &dn);
+    ret = ldap_delete_s(THIS->conn, dn->str);
+    if (ret != LDAP_SUCCESS)
+        Pike_error("OpenLDAP.Client->delete(): %s\n",
+                   ldap_err2string(ret));
+
+    pop_n_elems(args);
+}
+
+static void
 init_ldap(struct object *o)
 {
     base_str = make_shared_string("base");
@@ -840,6 +855,8 @@ _ol_ldap_program_init(void)
                  tFunc(tString tArr(tMap(tString, tMixed)), tVoid), 0);
     ADD_FUNCTION("add", f_ldap_add,
                  tFunc(tString tArr(tMap(tString, tMixed)), tVoid), 0);
+    ADD_FUNCTION("delete", f_ldap_delete,
+                 tFunc(tString, tVoid), 0);
     
     _ol_result_program_init();
     
