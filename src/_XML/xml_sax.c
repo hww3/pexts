@@ -71,43 +71,59 @@ RCSID("$Id$");
 #include "xml_sax.h"
 
 #ifdef HAVE_XML2
+#include <string.h>
+
 #include <libxml/tree.h>
 #include <libxml/SAX.h>
 #include <libxml/entities.h>
 #include <libxml/parserInternals.h>
 
+#ifdef SAX_DEBUG
+#include <stdio.h>
+
+static unsigned int   __debug_indent;
+
+#define DBG_FUNC_ENTER() do { fprintf(stderr, "%*cEnter: %s %s:%d\n", __debug_indent, ' ', __FUNCTION__, __FILE__, __LINE__); __debug_indent++; } while(0)
+#define DBG_FUNC_LEAVE() do { fprintf(stderr, "%*cLeave: %s %s:%d\n", __debug_indent, ' ', __FUNCTION__, __FILE__, __LINE__); __debug_indent--; } while(0)
+#else
+#define DBG_FUNC_ENTER()
+#define DBG_FUNC_LEAVE()
+#endif
+
 #define THIS ((sax_storage*)Pike_fp->current_storage)
 #define CB_ABSENT(_idx_) (THIS->callbackOffsets[(_idx_)] == -1)
 #define CB_API(_name_) {#_name_, 1}
+#define CB_CALL(_offset_, _args_) apply_low(THIS->callbacks, THIS->callbackOffsets[(_offset_)], (_args_))
+
+#define safe_push_text(_txt_) if ((_txt_)) push_text((_txt_)) else push_int(0)
 
 #define internalSubsetSAX 0x00
 #define isStandaloneSAX 0x01
 #define hasInternalSubsetSAX 0x02
 #define hasExternalSubsetSAX 0x03
-#define resolveEntitySAX 0x04
-#define getEntitySAX 0x05
-#define entityDeclSAX 0x06
-#define notationDeclSAX 0x07
-#define attributeDeclSAX 0x08
-#define elementDeclSAX 0x09
-#define unparsedEntityDeclSAX 0x0A
-#define setDocumentLocatorSAX 0x0B
-#define startDocumentSAX 0x0C
-#define endDocumentSAX 0x0D
-#define startElementSAX 0x0E
-#define endElementSAX 0x0F
-#define referenceSAX 0x10
-#define charactersSAX 0x11
-#define ignorableWhitespaceSAX   0x12
-#define processingInstructionSAX 0x13
-#define commentSAX 0x14
-#define warningSAX 0x15
-#define errorSAX 0x16
-#define fatalErrorSAX 0x17
-#define getParameterEntitySAX 0x18
-#define cdataBlockSAX 0x19
-#define externalSubsetSAX 0x1A
-#define CB_API_SIZE 0x1B
+#define getEntitySAX 0x04
+#define entityDeclSAX 0x05
+#define notationDeclSAX 0x06
+#define attributeDeclSAX 0x07
+#define elementDeclSAX 0x08
+#define unparsedEntityDeclSAX 0x09
+#define setDocumentLocatorSAX 0x0A
+#define startDocumentSAX 0x0B
+#define endDocumentSAX 0x0C
+#define startElementSAX 0x0D
+#define endElementSAX 0x0E
+#define referenceSAX 0x0F
+#define charactersSAX 0x10
+#define ignorableWhitespaceSAX   0x11
+#define processingInstructionSAX 0x12
+#define commentSAX 0x13
+#define warningSAX 0x14
+#define errorSAX 0x15
+#define fatalErrorSAX 0x16
+#define getParameterEntitySAX 0x17
+#define cdataBlockSAX 0x18
+#define externalSubsetSAX 0x19
+#define CB_API_SIZE 0x1A
 
 typedef enum {
   PARSE_PUSH_PARSER = 0x01,
@@ -137,7 +153,6 @@ static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
 static int pextsIsStandalone(void *ctx);
 static int pextsHasInternalSubset(void *ctx);
 static int pextsHasExternalSubset(void *ctx);
-static xmlParserInputPtr pextsResolveEntity(void *ctx, const xmlChar *publicId, const xmlChar *systemId);
 static xmlEntityPtr pextsGetEntity(void *ctx, const xmlChar *name);
 static void pextsEntityDecl(void *ctx, const xmlChar *name, int type, const xmlChar *publicId,
                             const xmlChar *systemId, xmlChar *content);
@@ -202,7 +217,7 @@ static xmlSAXHandler   pextsSAX = {
   .isStandalone = pextsIsStandalone,
   .hasInternalSubset = pextsHasInternalSubset,
   .hasExternalSubset = pextsHasExternalSubset,
-  .resolveEntity = pextsResolveEntity,
+  .resolveEntity = NULL, /* we don't use it by default */
   .getEntity = pextsGetEntity,
   .entityDecl = pextsEntityDecl,
   .notationDecl = pextsNotationDecl,
@@ -227,177 +242,447 @@ static xmlSAXHandler   pextsSAX = {
   .externalSubset = pextsExternalSubset
 };
 
+static struct pike_string  *econtent_type;
+static struct pike_string  *econtent_ocur;
+static struct pike_string  *econtent_name;
+static struct pike_string  *econtent_prefix;
+static struct pike_string  *econtent_c1;
+static struct pike_string  *econtent_c2;
+
 /* Parser callbacks */
 
 static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID)
 {
-  if (CB_ABSENT(internalSubsetSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(internalSubsetSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  safe_push_text(name);
+  safe_push_text(externalID);
+  safe_push_text(systemID);
+  
+  CB_CALL(endElementSAX, 3);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static int pextsIsStandalone(void *ctx)
 {
-  if (CB_ABSENT(isStandaloneSAX))
+  struct svalue   sv;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(isStandaloneSAX)) {
+    DBG_FUNC_LEAVE();
     return 1;
-  return 0;
+  }
+
+  CB_CALL(isStandaloneSAX, 0);
+  stack_pop_to(sv);
+  
+  DBG_FUNC_LEAVE();
+  return sv.u.integer;
 }
 
 static int pextsHasInternalSubset(void *ctx)
 {
-  if (CB_ABSENT(hasInternalSubsetSAX))
+  struct svalue   sv;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(hasInternalSubsetSAX)) {
+    DBG_FUNC_LEAVE();
     return 0;
-  return 1;
+  }
+
+  CB_CALL(hasInternalSubsetSAX, 0);
+  stack_pop_to(sv);
+  
+  DBG_FUNC_LEAVE();
+  return sv.u.integer;
 }
 
 static int pextsHasExternalSubset(void *ctx)
 {
-  if (CB_ABSENT(hasExternalSubsetSAX))
+  struct svalue   sv;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(hasExternalSubsetSAX)) {
+    DBG_FUNC_LEAVE();
     return 0;
-  return 1;
+  }
+
+  CB_CALL(hasExternalSubsetSAX, 0);
+  stack_pop_to(sv);
+  
+  DBG_FUNC_LEAVE();
+  return sv.u.integer;
 }
 
-static xmlParserInputPtr pextsResolveEntity(void *ctx, const xmlChar *publicId, const xmlChar *systemId)
-{
-  if (CB_ABSENT(resolveEntitySAX))
-    return NULL;
-  return NULL;
-}
-
+/* TODO: this one needs more thought... */
 static xmlEntityPtr pextsGetEntity(void *ctx, const xmlChar *name)
 {
-  if (CB_ABSENT(getEntitySAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(getEntitySAX)) {
+    DBG_FUNC_LEAVE();
     return NULL;
+  }
+  
+  DBG_FUNC_LEAVE();
   return NULL;
 }
 
 static void pextsEntityDecl(void *ctx, const xmlChar *name, int type, const xmlChar *publicId,
                             const xmlChar *systemId, xmlChar *content)
 {
-  if (CB_ABSENT(entityDeclSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(entityDeclSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  safe_push_text(name);
+  push_int(type);
+  safe_push_text(publicId);
+  safe_push_text(systemId);
+  safe_push_text(content);
+
+  CB_CALL(entityDeclSAX, 5);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsNotationDecl(void *ctx, const xmlChar *name, const xmlChar *publicId, const xmlChar *systemId)
 {
-  if (CB_ABSENT(notationDeclSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(notationDeclSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  safe_push_text(name);
+  safe_push_text(publicId);
+  safe_push_text(systemId);
+
+  CB_CALL(notationDeclSAX, 3);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fullname, int type, int def,
                                const xmlChar *defaultValue, xmlEnumerationPtr tree)
 {
-  if (CB_ABSENT(attributeDeclSAX))
+  int  nenum;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(attributeDeclSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  safe_push_text(elem);
+  safe_push_text(fullname);
+  push_int(type);
+  push_int(def);
+  safe_push_text(defaultValue);
+
+  if (tree) {
+    xmlEnumeratorPtr   tmp = tree;
+    struct array      *arr;
+    
+    nenum = 0;
+    while (tree) {
+      safe_push_text(tmp->name);
+      tmp = tmp->next;
+      nenum++;
+    }
+    arr = aggregate_array(nenum);
+    push_array(arr);
+  } else
+    push_int(0);
+
+  CB_CALL(attributeDeclSAX, 6);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
+}
+
+inline static struct mapping *tree2mapping(xmlElementContentPtr content)
+{
+  struct mapping *ret;
+  struct svalue   sv;
+
+  if (!content)
+    return NULL;
+
+  ret = allocate_mapping(12);
+  sv.type = T_INT;
+  sv.u.integer = content->type;
+  mapping_string_insert(ret, econtent_type, &sv);
+  
+  sv.u.integer = content->ocur;
+  mapping_string_insert(ret, econtent_ocur, &sv);
+  
+  mapping_string_insert_string(ret, econtent_name, make_shared_string(content->name));
+  mapping_string_insert_string(ret, econtent_prefix, make_shared_string(content->prefix));
+
+  if (content->c1) {
+    sv.type = T_MAPPING;
+    sv.u.mapping = tree2mapping(content->c1);
+  } else
+    sv.u.integer = 0;
+  mapping_string_insert(ret, econtent_c1, &sv);
+
+  if (content->c2) {
+    sv.type = T_MAPPING
+    sv.u.mapping = tree2mapping(content->c2);
+  } else {
+    sv.type = T_INT;
+    sv.u.integer = 0;
+  }
+  mapping_string_insert(ret, econtent_c2, &sv);
+
+  return ret;
 }
 
 static void pextsElementDecl(void *ctx, const xmlChar *name, int type, xmlElementContentPtr content)
 {
-  if (CB_ABSENT(elementDeclSAX))
+  struct mapping  *cmap;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(elementDeclSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  safe_push_text(name);
+  push_int(type);
+  cmap = tree2mapping(content);
+  if (cmap)
+    push_mapping(cmap);
+  else
+    push_int(0);
+
+  CB_CALL(elementDeclSAX, 3);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsUnparsedEntityDecl(void *ctx, const xmlChar *name, const xmlChar *publicId,
                                     const xmlChar *systemId, const xmlChar *notationName)
 {
-  if (CB_ABSENT(unparsedEntityDeclSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(unparsedEntityDeclSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsSetDocumentLocator(void *ctx, xmlSAXLocatorPtr loc)
 {
-  if (CB_ABSENT(setDocumentLocatorSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(setDocumentLocatorSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsStartDocument(void *ctx)
 {
-  if (CB_ABSENT(startDocumentSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(startDocumentSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsEndDocument(void *ctx)
 {
-  if (CB_ABSENT(endDocumentSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(endDocumentSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **atts)
 {
-  if (CB_ABSENT(startElementSAX))
+  int              npairs;
+  const xmlChar  **tmp;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(startElementSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+  
+  push_text(name);
+  if (atts) {
+    npairs = 0;
+    tmp = atts;
+    while (tmp && *tmp) {
+      push_text(*tmp++);
+      push_text(*tmp++);
+      npairs += 2;
+    }
+    f_aggregate_mapping(npairs);
+  } else {
+    push_int(0);
+  }
+  
+  CB_CALL(startElementSAX, 2);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsEndElement(void *ctx, const xmlChar *name)
 {
-  if (CB_ABSENT(endElementSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(endElementSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  push_text(name);
+  CB_CALL(endElementSAX, 1);
+  pop_stack();
+  
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsReference(void *ctx, const xmlChar *name)
 {
-  if (CB_ABSENT(referenceSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(referenceSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsCharacters(void *ctx, const xmlChar *ch, int len)
 {
-  if (CB_ABSENT(charactersSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(charactersSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsIgnorableWhitespace(void *ctx, const xmlChar *ch, int len)
 {
-  if (CB_ABSENT(ignorableWhitespaceSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(ignorableWhitespaceSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsProcessingInstruction(void *ctx, const xmlChar *target, const xmlChar *data)
 {
-  if (CB_ABSENT(processingInstructionSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(processingInstructionSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsComment(void *ctx, const xmlChar *value)
 {
-  if (CB_ABSENT(commentSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(commentSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsWarning(void *ctx, const char *msg, ...)
 {
-  if (CB_ABSENT(warningSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(warningSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsError(void *ctx, const char *msg, ...)
 {
-  if (CB_ABSENT(errorSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(errorSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsFatalError(void *ctx, const char *msg, ...)
 {
-  if (CB_ABSENT(fatalErrorSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(fatalErrorSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static xmlEntityPtr pextsGetParameterEntity(void *ctx, const xmlChar *name)
 {
-  if (CB_ABSENT(getParameterEntitySAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(getParameterEntitySAX)) {
+    DBG_FUNC_LEAVE();
     return NULL;
+  }
+
+  DBG_FUNC_LEAVE();
   return NULL;
 }
 
 static void pextsCdataBlock(void *ctx, const xmlChar *value, int len)
 {
-  if (CB_ABSENT(cdataBlockSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(cdataBlockSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID)
 {
-  if (CB_ABSENT(externalSubsetSAX))
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(externalSubsetSAX)) {
+    DBG_FUNC_LEAVE();
     return;
+  }
+
+  DBG_FUNC_LEAVE();
 }
 
 /*
@@ -494,14 +779,16 @@ static void f_create(INT32 args)
         if (ARG(2).type != T_OBJECT)
           Pike_error("Incorrect type for argument 2: expected an object\n");
         callbacks = ARG(2).u.object;
+        add_ref(callbacks);
         /* fall through */
 
       case 1:
         if (ARG(1).type != T_OBJECT && ARG(1).type != T_STRING)
           Pike_error("Incorrect type for argument 1: expected a string or an object\n");
-        if (ARG(1).type == T_OBJECT)
+        if (ARG(1).type == T_OBJECT) {
           file_obj = ARG(1).u.object;
-        else
+          add_ref(file_obj);
+        } else
           input_data = ARG(1).u.string;
         break;
 
@@ -527,6 +814,8 @@ static void f_create(INT32 args)
     THIS->parsing_method = PARSE_FILE_PARSER;
   else
     Pike_error("Cannot determine the parser type to use\n");
+
+  pop_n_elems(args);
   
   /* initialize the parser and state */
   THIS->sax = &pextsSAX;
@@ -537,13 +826,33 @@ static void f_create(INT32 args)
         break;
 
       case PARSE_MEMORY_PARSER:
-        THIS->input_data = input_data;
+      case PARSE_FILE_PARSER:
+        copy_shared_string(THIS->input_data, input_data);
+        break;
+  }
+
+  THIS->callbacks = callbacks;
+}
+
+static void f_parse(INT32 args)
+{
+  xmlDocPtr   doc = NULL;
+  
+  switch (THIS->parsing_method) {
+      case PARSE_PUSH_PARSER: {
+        break;
+      }
+        
+      case PARSE_MEMORY_PARSER:
+        doc = xmlSAXParseMemory(THIS->sax, THIS->input_data->str, THIS->input_data->len, 1);
         break;
 
       case PARSE_FILE_PARSER:
-        THIS->input_data = input_data;
+        doc = xmlSAXParseFileWithData(THIS->sax, THIS->input_data->str, 1, NULL);
         break;
   }
+  
+  push_int(0);
 }
 
 static void init_sax(struct object *o)
@@ -558,6 +867,13 @@ static void init_sax(struct object *o)
   THIS->callbacks = NULL;
   THIS->file_obj = NULL;
   THIS->input_data = NULL;
+
+  econtent_type = make_shared_string("type");
+  econtent_ocur = make_shared_string("ocur");
+  econtent_name = make_shared_string("name");
+  econtent_prefix = make_shared_string("prefix");
+  econtent_c1 = make_shared_string("child1");
+  econtent_c2 = make_shared_string("child2");
 }
 
 static void exit_sax(struct object *o)
@@ -567,6 +883,13 @@ static void exit_sax(struct object *o)
 
   if (THIS->filename)
     free(THIS->filename);
+
+  if (econtent_type) free_string(econtent_type);
+  if (econtent_ocur) free_string(econtent_ocur);
+  if (econtent_name) free_string(econtent_name);
+  if (econtent_prefix) free_string(econtent_prefix);
+  if (econtent_c1) free_string(econtent_c1);
+  if (econtent_c2) free_string(econtent_c2);
 }
 
 int _init_xml_sax(void)
@@ -579,6 +902,7 @@ int _init_xml_sax(void)
 
   ADD_FUNCTION("create", f_create,
                tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tInt, tVoid), tVoid), 0);
+  ADD_FUNCTION("parse", f_parse, tFunc(tVoid, tInt), 0);
   
   sax_program = end_program();
   add_program_constant("SAX", sax_program, 0);

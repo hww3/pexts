@@ -68,6 +68,7 @@ RCSID("$Id$");
 #include "xml_config.h"
 
 #ifdef HAVE_XML2
+#include <libxml/entities.h>
 #include "xml_sax.h"
 
 void pike_module_init(void)
@@ -84,6 +85,46 @@ void pike_module_init(void)
   /* initialize the classes */
   if (!_init_xml_sax())
     Pike_error("Could not initialize the SAX class");
+
+  /* some contstants */
+  add_integer_constant("XML_INTERNAL_GENERAL_ENTITY", XML_INTERNAL_GENERAL_ENTITY, 0);
+  add_integer_constant("XML_EXTERNAL_GENERAL_PARSED_ENTITY", XML_EXTERNAL_GENERAL_PARSED_ENTITY, 0);
+  add_integer_constant("XML_EXTERNAL_GENERAL_UNPARSED_ENTITY", XML_EXTERNAL_GENERAL_UNPARSED_ENTITY, 0);
+  add_integer_constant("XML_INTERNAL_PARAMETER_ENTITY", XML_INTERNAL_PARAMETER_ENTITY, 0);
+  add_integer_constant("XML_EXTERNAL_PARAMETER_ENTITY", XML_EXTERNAL_PARAMETER_ENTITY, 0);
+  add_integer_constant("XML_INTERNAL_PREDEFINED_ENTITY", XML_INTERNAL_PREDEFINED_ENTITY, 0);
+
+  add_integer_constant("XML_ATTRIBUTE_CDATA", XML_ATTRIBUTE_CDATA, 0);
+  add_integer_constant("XML_ATTRIBUTE_ID", XML_ATTRIBUTE_ID, 0);
+  add_integer_constant("XML_ATTRIBUTE_IDREF", XML_ATTRIBUTE_IDREF, 0);
+  add_integer_constant("XML_ATTRIBUTE_IDREFS", XML_ATTRIBUTE_IDREFS, 0);
+  add_integer_constant("XML_ATTRIBUTE_ENTITY", XML_ATTRIBUTE_ENTITY, 0);
+  add_integer_constant("XML_ATTRIBUTE_ENTITIES", XML_ATTRIBUTE_ENTITIES, 0);
+  add_integer_constant("XML_ATTRIBUTE_NMTOKEN", XML_ATTRIBUTE_NMTOKEN, 0);
+  add_integer_constant("XML_ATTRIBUTE_NMTOKENS", XML_ATTRIBUTE_NMTOKENS, 0);
+  add_integer_constant("XML_ATTRIBUTE_ENUMERATION", XML_ATTRIBUTE_ENUMERATION, 0);
+  add_integer_constant("XML_ATTRIBUTE_NOTATION", XML_ATTRIBUTE_NOTATION, 0);
+
+  add_integer_constant("XML_ATTRIBUTE_NONE", XML_ATTRIBUTE_NONE, 0);
+  add_integer_constant("XML_ATTRIBUTE_REQUIRED", XML_ATTRIBUTE_REQUIRED, 0);
+  add_integer_constant("XML_ATTRIBUTE_IMPLIED", XML_ATTRIBUTE_IMPLIED, 0);
+  add_integer_constant("XML_ATTRIBUTE_FIXED", XML_ATTRIBUTE_FIXED, 0);
+
+  add_integer_constant("XML_ELEMENT_CONTENT_PCDATA", XML_ELEMENT_CONTENT_PCDATA, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_ELEMENT", XML_ELEMENT_CONTENT_ELEMENT, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_SEQ", XML_ELEMENT_CONTENT_SEQ, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_OR", XML_ELEMENT_CONTENT_OR, 0);
+
+  add_integer_constant("XML_ELEMENT_CONTENT_ONCE", XML_ELEMENT_CONTENT_ONCE, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_OPT", XML_ELEMENT_CONTENT_OPT, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_MULT", XML_ELEMENT_CONTENT_MULT, 0);
+  add_integer_constant("XML_ELEMENT_CONTENT_PLUS", XML_ELEMENT_CONTENT_PLUS, 0);
+
+  add_integer_constant("XML_ELEMENT_TYPE_UNDEFINED", XML_ELEMENT_TYPE_UNDEFINED, 0);
+  add_integer_constant("XML_ELEMENT_TYPE_EMPTY", XML_ELEMENT_TYPE_EMPTY, 0);
+  add_integer_constant("XML_ELEMENT_TYPE_ANY", XML_ELEMENT_TYPE_ANY, 0);
+  add_integer_constant("XML_ELEMENT_TYPE_MIXED", XML_ELEMENT_TYPE_MIXED, 0);
+  add_integer_constant("XML_ELEMENT_TYPE_ELEMENT", XML_ELEMENT_TYPE_ELEMENT, 0);
 }
 
 void pike_module_exit(void)
