@@ -43,9 +43,10 @@ typedef struct
 #endif
 #endif
 
-void f_pcre_create(INT32 args);
-void f_pcre_match(INT32 args);
-void f_pcre_split(INT32 args);
+void f_pcre_create(INT32);
+void f_pcre_match(INT32);
+void f_pcre_split(INT32);
 void pike_module_init(void);
 void pike_module_exit(void);
+static void free_regexp(struct object *);
 #endif

@@ -87,26 +87,27 @@ void f_pcre_create(INT32 args)
   char *locale = setlocale(LC_CTYPE, NULL); /* Get current locale for
 					     * translation table. */
 #endif
+  free_regexp(fp->current_object);
   switch(args)
   {
-  case 2:
+   case 2:
     switch(sp[-1].type) {
-    case T_STRING:
+     case T_STRING:
       opts = parse_options(sp[-1].u.string->str, &do_study);
       if(opts < 0)
 	Pike_error("PCRE.Regexp->create(): Unknown option modifier '%c'.\n", -opts);
       break;
-    case T_INT:
+     case T_INT:
       if(sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
-    default:
+     default:
       Pike_error("Bad argument 2 to PCRE.Regexp->create() - expected string.\n");
       break;
     }
     /* Fall through */
-  case 1:
+   case 1:
     if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
       Pike_error("PCRE.Regexp->create(): Invalid argument 1. Expected 8-bit string.\n");
     }
@@ -115,7 +116,10 @@ void f_pcre_create(INT32 args)
       Pike_error("PCRE.Regexp->create(): Regexp pattern contains null characters. Use \\0 instead.\n");
     
     break;
-  default:
+   case 0: /* Regexp() compatibility */
+    return;
+    
+   default:
     Pike_error("PCRE.Regexp->create(): Invalid number of arguments. Expected 1 or 2.\n");
   }
 
@@ -154,32 +158,35 @@ void f_pcre_match(INT32 args)
   char *pp;                 /* Pointer... */
   int opts = 0;             /* Match options */
   int is_match;             /* Did it match? */
+
+  if(THIS->regexp == NULL)
+    Pike_error("PCRE.Regexp not initialized.\n");
   switch(args)
   {
-  case 2:
+   case 2:
     switch(sp[-1].type) {
-    case T_STRING:
+     case T_STRING:
       opts = parse_options(sp[-1].u.string->str, NULL);
       if(opts < 0)
 	Pike_error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", -opts);
       break;
-    case T_INT:
+     case T_INT:
       if(sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
-    default:
+     default:
       Pike_error("Bad argument 2 to PCRE.Regexp->match() - expected string.\n");
       break;
     }
     /* Fall through */
-  case 1:
+   case 1:
     if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
       Pike_error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
     data = sp[-args].u.string;
     break;
-  default:
+   default:
     Pike_error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");
   }
   re = THIS->regexp;
@@ -213,6 +220,8 @@ void f_pcre_split(INT32 args)
   int *ovector, ovecsize;   /* Subpattern storage */
   int ret;                  /* Result codes */
   int i, e;                 /* Counter variable */
+  if(THIS->regexp == NULL)
+    Pike_error("PCRE.Regexp not initialized.\n");
   get_all_args("PCRE.Regexp->split", args, "%S", &data);
   switch(args) {
   case 2:
@@ -284,15 +293,9 @@ void f_pcre_split(INT32 args)
 
 static void free_regexp(struct object *o)
 {
-  if(THIS->pattern) {
-    free_string(THIS->pattern);
-  }
-  if(THIS->regexp) {
-    pcre_free(THIS->regexp);
-  }
-  if(THIS->extra) {
-    pcre_free(THIS->extra);    
-  }
+  if(THIS->pattern) { free_string(THIS->pattern); }
+  if(THIS->regexp)  { pcre_free(THIS->regexp);    }
+  if(THIS->extra)   { pcre_free(THIS->extra);     }
   MEMSET(THIS, 0, sizeof(PCRE_Regexp));
 }
 
@@ -309,7 +312,7 @@ void pike_module_init(void)
   start_new_program();
   ADD_STORAGE( PCRE_Regexp  );
   ADD_FUNCTION( "create", f_pcre_create,
-		tFunc(tStr tOr(tStr,tVoid), tVoid), 0);
+		tFunc(tOr(tStr,tVoid) tOr(tStr,tVoid), tVoid), 0);
   ADD_FUNCTION("match", f_pcre_match,
 	       tFunc(tStr tOr(tStr,tVoid), tInt), 0);
   ADD_FUNCTION("split", f_pcre_split,
