@@ -39,6 +39,7 @@ RCSID("$Id$");
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 #include "at_common.h"
 
@@ -95,6 +96,69 @@ f_unlink(INT32 args)
     push_int(ret);
 }
 
+#ifdef HAVE_MKSTEMP
+static void
+f_mkstemp(INT32 args)
+{
+    char  *buf;
+    int    ret;
+    
+    if (args != 1)
+	FERROR("mkstemp", "not enough arguments. Expected exactly 1.");
+	
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+        FERROR("mkstemp", "Wrong argument type for argument 1. Expected 8-bit string");
+	
+    buf = strdup(ARG(1).u.string->str);
+    if (!buf)
+	FERROR("mkstemp", "Out of memory (allocating %d bytes)", 
+	       ARG(1).u.string->len);
+    
+    if ((ret = mkstemp(buf)) < 0)
+	FERROR("mkstemp", "Error creating a temporary file");
+	
+    /*
+     * Some libc libraries set the permissions to 0666,
+     * let's change it here
+     */
+    fchmod(ret, 0600);
+    
+    pop_n_elems(args);
+    
+    push_int(ret);
+    free(buf);
+}
+#endif
+
+#ifdef HAVE_MKDTEMP
+static void
+f_mkdtemp(INT32 args)
+{
+    char  *dir, *ret;
+    
+    if (args < 1 || args > 2)
+	FERROR("mkdtemp", "not enough arguments. Expected 1 or 21.");
+	
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+        FERROR("mkdtemp", "Wrong argument type for argument 1. Expected 8-bit string");
+
+    dir = strdup(ARG(1).u.string->str);
+    if (!dir)
+	FERROR("mkdtemp", "Error allocating memory (requested %d bytes)",
+	       ARG(1).u.string->len);
+	       
+    ret = mkdtemp(dir);
+    
+    if (!ret)
+	FERROR("mkdtemp", "Error creating temporary directory");
+	
+    pop_n_elems(args);
+    
+    push_string(make_shared_string(ret));
+    free(dir);
+}
+#endif
+
 static void
 f_create(INT32 args)
 {
@@ -126,7 +190,17 @@ _at_system_init(void)
                  tFunc(tString tString tOr(tInt, tVoid), tInt), 0);
     ADD_FUNCTION("unlink", f_unlink,
                  tFunc(tString, tInt), 0);
-    
+		 
+#ifdef HAVE_MKSTEMP
+    ADD_FUNCTION("mkstemp", f_mkstemp,
+	         tFunc(tString, tInt), 0);
+#endif
+
+#ifdef HAVE_MKSTEMP
+    ADD_FUNCTION("mkdtemp", f_mkdtemp,
+	         tFunc(tString tOr(tString, tVoid), tString), 0);
+#endif
+
     system_program = end_program();
     add_program_constant("System", system_program, 0);
     
