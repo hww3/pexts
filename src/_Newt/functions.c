@@ -2435,7 +2435,7 @@ void init_functions()
 #endif
 
 #ifdef HAVE_NEWTCURSORON
-    ADD_FUNCTION("cursorOff", f_cursorOff, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("cursorOn", f_cursorOff, tFunc(tVoid, tVoid), 0);
 #endif
 
     ADD_FUNCTION("compactButton", f_compactButton, tFunc(tInt tInt tString, tVoid), 0);
