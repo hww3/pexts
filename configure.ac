@@ -447,7 +447,9 @@ fi
 
 #############################################################
 # Optimization flags...
-
+#
+# Do we really need that crap here?
+# /grendel, 19.03.2003
 WARN=""
 OPTIMIZE=""
 
