@@ -1,8 +1,8 @@
-diff -U3 --new-file -r pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure.ac
---- pexts.orig/src/PCRE/configure.ac	2002-12-26 21:19:21.000000000 +0100
-+++ pexts/src/PCRE/configure.ac	2002-12-26 21:39:52.000000000 +0100
+diff -U3 -r --new-file pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure.ac
+--- pexts.orig/src/PCRE/configure.ac	2003-03-31 02:33:35.000000000 +0200
++++ pexts/src/PCRE/configure.ac	2003-05-25 03:43:32.000000000 +0200
 @@ -4,7 +4,7 @@
- CAUDIUM_MODULE_INIT()
+ CAUDIUM_MODULE_INIT([PCRE])
  
  AH_BOTTOM([
 -#include "pcrelib/pcre.h"
@@ -26,5 +26,29 @@ diff -U3 --new-file -r pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure
 +AC_CHECK_HEADERS(locale.h pcre.h)
 +AC_CHECK_FUNCS(setlocale )
  
- AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+ AC_SUBST(makefile_rules)
+ AC_OUTPUT(Makefile)
+diff -U3 -r --new-file pexts.orig/src/PCRE/Makefile.in pexts/src/PCRE/Makefile.in
+--- pexts.orig/src/PCRE/Makefile.in	2003-03-31 02:14:43.000000000 +0200
++++ pexts/src/PCRE/Makefile.in	2003-05-25 03:42:27.000000000 +0200
+@@ -1,17 +1,15 @@
+ VPATH=@srcdir@:@srcdir@/../..:../..
+ MODNAME=PCRE
+-OBJS= pcre.o pcrelib/libpcre.a
++OBJS= pcre.o
+ SOURCES=pcre.c
+-MODULE_LIBS=@LIBS@
++MODULE_CFLAGS=@PCRE_CFLAGS@
++MODULE_LIBS=@LIBS@ @PCRE_LIBS@
+ EXTRA_CLEAN=pcre_config.h pcre_config.h.in PCRE.so
+ 
+ include @makefile_rules@
+ 
+ extrainstall:
+ 
+-pcrelib/libpcre.a: pcrelib/config.h pcrelib/dftables.c pcrelib/get.c pcrelib/internal.h pcrelib/maketables.c pcrelib/pcre.c pcrelib/pcre.h pcrelib/pcretest.c pcrelib/study.c
+-	(cd pcrelib ; ${MAKE} )
+-
+ # DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+ 
  
