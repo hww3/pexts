@@ -48,6 +48,15 @@ RCSID("$Id$");
 
 static char *_object_name = "System";
 static struct program *system_program;
+static struct program *mkstemp_program;
+
+typedef struct
+{
+    struct pike_string    *fname;
+    int                    fd;
+} MKSTEMP_STORAGE;
+
+#define THIS_MKSTEMP ((MKSTEMP_STORAGE*)get_storage(fp->current_object, mkstemp_program))
 
 static void
 f_ln(INT32 args)
@@ -98,10 +107,47 @@ f_unlink(INT32 args)
 
 #ifdef HAVE_MKSTEMP
 static void
+f_temp_create(INT32 args)
+{
+    // No need to check the arguments - we create the object here
+    THIS_MKSTEMP->fname = ARG(1).u.string;
+    add_ref(THIS_MKSTEMP->fname);
+
+    THIS_MKSTEMP->fd = ARG(2).u.integer;
+
+    pop_n_elems(args);
+}
+
+f_temp_name(INT32 args)
+{
+    pop_n_elems(args);
+
+    push_string(THIS_MKSTEMP->fname);
+}
+
+f_temp_fd(INT32 args)
+{
+    pop_n_elems(args);
+
+    push_int(THIS_MKSTEMP->fd);
+}
+
+f_temp_truncate(INT32 args)
+{
+    int   ret;
+    
+    pop_n_elems(arg);
+    ret = ftruncate(THIS_MKSTEMP->fd, 0);
+
+    push_int(ret);
+}
+
+static void
 f_mkstemp(INT32 args)
 {
-    char  *buf;
-    int    ret;
+    char            *buf;
+    int              ret;
+    struct object   *obj;
     
     if (args != 1)
 	FERROR("mkstemp", "not enough arguments. Expected exactly 1.");
@@ -124,8 +170,12 @@ f_mkstemp(INT32 args)
     fchmod(ret, 0600);
     
     pop_n_elems(args);
-    
+
+    push_string(make_shared_string(buf));
     push_int(ret);
+    obj = clone_object(mkstemp_program, 2);
+
+    push_object(obj);
     free(buf);
 }
 #endif
@@ -193,7 +243,7 @@ _at_system_init(void)
 		 
 #ifdef HAVE_MKSTEMP
     ADD_FUNCTION("mkstemp", f_mkstemp,
-	         tFunc(tString, tInt), 0);
+	         tFunc(tString, tObj), 0);
 #endif
 
 #ifdef HAVE_MKDTEMP
@@ -203,6 +253,19 @@ _at_system_init(void)
 
     system_program = end_program();
     add_program_constant("System", system_program, 0);
+
+    start_new_program();
+    ADD_STORAGE(MKSTEMP_STORAGE);
+    
+    ADD_FUNCTION("create", f_temp_create,
+                 tFunc(tString tInt, tVoid), 0);
+    ADD_FUNCTION("name", f_temp_name,
+                 tFunc(tVoid, tString), 0);
+    ADD_FUNCTION("fd", f_temp_fd,
+                 tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("truncate", f_temp_truncate,
+                 tFunc(tVoid, tInt), 0);
+    mkstemp_program = end_program();
     
     return system_program;
 }
