@@ -28,12 +28,6 @@ RCSID("$Id$");
 #include "caudium_util.h"
 #include "bz2_config.h"
 
-#define MODULE_MAJOR 0
-#define MODULE_MINOR 5
-#define MODULE_BUILD 1
-
-
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

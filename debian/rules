@@ -29,7 +29,10 @@ configure-stamp:
 	    ./autogen.sh; \
 	fi
 	CFLAGS=-O2 ./configure --prefix=/usr \
-	                       --with-pike=$(PIKE)
+	                       --with-pike=$(PIKE) \
+			       --without-_esmtp \
+			       --without-_FDF \
+			       --without-PDF
 
 	touch configure-stamp
 

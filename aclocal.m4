@@ -304,4 +304,187 @@ return !!mcrypt_check_version(NULL);
   AC_SUBST(LIBMCRYPT_LIBS)
 ])
 
+dnl AM_PATH_LIBESMTP([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, MODULES]]]])
+dnl Test for LIBESMTP, and define LIBESMTP_CFLAGS and LIBESMTP_LIBS
+dnl
+AC_DEFUN(ACX_PATH_LIBESMTP,
+[dnl 
+dnl Get the cflags and libraries from the libesmtp-config script
+dnl
+AC_ARG_WITH(libesmtp-prefix,[  --with-libesmtp-prefix=PFX   Prefix where LIBESMTP is installed (optional)],
+            libesmtp_config_prefix="$withval", libesmtp_config_prefix="")
+AC_ARG_WITH(libesmtp-exec-prefix,[  --with-libesmtp-exec-prefix=PFX Exec prefix where LIBESMTP is installed (optional)],
+            libesmtp_config_exec_prefix="$withval", libesmtp_config_exec_prefix="")
+AC_ARG_ENABLE(libesmtptest, [  --disable-libesmtptest       Do not try to compile and run a test LIBESMTP program],
+		    , enable_libesmtptest=yes)
+
+  if test x$libesmtp_config_exec_prefix != x ; then
+     libesmtp_config_args="$libesmtp_config_args --exec-prefix=$libesmtp_config_exec_prefix"
+     if test x${LIBESMTP_CONFIG+set} != xset ; then
+        LIBESMTP_CONFIG=$libesmtp_config_exec_prefix/bin/libesmtp-config
+     fi
+  fi
+  if test x$libesmtp_config_prefix != x ; then
+     libesmtp_config_args="$libesmtp_config_args --prefix=$libesmtp_config_prefix"
+     if test x${LIBESMTP_CONFIG+set} != xset ; then
+        LIBESMTP_CONFIG=$libesmtp_config_prefix/bin/libesmtp-config
+     fi
+  fi
+
+  AC_PATH_PROG(LIBESMTP_CONFIG, libesmtp-config, no)
+  min_libesmtp_version=ifelse([$1], ,0.99.7,$1)
+  AC_MSG_CHECKING(for LIBESMTP - version >= $min_libesmtp_version)
+  no_libesmtp=""
+  if test "$LIBESMTP_CONFIG" = "no" ; then
+    no_libesmtp=yes
+  else
+    LIBESMTP_CFLAGS=`$LIBESMTP_CONFIG $libesmtp_config_args --cflags`
+    LIBESMTP_LIBS=`$LIBESMTP_CONFIG $libesmtp_config_args --libs`
+    libesmtp_config_major_version=`$LIBESMTP_CONFIG $libesmtp_config_args --version | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
+    libesmtp_config_minor_version=`$LIBESMTP_CONFIG $libesmtp_config_args --version | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\2/'`
+    libesmtp_config_micro_version=`$LIBESMTP_CONFIG $libesmtp_config_args --version | \
+           sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\3/'`
+    if test "x$enable_libesmtptest" = "xyes" ; then
+      ac_save_CFLAGS="$CFLAGS"
+      ac_save_LIBS="$LIBS"
+      CFLAGS="$CFLAGS $LIBESMTP_CFLAGS"
+      LIBS="$LIBESMTP_LIBS $LIBS"
+dnl
+dnl Now check if the installed LIBESMTP is sufficiently new. (Also sanity
+dnl checks the results of libesmtp-config to some extent
+dnl
+      rm -f conf.libesmtptest
+      AC_TRY_RUN([
+#include <libesmtp/libesmtp.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int 
+main ()
+{
+  int major, minor, micro;
+  char *tmp_version;
+
+  system ("touch conf.libesmtptest");
+
+  /* HP/UX 9 (%@#!) writes to sscanf strings */
+  tmp_version = g_strdup("$min_libesmtp_version");
+  if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
+     printf("%s, bad version string\n", "$min_libesmtp_version");
+     exit(1);
+   }
+
+  if ((libesmtp_major_version != $libesmtp_config_major_version) ||
+      (libesmtp_minor_version != $libesmtp_config_minor_version) ||
+      (libesmtp_micro_version != $libesmtp_config_micro_version))
+    {
+      printf("\n*** 'libesmtp-config --version' returned %d.%d.%d, but LIBESMTP+ (%d.%d.%d)\n", 
+             $libesmtp_config_major_version, $libesmtp_config_minor_version, $libesmtp_config_micro_version,
+             libesmtp_major_version, libesmtp_minor_version, libesmtp_micro_version);
+      printf ("*** was found! If libesmtp-config was correct, then it is best\n");
+      printf ("*** to remove the old version of LIBESMTP+. You may also be able to fix the error\n");
+      printf("*** by modifying your LD_LIBRARY_PATH enviroment variable, or by editing\n");
+      printf("*** /etc/ld.so.conf. Make sure you have run ldconfig if that is\n");
+      printf("*** required on your system.\n");
+      printf("*** If libesmtp-config was wrong, set the environment variable LIBESMTP_CONFIG\n");
+      printf("*** to point to the correct copy of libesmtp-config, and remove the file config.cache\n");
+      printf("*** before re-running configure\n");
+    } 
+#if defined (LIBESMTP_MAJOR_VERSION) && defined (LIBESMTP_MINOR_VERSION) && defined (LIBESMTP_MICRO_VERSION)
+  else if ((libesmtp_major_version != LIBESMTP_MAJOR_VERSION) ||
+	   (libesmtp_minor_version != LIBESMTP_MINOR_VERSION) ||
+           (libesmtp_micro_version != LIBESMTP_MICRO_VERSION))
+    {
+      printf("*** LIBESMTP+ header files (version %d.%d.%d) do not match\n",
+	     LIBESMTP_MAJOR_VERSION, LIBESMTP_MINOR_VERSION, LIBESMTP_MICRO_VERSION);
+      printf("*** library (version %d.%d.%d)\n",
+	     libesmtp_major_version, libesmtp_minor_version, libesmtp_micro_version);
+    }
+#endif /* defined (LIBESMTP_MAJOR_VERSION) ... */
+  else
+    {
+      if ((libesmtp_major_version > major) ||
+        ((libesmtp_major_version == major) && (libesmtp_minor_version > minor)) ||
+        ((libesmtp_major_version == major) && (libesmtp_minor_version == minor) && (libesmtp_micro_version >= micro)))
+      {
+        return 0;
+       }
+     else
+      {
+        printf("\n*** An old version of LIBESMTP+ (%d.%d.%d) was found.\n",
+               libesmtp_major_version, libesmtp_minor_version, libesmtp_micro_version);
+        printf("*** You need a version of LIBESMTP+ newer than %d.%d.%d. The latest version of\n",
+	       major, minor, micro);
+        printf("*** LIBESMTP+ is always available from ftp://ftp.libesmtp.org.\n");
+        printf("***\n");
+        printf("*** If you have already installed a sufficiently new version, this error\n");
+        printf("*** probably means that the wrong copy of the libesmtp-config shell script is\n");
+        printf("*** being found. The easiest way to fix this is to remove the old version\n");
+        printf("*** of LIBESMTP+, but you can also set the LIBESMTP_CONFIG environment to point to the\n");
+        printf("*** correct copy of libesmtp-config. (In this case, you will have to\n");
+        printf("*** modify your LD_LIBRARY_PATH enviroment variable, or edit /etc/ld.so.conf\n");
+        printf("*** so that the correct libraries are found at run-time))\n");
+      }
+    }
+  return 1;
+}
+],, no_libesmtp=yes,[echo $ac_n "cross compiling; assumed OK... $ac_c"])
+       CFLAGS="$ac_save_CFLAGS"
+       LIBS="$ac_save_LIBS"
+     fi
+  fi
+  if test "x$no_libesmtp" = x ; then
+     AC_MSG_RESULT(yes)
+     ifelse([$2], , :, [$2])     
+  else
+     AC_MSG_RESULT(no)
+     if test "$LIBESMTP_CONFIG" = "no" ; then
+       echo "*** The libesmtp-config script installed by LIBESMTP could not be found"
+       echo "*** If LIBESMTP was installed in PREFIX, make sure PREFIX/bin is in"
+       echo "*** your path, or set the LIBESMTP_CONFIG environment variable to the"
+       echo "*** full path to libesmtp-config."
+     else
+       if test -f conf.libesmtptest ; then
+        :
+       else
+          echo "*** Could not run LIBESMTP test program, checking why..."
+          CFLAGS="$CFLAGS $LIBESMTP_CFLAGS"
+          LIBS="$LIBS $LIBESMTP_LIBS"
+          AC_TRY_LINK([
+#include <libesmtp/libesmtp.h>
+#include <stdio.h>
+],      [ return ((libesmtp_major_version) || (libesmtp_minor_version) || (libesmtp_micro_version)); ],
+        [ echo "*** The test program compiled, but did not run. This usually means"
+          echo "*** that the run-time linker is not finding LIBESMTP or finding the wrong"
+          echo "*** version of LIBESMTP. If it is not finding LIBESMTP, you'll need to set your"
+          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
+          echo "*** is required on your system"
+	  echo "***"
+          echo "*** If you have an old version installed, it is best to remove it, although"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
+          echo "***"
+          echo "*** If you have a RedHat 5.0 system, you should remove the LIBESMTP package that"
+          echo "*** came with the system with the command"
+          echo "***"
+          echo "***    rpm --erase --nodeps libesmtp libesmtp-devel" ],
+        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** exact error that occured. This usually means LIBESMTP was incorrectly installed"
+          echo "*** or that you have moved LIBESMTP since it was installed. In the latter case, you"
+          echo "*** may want to edit the libesmtp-config script: $LIBESMTP_CONFIG" ])
+          CFLAGS="$ac_save_CFLAGS"
+          LIBS="$ac_save_LIBS"
+       fi
+     fi
+     LIBESMTP_CFLAGS=""
+     LIBESMTP_LIBS=""
+     ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(LIBESMTP_CFLAGS)
+  AC_SUBST(LIBESMTP_LIBS)
+  rm -f conf.libesmtptest
+])
+
 dnl *-*wedit:notab*-*  Please keep this as the last line.

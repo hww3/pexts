@@ -1,3 +1,23 @@
+pexts (0.0.20020219-1) unstable; urgency=low
+
+  * Latest snapshot
+  * Compiled for new pike
+  * Fixed some bugs in the _Newt module
+
+ -- Marek Habersack <grendel@debian.org>  Tue, 19 Feb 2002 12:55:49 +0100
+
+pexts (0.0.20011016-1.1) unstable; urgency=low
+
+  * NMU to fix build-failure
+  * debian/control:
+    - Build-Depend on autoconf (Closes: #116392)
+    - bumped Standards-Version (lintian-clean)
+  * debian/copyright: correct path to GPL
+  * debian/rules: comment out the call to dh_testversion in binary-arch rule
+    as it already was in binary-indep
+
+ -- Branden Robinson <branden@debian.org>  Mon,  5 Nov 2001 09:25:21 -0500
+
 pexts (0.0.20011016-1) unstable; urgency=low
 
   * Latest upstream sources
