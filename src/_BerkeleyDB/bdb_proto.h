@@ -28,7 +28,6 @@ void pike_module_exit(void);
 #ifdef HAVE_BDB
 
 /* DB functions */
-extern struct program *bdb_program;
 void free_bdb_struct(struct object *o);
 void init_bdb_struct(struct object *o);
 void f_bdb_open(INT32 args);
@@ -37,5 +36,7 @@ void f_bdb_put(INT32 args);
 void f_bdb_get(INT32 args);
 void f_bdb_del(INT32 args);
 void f_bdb_sync(INT32 args);
+
+void f_bdb_init_db_program(void);
 
 #endif

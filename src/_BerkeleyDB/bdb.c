@@ -36,22 +36,8 @@ RCSID("$Id$");
 void pike_module_init( void )
 {
 #ifdef HAVE_BDB
-  start_new_program();
-  ADD_STORAGE( BDB_Storage  );
-  add_function( "create", f_bdb_create, "function(void:void)", 0 );
-  add_function( "open", f_bdb_open, "function(string,string,int,int,int:int)",
-		0 );
-  add_function( "put", f_bdb_put, "function(string,string,int:int)",0 );
-  add_function( "get", f_bdb_get, "function(string:string)",0 );
-  add_function( "del", f_bdb_del, "function(string:int)",0 );
-  add_function( "sync", f_bdb_sync, "function(void:int)",0 );
-
-  set_exit_callback(free_bdb_struct);
-  set_init_callback(init_bdb_struct);
-  bdb_program = end_program();
-  add_program_constant("DB", bdb_program, 0);
-
-
+  f_bdb_init_db_program();
+ 
   /* Open flags */
   add_integer_constant("DB_CREATE", DB_CREATE, 0);
   add_integer_constant("DB_EXCL", DB_EXCL, 0);
@@ -71,8 +57,5 @@ void pike_module_init( void )
 /* Restore and exit module */
 void pike_module_exit( void )
 {
-#if HAVE_BDB
-  free_program(bdb_program);
-#endif
 }
 

@@ -34,7 +34,6 @@ RCSID("$Id$");
 
 #ifdef HAVE_BDB
 
-struct program *bdb_program;
 
 /* Free the storage */
 void free_bdb_struct(struct object *o)
@@ -51,6 +50,22 @@ void init_bdb_struct(struct object *o)
   BDB->db = NULL;
   BDB->state = 0;
   BDB->txnid = NULL;
+}
+
+/* Initialize program */
+void f_bdb_init_db_program(void) {
+  start_new_program();
+  ADD_STORAGE( BDB_Storage  );
+  ADD_FUNCTION( "create", f_bdb_create, tFunc(tVoid, tVoid), 0 );
+  ADD_FUNCTION( "open", f_bdb_open, tFunc(tStr tStr tInt tInt tInt, tInt), 0);
+  ADD_FUNCTION( "put", f_bdb_put, tFunc(tStr tStr tInt, tInt), 0);
+  ADD_FUNCTION( "get", f_bdb_get, tFunc(tStr, tStr), 0);
+  ADD_FUNCTION( "del", f_bdb_del, tFunc(tStr, tInt), 0);
+  ADD_FUNCTION( "sync", f_bdb_sync, tFunc(tVoid, tInt), 0);
+
+  set_exit_callback(free_bdb_struct);
+  set_init_callback(init_bdb_struct);
+  end_class("db", 0);
 }
 
 void f_bdb_create(INT32 args)
