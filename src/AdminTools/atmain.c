@@ -19,6 +19,7 @@
  * Simple glue for more advanced Unix functions.
 */
 #define _GNU_SOURCE
+#define _POSIX_PTHREAD_SEMANTICS
 
 #include "global.h"
 RCSID("$Id$");
@@ -502,12 +503,96 @@ f_closedir(INT32 args)
 #endif
 
 #if defined(HAVE_READDIR) || defined(HAVE_READDIR_R)
+static void
+push_dirent(struct dirent *dent)
+{
+    /* [0] - entry inode number (d_ino; POSIX) */
+    push_int(dent->d_ino);
+    
+    /* 
+     * [1] - offset of disk directory entry (d_off) 
+     *  On systems that don't have this member, this is set
+     *  to 0;
+     */
+#ifdef HAVE_DIRENT_D_OFF
+    push_int(dent->d_off);
+#else
+    push_int(0);
+#endif
+
+    /* [2] - name of file (d_name; POSIX) */
+    push_text(dent->d_name);
+    
+#ifdef HAVE_DIRENT_D_TYPE
+    /* 
+     * [3] - type of file (not all systems) (d_type) 
+     *  This is fully supported only on BSD-compliant
+     *  systems that define this field. If it is not
+     *  supported by the system, it will be set to 'U' 
+     *  which corresponds to DT_UNKNOWN.
+     */
+     
+     switch(dent->d_type) {
+        case DT_UNKNOWN:
+	    push_text("U");
+	    break;
+	    
+	case DT_REG:
+	    push_text("R");
+	    break;
+	    
+	case DT_DIR:
+	    push_text("D");
+	    break;
+	    
+	case DT_FIFO:
+	    push_text("F");
+	    break;
+	    
+	case DT_SOCK:
+	    push_text("S");
+	    break;
+	    
+	case DT_CHR:
+	    push_text("C");
+	    break;
+	    
+	case DT_BLK:
+	    push_text("B");
+	    break;
+	    
+	default:
+	    push_text("?");
+	    break;
+     };
+#else
+    push_text("U");
+#endif
+}
+
+/*
+ * This is the recommended safe way of calling readdir_r
+ */
+typedef union {
+    struct dirent   d;
+    char b[offsetof(struct dirent, d_name) + NAME_MAX + 1];
+} DIRENT;
+
 static struct dirent*
 my_readdir(DIR *dir)
 {
-#if defined(_REENTRANT) && defined(HAVE_READDIR_R)    
+    struct dirent   *dent;
+    
+#if defined(_REENTRANT) && defined(HAVE_READDIR_R)
+    DIRENT          dent2;
+    
+    if (readdir_r(dir, &dent2.d, &dent) != 0)
+	error("AdminTools.Directory->read(): error reading directory.\n");
 #else
+    dent = readdir(dir);
 #endif
+
+    return dent;
 }
 #endif
 
@@ -515,7 +600,6 @@ my_readdir(DIR *dir)
 static void
 f_readdir(INT32 args)
 {
-
     struct dirent   *dent;
     
     if (!THIS->dir.dir) {
@@ -524,7 +608,9 @@ f_readdir(INT32 args)
     }
     
     dent = my_readdir(THIS->dir.dir);
-
+    pop_n_elems(args);
+    
+    push_dent(dent);
 }
 #else
 static void
@@ -537,7 +623,13 @@ f_readdir(INT32 args)
 #ifdef HAVE_REWINDDIR
 static void
 f_rewinddir(INT32 args)
-{}
+{
+    pop_n_elems(args);
+    if (!THIS->dir.dir)
+	return;
+	
+    rewinddir(THIS->dir.dir);
+}
 #else
 static void
 f_rewinddir(INT32 args)
@@ -549,7 +641,24 @@ f_rewinddir(INT32 args)
 #ifdef HAVE_SEEKDIR
 static void
 f_seekdir(INT32 args)
-{}
+{
+    off_t     soff = 0;
+    
+    if (!THIS->dir.dir) {
+	pop_n_elems(args);
+	return;
+    }
+    
+    if (args == 1) {
+	if (ARG(1).type != T_INT)
+	    error("AdminTools.Directory->seek(): Wrong argument type for argument 1 - expected int.\n");
+	soff = ARG(1).u.integer;
+    } else
+	error("AdminTools.Directory->seek(): Wrong number of arguments. Expected 1 (int).\n");
+
+    pop_n_elems(args);
+    seekdir(THIS->dir.dir, soff);
+}
 #else
 static void
 f_seekdir(INT32 args)
@@ -561,7 +670,19 @@ f_seekdir(INT32 args)
 #ifdef HAVE_TELLDIR
 static void
 f_telldir(INT32 args)
-{}
+{
+    off_t     pos;
+    
+    pop_n_elems(args);
+    if (!THIS->dir.dir) {
+
+	push_int(-1);
+	return;
+    }
+    
+    pos = telldir(THIS->dir.dir);
+    push_int(pos);
+}
 #else
 static void
 f_telldir(INT32 args)
@@ -645,7 +766,10 @@ void pike_module_init(void)
     add_function("open", f_opendir, "function(string:void)", 0);
     add_function("close", f_closedir, "function(void:int)", 0);
     add_function("read", f_readdir, "function(void:array)", 0);
-
+    add_function("rewind", f_rewinddir, "function(void:void)", 0);
+    add_function("seek", f_seekdir, "function(void|int:void)", 0);
+    add_function("tell", f_telldir, "function(void:int)", 0);
+    
     dir_program = end_program();
     add_program_constant("Directory", dir_program, 0);
 }

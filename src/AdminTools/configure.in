@@ -32,6 +32,54 @@ else
   AC_MSG_RESULT(no)
 fi
 
+if test "$ac_cv_header_dirent_h" = yes; then
+    AC_MSG_CHECKING(for struct dirent with d_type)
+    AC_CACHE_VAL(atools_cv_struct_dirent_d_type,
+    [
+    AC_TRY_RUN([
+    #include <dirent.h>
+    int main()
+    {
+	struct dirent   dent;
+	
+	dent.d_type = 1;
+	return 0;
+    }
+    ],atools_cv_struct_dirent_d_type=yes,atools_cv_struct_dirent_d_type=no,
+    atools_cv_struct_dirent_d_type=no)
+    ])
+    
+    if test "$atools_cv_struct_dirent_d_type" = yes; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_DIRENT_D_TYPE)
+    else
+	AC_MSG_RESULT(no)
+    fi
+    
+    AC_MSG_CHECKING(for struct dirent with d_off)
+    AC_CACHE_VAL(atools_cv_struct_dirent_d_off,
+    [
+    AC_TRY_RUN([
+    #include <dirent.h>
+    int main()
+    {
+	struct dirent   dent;
+	
+	dent.d_off = 1;
+	return 0;
+    }
+    ],atools_cv_struct_dirent_d_off=yes,atools_cv_struct_dirent_d_off=no,
+    atools_cv_struct_dirent_d_off=no)
+    ])
+    
+    if test "$atools_cv_struct_dirent_d_off" = yes; then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_DIRENT_D_OFF)
+    else
+	AC_MSG_RESULT(no)
+    fi
+fi
+
 if test "$ac_cv_func_getspnam_r" = "yes"; then
   AC_MSG_CHECKING([if getspnam_r takes 4 (Solaris) or 5 (Linux) arguments])
   AC_CACHE_VAL(atools_cv_have_solaris_getspnam_r, [

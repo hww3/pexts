@@ -18,4 +18,10 @@
 /* Define if you have solaris and have this func */
 #undef HAVE_SOLARIS_GETSPENT_R
 
+/* Define if your system has the d_type member in struct dirent */
+#undef HAVE_DIRENT_D_TYPE
+
+/* Define if your system has the d_off member in struct dirent */
+#undef HAVE_DIRENT_D_OFF
+
 #endif
