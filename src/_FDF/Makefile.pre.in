@@ -1,0 +1,15 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=_FDF
+OBJS= fdf_main.o
+SOURCES=fdf_main.c
+MODULE_LIBS=@LIBS@
+#MODULE_CFLAGS=
+EXTRA_CLEAN=fdf_config.h fdf_config.h.in _FDF.so
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

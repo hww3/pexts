@@ -101,4 +101,16 @@ Gzip:
          one.
   TODO: implement streamed decompression
         implement compression in all modes
+
+_esmtp:
+  Module that implements the interface to the libesmtp library that
+  provides client side of the SMTP protocol.
+  Requires: http://www.stafford.uklinux.net/libesmtp/
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  Notes: WIP
   
+_FDF:
+  Pike glue to the Adobe FDF SDK.
+  Requires: http://partners.adobe.com/asn/developer/acrosdk/forms.html
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  Notes: WIP

@@ -1,0 +1,14 @@
+AC_INIT(fdf_main.c)
+AC_CONFIG_HEADER(fdf_config.h)
+
+CAUDIUM_MODULE_INIT()
+
+AC_CHECK_HEADERS(fdftk.h)
+AC_CHECK_LIB(fdftk, FDFOpen)
+
+AC_OUTPUT(Makefile.pre, [${MAKE-make} -f Makefile.pre depend])
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	
