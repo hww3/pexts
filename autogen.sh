@@ -23,18 +23,18 @@ gather_modules()
   read MODLINE MODDEFAULT
   while [ -n "$MODLINE" ]; do
    cat <<EOF | tr -d '\n' >> $tmpfile_with
-AC_ARG_WITH(\\$MODLINE,\n
-  AC_HELP_STRING(\\[--with-\\$MODLINE\\],\\[compile with the \\$MODLINE module\\]), \\[\n
-    if test "x\\\$withval" != "xno"; then\n
-       ENABLE_MODULES="\\\$ENABLE_MODULES $MODLINE"; export ENABLE_MODULES\n
-       MODULE_${MODLINE}_ENABLED=yes; export MODULE_${MODLINE}_ENABLED\n
-    fi\\], \\[\n
-    if test "x$MODDEFAULT" = "xdefault"; then\n
-       ENABLE_MODULES="\\\$ENABLE_MODULES $MODLINE"; export ENABLE_MODULES\n
-       MODULE_${MODLINE}_ENABLED=yes; export MODULE_${MODLINE}_ENABLED\n
-    fi\n
-  \\])\n
-\n
+AC_ARG_WITH(\\$MODLINE, þ
+  AC_HELP_STRING(\\[--with-\\$MODLINE\\],\\[compile with the \\$MODLINE module\\]), \\[þ
+    if test "x\\\$withval" != "xno"; thenþ
+       ENABLE_MODULES="\\\$ENABLE_MODULES $MODLINE"; export ENABLE_MODULESþ
+       MODULE_${MODLINE}_ENABLED=yes; export MODULE_${MODLINE}_ENABLEDþ
+    fi\\], \\[þ
+    if test "x$MODDEFAULT" = "xdefault"; thenþ
+       ENABLE_MODULES="\\\$ENABLE_MODULES $MODLINE"; export ENABLE_MODULESþ
+       MODULE_${MODLINE}_ENABLED=yes; export MODULE_${MODLINE}_ENABLEDþ
+    fiþ
+  \\])þ
+þ
 EOF
 	MODULES="$MODULES $MODLINE"
 	read MODLINE MODDEFAULT
@@ -48,9 +48,9 @@ gather_subdirs()
   read MODLINE MODDEFAULT
   while [ -n "$MODLINE" ]; do
     cat <<EOF | tr -d '\n' >> $tmpfile_subdirs
-if test "x\\\$MODULE_${MODLINE}_ENABLED" = "xyes"; then\n
-  AC_CONFIG_SUBDIRS($MODLINE)\n
-fi\n
+if test "x\\\$MODULE_${MODLINE}_ENABLED" = "xyes"; thenþ
+  AC_CONFIG_SUBDIRS($MODLINE)þ
+fiþ
 EOF
     read MODLINE MODDEFAULT
   done
@@ -64,7 +64,8 @@ create_config()
     fi    
 
     sed -e "s#@enabled_modules_pre@#`cat $tmpfile_subdirs`#g" \
-        -e "s#@module_with_pre@#`cat $tmpfile_with`#g" < $1 > `dirname $1`/configure.ac
+        -e "s#@module_with_pre@#`cat $tmpfile_with`#g" < $1 \
+	| tr '\376' '\n' > `dirname $1`/configure.ac
 }
 
 echo "Cleaning the directories"
