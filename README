@@ -17,6 +17,8 @@ Installing
 
   From CVS:
   +++++++++
+    (execute these commands in the _top_ directory)
+
     ./autogen.sh
     ./configure [--with-pike=/path/to/pike]
     make install
