@@ -340,9 +340,11 @@ static void
 f_shadow_create(INT32 args)
 {
     pop_n_elems(args);
+#ifdef HAVE_SYSCONF
     THIS->shadow.sp_buf_max = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (THIS->shadow.sp_buf_max < 0)
-        THIS->shadow.sp_buf_max = 2048;
+#endif
+      THIS->shadow.sp_buf_max = 2048;
 }
 
 /*

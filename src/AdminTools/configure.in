@@ -4,8 +4,9 @@ AC_CONFIG_HEADER(at_config.h)
 PEXTS_MODULE_INIT()
 
 AC_CHECK_HEADERS(shadow.h dirent.h)
-AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir readdir readdir_r \
-               rewinddir seekdir telldir scandir alphasort versionsort) 
+AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
+			   readdir readdir_r rewinddir seekdir telldir scandir      \
+			   alphasort versionsort sysconf) 
 
 AC_MSG_CHECKING(for working (and failsafe) strerror)
 AC_CACHE_VAL(atools_cv_func_failsafe_strerror,
