@@ -1,8 +1,6 @@
 Developers are encouraged to use the licensing block given below in their source files.
 
 ----- CUT HERE -----
-/* -*-Pike-*-
- *
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000-2003 The Caudium Group
