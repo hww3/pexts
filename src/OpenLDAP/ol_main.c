@@ -42,7 +42,6 @@ RCSID("$Id$");
 #include <sys/types.h>
 
 #ifdef HAVE_LIBLDAP
-static struct program   *ldap_program;
 
 void pike_module_init(void)
 {
@@ -70,12 +69,13 @@ void pike_module_init(void)
     add_integer_constant("LDAP_SCOPE_ONELEVEL", LDAP_SCOPE_ONELEVEL, 0);
     add_integer_constant("LDAP_SCOPE_SUBTREE", LDAP_SCOPE_SUBTREE, 0);
     
-    ldap_program = _ol_ldap_program_init();
+    _ol_ldap_program_init();
 }
 
 void pike_module_exit(void)
 {
   free_program(ldap_program);
+  free_program(result_program);
 }
 #else /* !HAVE_LIBLDAP */
 void pike_module_init()

@@ -442,7 +442,8 @@ f_ldap_search(INT32 args)
         push_int(ret);
         return;
     }
-    
+
+    THIS->data = res;
     obj = clone_program(result_program, 2);
     push_object(obj);
 
@@ -500,7 +501,7 @@ exit_ldap(struct object *o)
     free_string(empty_str);
 }
 
-struct program*
+void
 _ol_ldap_program_init(void)
 {
     start_new_program();
@@ -540,12 +541,10 @@ _ol_ldap_program_init(void)
                            tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
                        tOr(tObj, tInt)), 0);
 
-    result_program = _ol_result_program_init();
+    _ol_result_program_init();
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);
-    
-    return ldap_program;
 }
 #else /* !HAVE_LIBLDAP */
 struct program*

@@ -77,6 +77,8 @@ typedef struct
     int                  lerrno;
     int                  bound:1;
     int                  caching:1;
+
+    void                *data;
 } OLSTORAGE;
 
 typedef struct
@@ -86,7 +88,10 @@ typedef struct
 } OLRSTORAGE;
 #endif
 
-struct program* _ol_ldap_program_init(void);
-struct program* _ol_result_program_init(void);
+void _ol_ldap_program_init(void);
+void _ol_result_program_init(void);
+
+extern struct program   *ldap_program;
+extern struct program   *result_program;
 
 #endif
