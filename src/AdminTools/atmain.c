@@ -19,22 +19,20 @@
  * Simple glue for more advanced Unix functions.
 */
 #define _GNU_SOURCE
+#include "global.h"
 RCSID("$Id$");
 
 /*
  * Pike includes
  */
-#include "global.h"
 #include "stralloc.h"
-#include "mapping.h"
-#include "array.h"
 #include "pike_macros.h"
 #include "module_support.h"
+#include "program.h"
 #include "error.h"
 #include "threads.h"
-#include "object.h"
-#include "svalue.h"
-#include "interpret.h"
+#include "array.h"
+
 
 #include "at_config.h"
 
