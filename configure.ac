@@ -467,14 +467,14 @@ if test $cflags_is_set = no; then
 # The -sparclite option seems to generate assembler that /bin/as doesn't
 # understand.	/grubba 1998-07-17
 #  AC_SYS_CPU_COMPILER_FLAG(sun4c,-msparclite,sparclite,OPTIMIZE)
-  AC_SYS_CPU_COMPILER_FLAG(sun4m,-mv8,microsparc,OPTIMIZE)
-  AC_SYS_CPU_COMPILER_FLAG(sun4d,-msupersparc,supersparc,OPTIMIZE)
-  AC_SYS_CPU_COMPILER_FLAG(sun4u,-msupersparc,ultrasparc,OPTIMIZE)
+  AC_SYS_CPU_COMPILER_FLAG(sun4m,-mcpu=v8,microsparc,OPTIMIZE)
+  AC_SYS_CPU_COMPILER_FLAG(sun4d,-mcpu=v8,supersparc,OPTIMIZE)
+  AC_SYS_CPU_COMPILER_FLAG(sun4u,-mcpu=v9,ultrasparc,OPTIMIZE)
 
   AC_SYS_COMPILER_FLAG(-mcpu=pentiumpro,pentiumpro,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-faltivec,faltivec,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-maltivec,maltivec,OPTIMIZE)
-  AC_SYS_COMPILER_FLAG(-mpowerpc,powerpc,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-mcpu=powerpc,powerpc,OPTIMIZE)
 dnl  AC_SYS_COMPILER_FLAG(-malign-power,alignpower,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-malign-natural,alignnatural,OPTIMIZE)
  else
