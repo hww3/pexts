@@ -23,7 +23,7 @@ DEFS = \
 	-DLIBMUTT
 
 #libmutt_a_CFLAGS = -I../src/
-INCLUDES = -I../src/
+INCLUDES = -I$(srcdir)/../src/
 
 libimap_a_SOURCES = auth.c \
 	auth_login.c \
