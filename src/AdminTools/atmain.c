@@ -194,7 +194,8 @@ push_spent(struct spwd *spent)
 /*
  * Exported APIs
  */
- 
+
+#ifdef HAVE_SETSPENT 
 static void
 f_setspent(INT32 args)
 {
@@ -205,7 +206,16 @@ f_setspent(INT32 args)
     setspent();
     THIS->shadow.db_opened = 1;
 }
+#else
+static void
+f_setspent(INT32 args)
+{
+    pop_n_elems(args);
+    error("AdminTools.Shadow->setspent(): function not supported\n");
+}
+#endif
 
+#ifdef HAVE_ENDSPENT
 static void
 f_endspent(INT32 args)
 {
@@ -216,6 +226,14 @@ f_endspent(INT32 args)
     endspent();
     THIS->shadow.db_opened = 0;
 }
+#else
+static void
+f_endspent(INT32 args)
+{
+    pop_n_elems(args);
+    error("AdminTools.Shadow->endspent(): function not supported\n");
+}
+#endif
 
 #if defined(HAVE_GETSPENT) || defined(HAVE_GETSPENT_R)
 static void
@@ -337,30 +355,13 @@ f_shadow_create(INT32 args)
  * Note that opendir/readdir is used by get_dir as well, we just provide 
  * a more fine-grained interface here with some more bells and whistles.
  */
-static void
-f_opendir(INT32 args)
+static DIR*
+do_opendir(char *dirpath)
 {
-#ifdef HAVE_OPENDIR
-    get_all_args("AdminTools.Dir->opendir", args, "%S", &THIS->dir.dirname);
-    if (args != 1)
-	error("AdminTools.Dir->opendir(): Invalid number of arguments. Expected 1.\n");
+    DIR   *dirent;
     
-    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	error("AdminTools.Dir->opendir(): Wrong argument type for argument 1. Expected 8-bit string.\n");
-
-    /*
-     * Do I have to make a copy of the string that's on the
-     * stack to preserve it for later use?? Guess not...
-     * /grendel 26-09-2000
-     */	
-    THIS->dir.dirname = ARG(1).u.string;
-    pop_n_elems(args);
-
-    if (THIS->dir.dir)
-	error("AdminTools.Dir->opendir(): previous directory not closed.\n");
-
-    THIS->dir.dir = opendir(THIS->dir.dirname->str);
-    if (!THIS->dir.dir) {
+    dirent = opendir(THIS->dir.dirname->str);
+    if (!dirent) {
 	char  *err;
 	
 #ifdef HAVE_STRERROR
@@ -400,11 +401,37 @@ f_opendir(INT32 args)
 	 * program rather than use error() here?
 	 * /grendel 26-09-2000
 	 */
-	error("AdminTools.Dir->opendir(): %s\n", err);
+	error("AdminTools.Directory->opendir(): %s\n", err);
     }
     
+    return dirent;
+}
+
+static void
+f_opendir(INT32 args)
+{
+#ifdef HAVE_OPENDIR
+    get_all_args("AdminTools.Directory->opendir", args, "%S", &THIS->dir.dirname);
+    if (args != 1)
+	error("AdminTools.Directory->opendir(): Invalid number of arguments. Expected 1.\n");
+    
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+	error("AdminTools.Directory->opendir(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+
+    /*
+     * Do I have to make a copy of the string that's on the
+     * stack to preserve it for later use?? Guess not...
+     * /grendel 26-09-2000
+     */	
+    THIS->dir.dirname = ARG(1).u.string;
+    pop_n_elems(args);
+
+    if (THIS->dir.dir)
+	error("AdminTools.Directory->opendir(): previous directory not closed.\n");
+
+    THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
 #else
-    error("AdminTools.Dir->opendir(): function not supported\n");
+    error("AdminTools.Directory->opendir(): function not supported\n");
 #endif
 }
 
@@ -419,7 +446,7 @@ f_closedir(INT32 args)
     }
     push_int(closedir(THIS->dir.dir));
 #else
-    error("AdminTools.Dir->closedir(): function not supported\n");
+    error("AdminTools.Directory->closedir(): function not supported\n");
 #endif
 }
 
@@ -446,7 +473,7 @@ f_readdir(INT32 args)
     
     dent = my_readdir(THIS->dir.dir);
 #else
-    error("AdminTools.Dir->readdir(): function not supported\n");
+    error("AdminTools.Directory->readdir(): function not supported\n");
 #endif
 }
 
@@ -469,13 +496,43 @@ f_scandir(INT32 args)
 static void
 f_dir_create(INT32 args)
 {
-    pop_n_elems(args);
-    THIS->dir.dir = NULL;
+#ifdef HAVE_OPENDIR
+    if (args > 1)
+	error("AdminTools.Directory->create(): Invalid number of arguments. Expected 0 or 1.\n");
+
+    if (args == 1) {
+	if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+	    error("AdminTools.Directory->create(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+
+	THIS->dir.dirname = ARG(1).u.string;
+	pop_n_elems(args);
+
+	THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
+    } else if (args > 1)
+	error("AdminTools.Directory->create(): too many arguments\n");
+    else
+	THIS->dir.dir = NULL;
+
+#else
+    error("AdminTools.Directory->opendir(): function not supported\n");
+#endif
+
     THIS->dir.select_cb.type = T_INT;
     THIS->dir.select_cb.u.integer = 0;
     THIS->dir.compare_cb.type = T_INT;
     THIS->dir.compare_cb.u.integer = 0;
     THIS->dir.dirname = NULL;
+}
+
+static void
+f_dir_destroy(INT32 args)
+{
+#ifdef HAVE_CLOSEDIR
+    if (THIS->dir.dir)
+	closedir(THIS->dir.dir);
+    error("destroy called\n");
+#endif
+    pop_n_elems(args);
 }
 
 void pike_module_init(void)
@@ -505,10 +562,11 @@ void pike_module_init(void)
     start_new_program();
     ADD_STORAGE(struct INSTANCE);
     
-    add_function("create", f_dir_create, "function(void:void)", 0);
-    add_function("opendir", f_opendir, "function(string:void)", 0);
-    add_function("closedir", f_closedir, "function(void:int)", 0);
-    add_function("readdir", f_readdir, "function(void:array)", 0);
+    add_function("create", f_dir_create, "function(void|string:void)", 0);
+    add_function("open", f_opendir, "function(string:void)", 0);
+    add_function("close", f_closedir, "function(void:int)", 0);
+    add_function("read", f_readdir, "function(void:array)", 0);
+    add_function("destroy", f_dir_destroy, "function(void:void)", 0);
 
     dir_program = end_program();
     add_program_constant("Directory", dir_program, 0);
