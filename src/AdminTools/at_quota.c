@@ -123,7 +123,7 @@ hasquota(struct mntent *mnt, int type, char **qfnamep)
 
    if (has_quota_file_definition) {
       if ((option = strchr(++pathname, ',')) != (char *)NULL) 
-         strncpy(qfullname, pathname, min((option - pathname), sizeof(qfullname)));
+	strncpy(qfullname, pathname, min((option - pathname), (int)sizeof(qfullname)));
       else
          strncpy(qfullname, pathname, sizeof(qfullname));
    } else {
