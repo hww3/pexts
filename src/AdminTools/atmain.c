@@ -210,7 +210,6 @@ f_setspent(INT32 args)
 static void
 f_setspent(INT32 args)
 {
-    pop_n_elems(args);
     error("AdminTools.Shadow->setspent(): function not supported\n");
 }
 #endif
@@ -230,7 +229,6 @@ f_endspent(INT32 args)
 static void
 f_endspent(INT32 args)
 {
-    pop_n_elems(args);
     error("AdminTools.Shadow->endspent(): function not supported\n");
 }
 #endif
@@ -276,9 +274,7 @@ f_getspent(INT32 args)
 static void
 f_getspent(INT32 args)
 {
-    pop_n_elems(args);
     error("AdminTools.Shadow->getspent(): function not supported.\n");
-    push_int(0);
 }
 #endif
 
