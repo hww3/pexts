@@ -73,7 +73,7 @@ clean_dirs
 rm -f $module_dirs
 echo "Generating the list of modules"
 
-for d in `find "./src/" -maxdepth 1 -name "*" -type d -print`; do
+for d in `find "./src/." -name "*" -type d -prune -print`; do
     if [ -f $d/.pexts_module ]; then
       pexts_module_val=`cat $d/.pexts_module | head -n 1 | tr -d '\t\n'`
       module_val=""
