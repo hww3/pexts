@@ -1,12 +1,10 @@
 AC_INIT(bdb.c)
-
+AC_CONFIG_HEADER(bdb_config.h)
 PEXTS_MODULE_INIT()
-
 
 OLD_LIBS=$LIBS
 OLD_LDFLAGS=$LDFLAGS
 OLD_CPPFLAGS=$CPPFLAGS
-BDB_LIBS=""
 
 AC_ARG_WITH(BerkeleyDB,  [  --with-BerkeleyDB=path       Enable support for the Berkeley database],[],[withBerkeleyDB=yes])
 
@@ -34,8 +32,8 @@ else
   AC_MSG_RESULT($pexts_cv_bdb_dir)
 
   if test x$pexts_cv_bdb_dir = xno; then :; else
-    LDFLAGS="-R$pexts_cv_bdb_dir/lib/ -L$pexts_cv_bdb_dir/lib/ ${LDFLAGS}"
-    CPPFLAGS="-I$pexts_cv_bdb_dir/include/ ${CPPFLAGS}"
+    LIBS="-R$pexts_cv_bdb_dir/lib/ -L$pexts_cv_bdb_dir/lib/"
+    CFLAGS="-I$pexts_cv_bdb_dir/include/"
   fi
 fi
 AC_CHECK_HEADERS( db.h )
@@ -43,6 +41,21 @@ AC_CHECK_LIB(db-3, db_create)
 if test "$ac_cv_lib_db-3_db_create" = "no"; then
   AC_CHECK_LIB(db, db_create)
 fi
+AC_MSG_CHECKING(if Berkeley DB is new enough)
+AC_CACHE_VAL(pexts_cv_bdb_new_enough, 
+  AC_TRY_RUN([#include <db.h>
+    int main(int argc, char **argv) {
+    int M,m;
+    db_version(&M,&m,NULL);
+    if(M < 3 || (M == 3 && m < 1))
+      exit(1);
+    exit(0);
+  }],[pexts_cv_bdb_new_enough=yes], [pexts_cv_bdb_new_enough=no],[pexts_cv_bdb_new_enough=yes])
+)
+if test "$pexts_cv_bdb_new_enough" = "yes"; then
+  AC_DEFINE(HAVE_BDB)
+fi
+AC_MSG_RESULT($pexts_cv_bdb_new_enough)
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 
 

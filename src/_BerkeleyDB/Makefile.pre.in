@@ -1,9 +1,9 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
 MODNAME=_BerkeleyDB
-OBJS= bdb.o
-SOURCES=bdb.c
+OBJS= bdb.o bdb_db.o
+SOURCES=bdb.c bdb_db.c
 MODULE_LIBS=@LIBS@
-
+MODULE_CFLAGS=@CFLAGS@
 @module_makefile@
 
 extrainstall:
