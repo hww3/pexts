@@ -104,6 +104,7 @@ DEFINE_IMUTEX(at_shadow_mutex);
 static struct program   *shadow_program;
 static struct program   *dir_program;
 static struct program   *quota_program;
+static struct program   *system_program;
 
 void pike_module_init(void)
 {
@@ -119,6 +120,9 @@ void pike_module_init(void)
     
     /* Quota stuff */
     quota_program = _at_quota_init();
+    
+    /* System stuff */
+    system_program = _at_system_init();
 }
 
 void pike_module_exit(void)
