@@ -1,4 +1,6 @@
 
+constant cvs_version = "$Id $";
+
 object bind;
 string host;
 string remote_user;
