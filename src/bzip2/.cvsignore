@@ -1,0 +1,10 @@
+configure
+bz2_config.h
+bz2_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+output.bin
+output.bin.bz2
+bzip2.so

@@ -1,0 +1,14 @@
+AC_INIT(bz2main.c)
+AC_CONFIG_HEADER(bz2_config.h)
+
+PEXTS_MODULE_INIT()
+
+AC_CHECK_LIB(bz2, BZ2_bzCompressInit)
+AC_CHECK_HEADERS(bzlib.h)
+
+AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	
