@@ -28,7 +28,11 @@
 #if defined(HAVE_PDFLIB_H) && defined(HAVE_LIBPDF)
 #define HAVE_PDFLIB
 #include <pdflib.h>
-#define THIS ((PDF_storage *)fp->current_object->storage)
+#ifndef Pike_fp
+#define Pike_fp fp
+#endif
+
+#define THIS ((PDF_storage *)Pike_fp->current_object->storage)
 
 typedef struct
 {

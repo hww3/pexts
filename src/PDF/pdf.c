@@ -20,6 +20,7 @@
 
 /* PDF Support - This module adds PDF support to Pike. */
 
+#define NO_PIKE_SHORTHAND
 #include "global.h"
 RCSID("$Id$");
 
@@ -30,12 +31,13 @@ RCSID("$Id$");
 #include "error.h"
 #include "threads.h"
 #include "array.h"
-#include "pdf_config.h"
 
-#ifdef HAVE_PDFLIB
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include "pdf_config.h"
+
+#ifdef HAVE_PDFLIB
 
 
 void f_pdf_create(INT32 args)
@@ -395,76 +397,76 @@ void pike_module_init(void)
 {
   start_new_program();
   ADD_STORAGE( PDF_storage  );
-  add_function( "create", f_pdf_create,
+  pike_add_function( "create", f_pdf_create,
 		"function(string|void:void)", 0 ); 
-  add_function( "set_info", f_set_info,
+  pike_add_function( "set_info", f_set_info,
 		"function(string,string:void)",0);
-  add_function( "begin_page", f_begin_page,
+  pike_add_function( "begin_page", f_begin_page,
 		"function(float,float:void)",0);
-  add_function( "end_page", f_end_page,
+  pike_add_function( "end_page", f_end_page,
 		"function(void:void)",0);
-  add_function( "close", f_close,
+  pike_add_function( "close", f_close,
 		"function(void:void)",0);
-  add_function( "generate", f_generate,
+  pike_add_function( "generate", f_generate,
 		"function(void:string)", 0);
-  add_function( "findfont", f_findfont,
+  pike_add_function( "findfont", f_findfont,
 		"function(string,string,int:int)",0);
-  add_function( "setfont", f_setfont,
+  pike_add_function( "setfont", f_setfont,
 		"function(int,float:void)",0);
-  add_function( "show", f_show,
+  pike_add_function( "show", f_show,
 		"function(string,int|void:void)",0);
-  add_function( "show_boxed", f_show,
+  pike_add_function( "show_boxed", f_show,
 		"function(string,float,float,float,float,string,string:int)",0);
-  add_function( "continue_text", f_continue_text,
+  pike_add_function( "continue_text", f_continue_text,
 		"function(string,int|void:void)",0);
-  add_function( "set_text_pos", f_set_text_pos,
+  pike_add_function( "set_text_pos", f_set_text_pos,
 		"function(float,float:void)",0);
-  add_function( "stringwidth", f_stringwidth,
+  pike_add_function( "stringwidth", f_stringwidth,
 		"function(string,int,float|int,float|void:void)",0);
   /* Graphical funcs */
-  add_function( "setdash", f_setdash,
+  pike_add_function( "setdash", f_setdash,
 		"function(float,float:void)",0);
-  add_function( "setlinewidth", f_setlinewidth,
+  pike_add_function( "setlinewidth", f_setlinewidth,
 		"function(float:void)",0);
-  add_function( "moveto", f_moveto,
+  pike_add_function( "moveto", f_moveto,
 		"function(float,float:void)",0);
-  add_function( "lineto", f_lineto,
+  pike_add_function( "lineto", f_lineto,
 		"function(float,float:void)",0);
-  add_function( "curveto", f_curveto,
+  pike_add_function( "curveto", f_curveto,
 		"function(float,float,float,float,float,float:void)",0);
-  add_function( "circle", f_circle,
+  pike_add_function( "circle", f_circle,
 		"function(float,float,float:void)",0);
-  add_function( "arc", f_arc,
+  pike_add_function( "arc", f_arc,
 		"function(float,float,float,float,float:void)",0);
-  add_function( "rect", f_rect,
+  pike_add_function( "rect", f_rect,
 		"function(float,float,float,float:void)",0);
-  add_function( "stroke", f_stroke,
+  pike_add_function( "stroke", f_stroke,
 		"function(void:void)",0);
-  add_function( "fill", f_fill,
+  pike_add_function( "fill", f_fill,
 		"function(void:void)",0);
-  add_function( "setgray_fill", f_setgray_fill,
+  pike_add_function( "setgray_fill", f_setgray_fill,
 		"function(float:void)",0);
-  add_function( "setgray_stroke", f_setgray_stroke,
+  pike_add_function( "setgray_stroke", f_setgray_stroke,
 		"function(float:void)",0);
-  add_function( "setgray", f_setgray,
+  pike_add_function( "setgray", f_setgray,
 		"function(float:void)",0);
-  add_function( "setrgbcolor_fill", f_setrgbcolor_fill,
+  pike_add_function( "setrgbcolor_fill", f_setrgbcolor_fill,
 		"function(float,float,float:void)",0);
-  add_function( "setrgbcolor_stroke", f_setrgbcolor_stroke,
+  pike_add_function( "setrgbcolor_stroke", f_setrgbcolor_stroke,
 		"function(float,float,float:void)",0);
-  add_function( "setrgbcolor", f_setrgbcolor,
+  pike_add_function( "setrgbcolor", f_setrgbcolor,
 		"function(float,float,float:void)",0);
 
-  add_function( "get_value", f_get_value,
+  pike_add_function( "get_value", f_get_value,
 		"function(string,float|void:float)",0);
-  add_function( "set_value", f_get_value,
+  pike_add_function( "set_value", f_get_value,
 		"function(string,float:void)",0);
-  add_function( "get_parameter", f_get_parameter,
+  pike_add_function( "get_parameter", f_get_parameter,
 		"function(string,float|void:string)",0);
-  add_function( "set_parameter", f_set_parameter,
+  pike_add_function( "set_parameter", f_set_parameter,
 		"function(string,string:void)",0);
   /* Bookmark function */
-  add_function( "add_bookmark", f_add_bookmark,
+  pike_add_function( "add_bookmark", f_add_bookmark,
 		"function(string,int,int:int)",0);
 
   set_init_callback(init_pdf);
