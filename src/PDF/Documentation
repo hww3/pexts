@@ -98,7 +98,62 @@ float pdf->stringwidth(	string text, int len, int font, float size );
 	An optional <len> argument specifies the maximum length.
 
 
+pdf->setdash( float b, float w )
+	Set the current dash pattern to <b> black and <w> white units. 
+	<b> and <w> must be non-negative numbers. In order to produce a solid line, 	set b=w=0. The dash parameter is set to solid at the beginning of 
+	each page.
+
+pdf->setlinewidth( float width )
+	Set the current line width to <width> units in the user coordinate system. 
+	The linewidth parameter is set to the default value of 1 at the 
+	beginning of each page.
+
+pdf->moveto( float x, float y )
+	Set tge current point to (x,y). The current point is set to the default 
+	value undefined at the beginning of each page.
+	Note: The current point for graphics output and the current text position 
+		are maintained separately.
+
+pdf->lineto( float x, float y )
+	Add a straight line from the current point to (x,y) to the current path.
+	The current point must be set before using this function. 
+	The point (x,y) becomes the new current point.
+		The line will be centered around the >>ideal<< line. i.e. half of 
+	the linewidth (as determinated by the value of the linewidth parameter)
+	will be painted on each side of the line connecting both endpoints.
+	The behavior at the endpoints us determined by tge values of the 
+	linecap parameter. 
+
+pdf->curveto( float x1, float y1, float x2, float y2, float x3, float y3 )
+	Add a Bezier curve from the current point to (x3,y3) to the current path, 
+	using (x1,y1) and (x2,y2) as control points. The endpoint of the curve
+	becomes the new current point.
+
+pdf->circle( float x, float y, float r )
+	Add a curcle with center (x,y) and radius r to the current path. The point
+	(x+r,y) becomes the new current point. Elliptical curves can be constructed
+	by applying non-uniform scaling factors before drawing the circle.
+
+pdf->arc( float x, float y, float r, float start, float end )
+	Add a curcular arc segment with center (x,y) and radius r to the current
+	path, extending from start to end degrees. Angles are measured 
+	counterclockwie from the positive x axis of the current coordinate system.
+	Before drawing the arc segment, this function implicitly moves the 
+	current point to the beginning of the arc. The endpoint of the arc
+	becomes the new current point.
+
+pdf->rect( float x, float y, float width, float height )
+	Add a rectangle with lower left corner (x,y) and the supplied <width> and
+	<height> to the current path. Setting the current point is not required 
+	before using this function. The point (x,y) becomes the new current point.
+	The lines will be centered around the >>ideal<< line, i.e. half of the
+	linewidth (as determinated by the value of the linewidth parameter)
+	will be painted on each side of the line connecting the respective 
+	endpoints.
+
+pdf->stroke()
+	Stroke (draw) the current path with the current line width and the current 
+	stroke color. This operation clears the path.
 
 
-
-
+	
