@@ -1,0 +1,17 @@
+AC_INIT(newt.c)
+AC_CONFIG_HEADER(newt_config.h)
+
+PEXTS_MODULE_INIT()
+
+
+AC_CHECK_HEADERS( newt.h )
+AC_CHECK_LIB(newt, newtInit)
+
+
+AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
+
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	
