@@ -1,0 +1,26 @@
+avs_add_ms_callback 
+
+The value type interface does not lend itself to be easily encapulated
+within Pike. The value type definition requires a callback function.
+We can probably set it to null at the expense of loosing a little
+functionality. There is no API to release value types one at a time.
+Instead all value types are released at once with avs_release_valtypes.
+This would invalidate all valuetype objects created and does not allow
+use to destroy one object at a time. No pretty.
+
+avs_addvalue
+avs_define_valtype
+avs_define_valtype_multiple
+avs_lookup_valtype
+avs_newdoc
+avs_release_valtypes
+avs_setrankval
+avs_count_docs
+avs_count_docs_freelist
+avs_getindexversion_counts_v
+avs_getindexversion_search_v
+
+the compat api
+the docbundle api
+
+documentation

@@ -1,0 +1,15 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=AVS
+
+OBJS=@OBJS@
+SOURCES=@SOURCES@
+MODULE_CFLAGS=@MODULE_CFLAGS@
+MODULE_LDFLAGS=@MODULE_LDFLAGS@
+MODULE_LIBS=@MODULE_LIBS@
+
+
+@module_makefile@
+
+
+extrainstall:
+

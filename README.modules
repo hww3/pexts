@@ -44,6 +44,8 @@ PDF:
 
   A glue to PDFlib. Allows for dynamic generation of PDF files from
   within Pike. See src/PDF/README for special instructions on compilation.
+  This module is pretty much redundant since Pike 7.2+ includes PDF handling
+  modules already. Expect this one to disappear soon.
   Requires: PDFlib from http://www.pdflib.com/
   Principal Author: Zsolt Varga <redax@caudium.net>
 
@@ -63,3 +65,9 @@ bzip2:
   Principal Author: Marek Habersack <grendel@caudium.net>
   TODO: File based (de)compression, possibly non-blocking operation?
 
+AVS:
+
+  Glue to the Altavista SDK.
+  Requires: AVS SDK from http://solutions.altavista.com/
+  Principal Author: Aleph One <aleph1@caudium.net>
+  Other Authors: David Hedbor <david@hedbor.org>

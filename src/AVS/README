@@ -1,0 +1,12 @@
+		AltaVista Search Pike Module v.0.1c
+			aleph1@underground.org
+
+This Pike module implements Pike bindings to the AltaVista Search 3.0 SDK.
+For information on the AVS SDK go to:
+http://doc.altavista.com/business_solutions/search_products/search_engine/se30_index.html
+
+To compile this Pike module download the AVS SDK, unpack it, edit the
+Makefile and change the paths to the Pike and the AVS SDK include and
+libraries, compile by typing "make", and copy the AVS.so file to Pike's
+module directory.
+
