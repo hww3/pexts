@@ -134,9 +134,13 @@ RCSID("$Id$");
  * *** QUOTACTL support ***
  */
 
+#ifdef HAVE_SHADOW_H
+#ifndef RUNNING_BSD
 DEFINE_IMUTEX(at_shadow_mutex);
 
 static struct program   *shadow_program;
+#endif /* RUNNING_BSD */
+#endif /* HAVE_SHADOW_H */
 static struct program   *dir_program;
 static struct program   *quota_program;
 static struct program   *system_program;
@@ -146,7 +150,11 @@ static struct program   *pam_program;
 
 void pike_module_init(void)
 {
+#ifdef HAVE_SHADOW_H
+#ifndef RUNNING_BSD
     init_interleave_mutex(&at_shadow_mutex);
+#endif /* RUNNING_BSD */
+#endif /* HAVE_SHADOW_H */
 
     init_common("AdminTools");
 
@@ -155,7 +163,11 @@ void pike_module_init(void)
 #endif
     
     /* Shadow stuff */
+#ifdef HAVE_SHADOW_H
+#ifndef RUNNING_BSD
     shadow_program = _at_shadow_init();
+#endif /* RUNNING_BSD */
+#endif /* HAVE_SHADOW_H */
     
     /* Dir stuff */
     dir_program = _at_directory_init();
@@ -174,7 +186,11 @@ void pike_module_init(void)
 
 void pike_module_exit(void)
 {
+#ifdef HAVE_SHADOW_H
+#ifdef RUNNING_BSD
   free_program(shadow_program);
+#endif /* RUNNING_BSD */
+#endif /* HAVE_SHADOW_H */
   free_program(dir_program);
   free_program(quota_program);
 #ifdef HAVE_PAM
