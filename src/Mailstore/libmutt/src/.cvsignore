@@ -1,2 +1,3 @@
 Makefile.in
 stamp-h.in
+muttconfig.h.in
