@@ -136,6 +136,9 @@ f_fetch(INT32 args)
     if (args > 1)
         Pike_error("OpenLDAP.Client.Result->fetch(): requires at most one argument\n");
 
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     get_all_args("OpenLDAP.Client.Result->fetch()", args, "%i", &idx);
 
     if (idx > THIS->num_entries || idx < 0) {
@@ -162,6 +165,9 @@ f_fetch_all(INT32 args)
     struct mapping *tmp;
     LDAPMessage    *cur;
 
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     pop_n_elems(args);
     
     cur = ldap_first_entry(THIS->conn, THIS->msg);
@@ -184,6 +190,9 @@ f_fetch_all(INT32 args)
 static void
 f_ldap_first_entry(INT32 args)
 {
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     THIS->cur = ldap_first_entry(THIS->conn, THIS->msg);
     pop_n_elems(args);
 }
@@ -191,6 +200,9 @@ f_ldap_first_entry(INT32 args)
 static void
 f_ldap_next_entry(INT32 args)
 {
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     THIS->cur = ldap_next_entry(THIS->conn, THIS->cur);
     pop_n_elems(args);
 }

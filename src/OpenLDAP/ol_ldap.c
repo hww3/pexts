@@ -256,6 +256,9 @@ f_ldap_enable_cache(INT32 args)
     long timeout = OL_CACHE_TIMEOUT;
     long maxmem = OL_CACHE_MAX;
     int  ret;
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     if (THIS->caching) {
         pop_n_elems(args);
@@ -303,8 +306,11 @@ f_ldap_enable_cache(INT32 args)
 static void
 f_ldap_disable_cache(INT32 args)
 {
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+
     pop_n_elems(args);
-    
+
     if (!THIS->caching)
         return;
     
@@ -319,7 +325,11 @@ f_ldap_disable_cache(INT32 args)
 static void
 f_ldap_destroy_cache(INT32 args)
 {
-    pop_n_elems(args);    
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
+    pop_n_elems(args);
+    
     if (!THIS->caching)
         return;
     
@@ -334,6 +344,9 @@ f_ldap_destroy_cache(INT32 args)
 static void
 f_ldap_flush_cache(INT32 args)
 {
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     pop_n_elems(args);
     if (!THIS->caching)
         return;
@@ -355,6 +368,9 @@ static void
 f_ldap_uncache_entry(INT32 args)
 {
     char   *dn = "";
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     if (!THIS->caching) {
         pop_n_elems(args);
@@ -385,6 +401,9 @@ f_ldap_set_cache_options(INT32 args)
 {
     int   opts = 0; /* LDAP_CACHE_OPT_CACHENOERRS; */
 
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
+    
     get_all_args("OpenLDAP.Client->set_cache_options", args, "%i", &opts);
 
     pop_n_elems(args);
@@ -666,6 +685,30 @@ make_timeout(long val)
  **|   by the underlying API. The following fields are read from the
  **|   mapping:@nl
  **|
+ **|   @list
+ **|    * base - the base DN to use in this search. Overrides the
+ **|      default base DN (as set with set_base_dn)
+ **|    * scope - the search scope for this search. Overrides the
+ **|      default scope (as set with set_scope)
+ **|    * filter - the search filter. The BNF for the filter is as
+ **|      follows:
+ **|      @pre
+ **|        <filter> ::= `(' <filtercomp> `)'
+ **|        <filtercomp> ::= <and> | <or> | <not> | <simple>
+ **|        <and> ::= `&' <filterlist>
+ **|        <or> ::= `|' <filterlist>
+ **|        <not> ::= `!' <filter>
+ **|        <filterlist> ::= <filter> | <filter> <filterlist>
+ **|        <simple> ::= <attributetype> <filtertype> <attributevalue>
+ **|        <filtertype> ::= `=' | `~=' | `<=' | `>='
+ **|      @pre_end
+ **|    * attrs - search attributes. An array of attribute types to
+ **|      return in the result. If absent, all types will be returned.
+ **|    * attrsonly - if != then the result will contain attribute
+ **|      types only - no values shall be returned.
+ **|    * timeout - the timeout, in seconds, after which the call
+ **|      should return if the search isn't finished.
+ **|   @list_end
  */
 static void
 f_ldap_search(INT32 args)
@@ -679,6 +722,9 @@ f_ldap_search(INT32 args)
     LDAPMessage         *res;
     int                  ret;
     struct object       *obj;
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     if (!args)
         Pike_error("OpenLDAP.Client->search() requires at least one argument\n");
@@ -858,6 +904,9 @@ f_ldap_modify(INT32 args)
     LDAPMod             **mods;
     int                   i, ret;
     struct svalue        *val;
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     get_all_args("OpenLDAP.Client->modify()", args, "%S%a", &dn, &arr);
 
@@ -937,6 +986,9 @@ f_ldap_add(INT32 args)
     struct svalue          *val;
     LDAPMod               **mods;
     int                     i, ret;
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     get_all_args("OpenLDAP.Client->add()", args, "%S%a", &dn, &arr);
     mods = (LDAPMod**)malloc((arr->size + 1) * sizeof(LDAPMod*));
@@ -985,6 +1037,9 @@ f_ldap_delete(INT32 args)
 {
     struct pike_string   *dn;
     int                   ret;
+
+    if (!THIS->bound)
+        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     get_all_args("OpenLDAP.Client->delete()", args, "%S", &dn);
     ret = ldap_delete_s(THIS->conn, dn->str);
@@ -1090,6 +1145,8 @@ _ol_ldap_program_init(void)
                  tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("set_base_dn", f_set_base_dn,
                  tFunc(tString, tString), 0);
+    ADD_FUNCTION("set_basedn", f_set_base_dn,
+                 tFunc(tString, tString), 0);
     ADD_FUNCTION("set_scope", f_set_scope,
                  tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("dn2ufn", f_ldap_dn2ufn,
@@ -1111,6 +1168,7 @@ _ol_ldap_program_init(void)
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);
+    add_program_constant("client", ldap_program, 0);
 }
 #else /* !HAVE_LIBLDAP */
 void _ol_ldap_program_init(void) { }
