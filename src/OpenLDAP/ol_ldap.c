@@ -235,7 +235,21 @@ f_ldap_unbind(INT32 args)
 }
 
 /*
-**| method */
+ **| method: int enable_cache ( );
+ **| alt: int enable_cache ( int timeout );
+ **| alt: int enable_cache ( int timeout, int maxmem );
+ **|  The first time this method is called, it enables (creates) the
+ **|  internal OpenLDAP library cache. Further calls modify the
+ **|  parameters of the cache.
+ **
+ **| arg: int timeout
+ **|  Maximum time, in secods, a given entry is kept in the cache.
+ **
+ **| arg: int maxmem
+ **|  The size, in bytes, of the memory that can be used for cache.
+ **
+ **| returns: 0 for success, -1 if failed to create/modify the cache.
+ */
 static void
 f_ldap_enable_cache(INT32 args)
 {
@@ -253,13 +267,13 @@ f_ldap_enable_cache(INT32 args)
         case 2:
             if (ARG(2).type != T_INT)
                 Pike_error("OpenLDAP.Client->enable_cache(): argument 2 must be an integer\n");
-            maxmem = ARG(2).u.string->str;
+            maxmem = ARG(2).u.integer;
             /* fall through */
             
         case 1:
             if (ARG(1).type != T_INT)
                 Pike_error("OpenLDAP.Client->enable_cache(): argument 1 must be an integer\n");
-            timeout = ARG(1).u.string->str;
+            timeout = ARG(1).u.integer;
             break;
             
         default:
@@ -279,6 +293,13 @@ f_ldap_enable_cache(INT32 args)
     push_int(ret);
 }
 
+/*
+ **| method: void disable_cache ( );
+ **|  temporarily disables use of the cache
+ **|  (new requests are not cached and the cache is not  checked
+ **|  when  returning  results).   It  does not delete the cache
+ **|  contents.
+ */
 static void
 f_ldap_disable_cache(INT32 args)
 {
@@ -290,6 +311,11 @@ f_ldap_disable_cache(INT32 args)
     ldap_disable_cache(THIS->conn);
 }
 
+/*
+ **| method: void destroy_cache ( );
+ **|  turns  off  caching  and  completely
+ **|  removes the cache from memory.
+ */
 static void
 f_ldap_destroy_cache(INT32 args)
 {
@@ -300,6 +326,11 @@ f_ldap_destroy_cache(INT32 args)
     ldap_destroy_cache(THIS->conn);
 }
 
+/*
+ **| method: void flush_cache ( );
+ **|  deletes  the  cache contents, but does
+ **|  not effect it in any other way
+ */
 static void
 f_ldap_flush_cache(INT32 args)
 {
@@ -310,6 +341,16 @@ f_ldap_flush_cache(INT32 args)
     ldap_flush_cache(THIS->conn);
 }
 
+/*
+ **| method: void uncache_entry ( string dn );
+ **|  removes all requests that make reference  to  the
+ **|  distinguished  name  dn from the cache.  It
+ **|  should be used, for example, after doing a modify
+ **|  operation involving dn.
+ **
+ **| arg: string dn
+ **|  The distinguished name to remove from the cache.
+ */
 static void
 f_ldap_uncache_entry(INT32 args)
 {
@@ -329,6 +370,16 @@ f_ldap_uncache_entry(INT32 args)
     pop_n_elems(args);
 }
 
+/*
+ **| method: void set_cache_options ( int opts );
+ **|  Set the cache options. The manual page defines two options:
+ **|  LDAP_CACHE_OPT_CACHENOERRS and LDAP_CACHE_OPT_CACHEALLERRS, but
+ **|  those constants are not defined in the ldap include file,
+ **|  therefore they are not currently present in the OpenLDAP module.
+ **
+ **| arg: int opts
+ **|  options to set on the cache.
+ */
 static void
 f_ldap_set_cache_options(INT32 args)
 {
@@ -340,6 +391,14 @@ f_ldap_set_cache_options(INT32 args)
     ldap_set_cache_options(THIS->conn, opts);
 }
 
+/*
+ **| method: string err2string ( int lerrno );
+ **|  Converts the specified error code into the corresponding
+ **|  message.
+ **
+ **| arg: int lerrno
+ **|  LDAP error code.
+ */
 static void
 f_ldap_err2string(INT32 args)
 {
@@ -357,6 +416,17 @@ f_ldap_err2string(INT32 args)
     push_string(make_shared_string(str));
 }
 
+/*
+ **| method: string dn2ufn ( string dn );
+ **|  Convert the given DN to an user friendly form thereof. This will
+ **|  strip the type names from the passed dn. See RFC 1781 for more
+ **|  details. 
+ **
+ **| arg: string dn
+ **|  an UTF-8 string with the dn to convert.
+ **
+ **| returns: the user friendly form of the DN.
+ */
 static void
 f_ldap_dn2ufn(INT32 args)
 {
@@ -385,22 +455,43 @@ f_ldap_dn2ufn(INT32 args)
 }
 
 /*
- * see ldap_explode_dn(3)
+ **| method: array(string) explode_dn ( string dn );
+ **| alt: array(string) explode_dn ( string dn, int notypes );
+ **|  Takes a DN and converts it into an array of its components,
+ **|  called RDN (Relative Distinguished Name).
+ **
+ **| arg: string dn
+ **|  The DN to explode.
+ **
+ **| arg: int notypes
+ **|  If != 0 then the types of the DN components will be ignored and
+ **|  *not present in the output. Defaults to 1.
+ **
+ **| returns: an array of RDN entries.
  */
 static void
 f_ldap_explode_dn(INT32 args)
 {
     struct pike_string       *dn;
     char                    **edn;
-    int                       notypes = 1;
-    
-    if (args < 1 || args > 2)
-        Pike_error("OpenLDAP.Client->explode_dn(): requires at most two and at least one argument\n");
+    int                       notypes = 1;    
 
-    get_all_args("OpenLDAP.Client->explode_dn()", args, "%S%i", &dn, &notypes);
-    if (!dn) {
-        push_int(0);
-        return;
+    switch (args) {
+        case 2:
+            if (ARG(2).type != T_INT)
+                Pike_error("OpenLDAP.Client->explode_dn(): argument 2 must be an integer\n");
+            notypes = ARG(2).u.integer;
+            /* fall through */
+            
+        case 1:
+            if (ARG(1).type != T_STRING)
+                Pike_error("OpenLDAP.Client->explode_dn(): argument 1 must be an integer\n");
+            dn = ARG(1).u.string->str;
+            break;
+            
+        default:
+            Pike_error("OpenLDAP.Client->explode_dn(): expects at most 2 and at least 1 argument\n");
+            break;
     }
 
     pop_n_elems(args);
@@ -414,6 +505,16 @@ f_ldap_explode_dn(INT32 args)
     ldap_value_free(edn);
 }
 
+/*
+ **| method: string set_base_dn ( string basedn );
+ **|  Set the base DN to be used in all subsequent operations over
+ **|  this connection.
+ **
+ **| arg: string basedn
+ **|  The new base DN.
+ **
+ **| returns: previous base DN.
+ */
 static void
 f_set_base_dn(INT32 args)
 {
@@ -432,6 +533,18 @@ f_set_base_dn(INT32 args)
         push_string(olddn);
 }
 
+/*
+ **| method: void set_scope ( int scope );
+ **|  Set the operation scope for this connection.
+ **
+ **| arg: int scope
+ **|  One of the following scopes: OpenLDAP.LDAP_SCOPE_BASE (search
+ **|  the selected object itself only), OpenLDAP.LDAP_SCOPE_ONELEVEL
+ **|  (search the object's immediate children),
+ **|  OpenLDAP.LDAP_SCOPE_SUBTREE (search object and all its
+ **|  descendants). The 'object' here is the base DN you set with the
+ **|  set_base_dn function.
+ */ 
 static void
 f_set_scope(INT32 args)
 {
@@ -538,6 +651,22 @@ make_timeout(long val)
     return tv;
 }
 
+/*
+ **| method: object search ( mapping params );
+ **|   This is the preferred way of calling this method.
+ **
+ **| alt: object search ( string filter );
+ **| alt: object search ( string filter, array attrs );
+ **| alt: object search ( string filter, array attrs, int attrsonly );
+ **| alt: object search ( string filter, array attrs, int attrsonly, int timeout );
+ **
+ **| general: search the LDAP directory for the specified entry
+ **|   (entries). The first form is the preferred one as it
+ **|   encompasses all the current and future parameters as expected
+ **|   by the underlying API. The following fields are read from the
+ **|   mapping:@nl
+ **|
+ */
 static void
 f_ldap_search(INT32 args)
 {
@@ -655,15 +784,14 @@ f_ldap_search(INT32 args)
             /* fall through */
 
         case 2: /* attrs */
-            if (ARG(2).type != T_INT)
+            if (ARG(2).type != T_ARRAY)
                 Pike_error("OpenLDAP.Client->search(): argument 2 must be an array\n");
             else
-                attrs = make_c_array(&ARG(3));
+                attrs = make_c_array(&ARG(2));
 
             base = THIS->basedn;
             scope = THIS->scope;
             filter = ARG(1).u.string->str;
-            attrs = NULL;
             attrsonly = 0;
             timeout = NULL;
             break;
@@ -964,14 +1092,14 @@ _ol_ldap_program_init(void)
                  tFunc(tString, tString), 0);
     ADD_FUNCTION("set_scope", f_set_scope,
                  tFunc(tInt, tVoid), 0);
-    ADD_FUNCTION("search", f_ldap_search,
-                 tFunc(tOr(tMapping,
-                           tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
-                       tOr(tObj, tInt)), 0);
     ADD_FUNCTION("dn2ufn", f_ldap_dn2ufn,
                  tFunc(tString, tString), 0);
     ADD_FUNCTION("explode_dn", f_ldap_explode_dn,
                  tFunc(tString tOr(tInt, tVoid), tArr(tString)), 0);
+    ADD_FUNCTION("search", f_ldap_search,
+                 tFunc(tOr(tMapping,
+                           tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
+                       tOr(tObj, tInt)), 0);
     ADD_FUNCTION("modify", f_ldap_modify,
                  tFunc(tString tArr(tMap(tString, tMixed)), tVoid), 0);
     ADD_FUNCTION("add", f_ldap_add,
