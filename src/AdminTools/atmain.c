@@ -115,6 +115,14 @@ struct program   *shadow_program;
 #define push_longint(_x_) push_int((_x_))
 #endif
 
+#if !defined(__GNUC__) && defined(HAVE_ALLOCA)
+#define LALLOC(_s_) alloca((_s_))
+#define LFREE(_s_)
+#elif !defined(__GNUC__) && !defined(HAVE_ALLOCA)
+#define LALLOC(_s_) malloc((_s_))
+#define LFREE(_s_) if ((_s_)) free(_s_)
+#endif
+
 static void
 push_spent(struct spwd *spent)
 {
@@ -177,6 +185,7 @@ f_endspent(INT32 args)
     THIS->shadow.db_opened = 0;
 }
 
+
 static void
 f_getspent(INT32 args)
 {
@@ -194,18 +203,23 @@ f_getspent(INT32 args)
 #endif
         struct spwd    sp, *spent;
 
-#if !defined(__GNUC__) && defined(HAVE_ALLOCA)
-        buf = (char*)alloca(THIS->shadow.sp_buf_max);
-#elif !defined(__GNUC__) && !defined(HAVE_ALLOCA)
-        buf = (char*)malloc(THIS->shadow.sp_buf_max * sizeof(char));
+#ifndef __GNUC__
+        buf = (char*)LALLOC(THIS->shadow.sp_buf_max * sizeof(char));
+	if (!buf)
+	    error("AdminTools.Shadow->getspent(): out of memory\n");
 #endif
-        
+
+	/*
+	 * There is _no_ way to tell the difference between an error
+	 * and the end of DB using this function...
+	 * /grendel 22-09-2000
+	 */
         if (getspent_r(&sp, buf, THIS->shadow.sp_buf_max, &spent) != 0)
-            error("AdminTools.Shadow->getspent(): error retrieving next shadow entry\n");
+            return;
         push_spent(spent);
 
-#if !defined(__GNUC__) && !defined(HAVE_ALLOCA)
-        free(buf);
+#ifndef __GNUC__
+	LFREE(buf);
 #endif
     }
 #endif
@@ -217,29 +231,54 @@ f_getallspents(INT32 args)
     struct spwd    *spent;
     INT32          nents;
     struct array   *sp_arr;
+#ifdef _REENTRANT
+#ifdef __GNUC__
     char           buf[1024];
+#else
+    char           *buf;
+#endif
     struct spwd    spbuf;
-    
+#endif
+
     if(THIS->shadow.db_opened)
         f_endspent(0);
     f_setspent(0);
 
     nents = 0;
 
+#ifndef _REENTRANT
     spent = getspent();
+#else
+
+#ifndef __GNUC__
+    buf = LALLOC(THIS->shadow.sp_buf_max * sizeof(char));
+    if (!buf)
+	error("AdminTools.Shadow->getallspents(): out of memory\n");
+#endif
+
     if (getspent_r(&spbuf, buf, sizeof(buf), &spent) != 0)
         return;
+#endif
     
     while(spent) {
         push_spent(spent);
         nents++;
 
+#ifndef _REENTRANT
         spent = getspent();
+#else
+	getspent_r(&spbuf, buf, sizeof(buf), &spent);
+#endif
     }
     
     sp_arr = aggregate_array(nents);
     if (sp_arr)
         push_array(sp_arr);
+#ifdef _REENTRANT
+#ifndef __GNUC__
+    LFREE(buf)
+#endif
+#endif
 }
 
 static void
