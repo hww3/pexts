@@ -4,6 +4,10 @@
 
 AC_INIT(Makefile.in)
 
+dnl from this point onwards, one can use the $host_os
+dnl $host, $host_cpu, $host_vendor variables
+dnl to see what kind of OS are we running on and on what machine
+AC_CANONICAL_HOST
 
 AC_SET_MAKE
 
