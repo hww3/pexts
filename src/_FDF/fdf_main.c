@@ -2234,6 +2234,9 @@ static void f_errname(INT32 args)
 /* Pike interface */
 static void init_fdf(struct object *o)
 {
+    if (!THIS)
+        return;
+    
     THIS->theFDF = NULL;
 #ifdef PIKE_THREADS
     mt_init(&THIS->mutex);
@@ -2242,6 +2245,9 @@ static void init_fdf(struct object *o)
 
 static void exit_fdf(struct object *o)
 {
+    if (!THIS)
+        return;
+    
 #ifdef PIKE_THREADS
     mt_destroy(&THIS->mutex);
 #endif
