@@ -2,7 +2,7 @@ SRCDIR=@srcdir@/$(MODNAME)/
 CFLAGS= $(MODULE_CFLAGS) @PIKE_INCLUDE_DIRS@ @CPPFLAGS@ @CFLAGS@  -I$(SRCDIR) -I.
 CC=@CC@
 LIBGCC=@LIBGCC@
-LDFLAGS= $(MODULE_LIBS) @LDFLAGS@
+LDFLAGS= @LDFLAGS@
 LD= @LDSHARED@
 PIKE=@PIKE@
 SO=@SO@
@@ -23,11 +23,11 @@ install: all extrainstall
 
 $(MODNAME).$(SO):  $(OBJS)
 	@echo "linking $(MODNAME)" ;\
-	if $(LD) $(LDFLAGS) -o $(MODNAME).$(SO) $(OBJS) $(MODULE_ARCHIVES) $(MODULE_LDFLAGS) $(LIBGCC) $(CLIBRARY_LINK) $(LIBGCC) ; then \
+	if $(LD) $(LDFLAGS) -o $(MODNAME).$(SO) $(OBJS) $(MODULE_ARCHIVES) $(MODULE_LDFLAGS) $(MODULE_LIBS) $(LIBGCC) $(CLIBRARY_LINK) $(LIBGCC) ; then \
 	  : ;\
 	else \
 	  echo "Linking failed:" >&2; \
-	  echo $(LD) $(LDFLAGS) -o $(MODNAME).$(SO) $(OBJS) $(MODULE_ARCHIVES) $(MODULE_LDFLAGS) $(LIBGCC) $(CLIBRARY_LINK) $(LIBGCC) >&2 ;\
+	  echo $(LD) $(LDFLAGS) -o $(MODNAME).$(SO) $(OBJS) $(MODULE_ARCHIVES) $(MODULE_LDFLAGS) $(MODULE_LIBS) $(LIBGCC) $(CLIBRARY_LINK) $(LIBGCC) >&2 ;\
 	fi
 
 Makefile.pre: $(SRCDIR)/Makefile.pre.in $(SRCDIR)/configure config.status
