@@ -40,8 +40,6 @@ f_create(INT32 args)
     THIS->cur = ldap_first_entry(THIS->conn, THIS->msg);
     THIS->num_entries = ldap_count_entries(THIS->conn, THIS->msg);
 
-    printf("Creating result...:\n"
-           "num_entries: %u\n", THIS->num_entries);
     pop_n_elems(args);
 }
 
@@ -136,6 +134,8 @@ f_fetch(INT32 args)
         Pike_error("OpenLDAP.Client.Result->fetch(): %s",
                    ldap_err2string(THIS->ld_errno));
 */
+
+    pop_n_elems(args);
     
     if (!cnt) {
         free_mapping(ret);
@@ -144,6 +144,20 @@ f_fetch(INT32 args)
     }
     
     push_mapping(ret);
+}
+
+static void
+f_ldap_first_entry(INT32 args)
+{
+    THIS->cur = ldap_first_entry(THIS->conn, THIS->msg);
+    pop_n_elems(args);
+}
+
+static void
+f_ldap_next_entry(INT32 args)
+{
+    THIS->cur = ldap_next_entry(THIS->conn, THIS->cur);
+    pop_n_elems(args);
 }
 
 static void
@@ -181,6 +195,10 @@ _ol_result_program_init(void)
                  tFunc(tVoid, tString), 0);
     ADD_FUNCTION("fetch", f_fetch,
                  tFunc(tInt, tMap(tString, tArr(tString))), 0);
+    ADD_FUNCTION("first", f_ldap_first_entry,
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("next", f_ldap_next_entry,
+                 tFunc(tVoid, tVoid), 0);
     
     result_program = end_program();
     add_program_constant("Result", result_program, 0);
