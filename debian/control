@@ -76,3 +76,14 @@ Description: Pike bzip2 module
  .
  This module implements a glue for the bzip2 compression
  library.
+
+Package: pexts-openldap
+Architecture: any
+Depends: ${shlibs:Depends}, pike7 (= ${pikever})
+Description: Pike OpenLDAP module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the OpenLDAP library.
