@@ -297,3 +297,80 @@ void cdataBlockSAX(object parser, string value, void|mixed userData)
 void externalSubsetSAX(object parser, string name, string externalId, string systemId,
                        void|mixed userData)
 {}
+
+//! Called when an element start has been detected by the parser. It
+//! provides the namespace information for the element, as well as the new
+//! namespace declarations on the element.
+//!
+//! @param localname
+//!  the local name of the element
+//!
+//! @param prefix
+//!  the element namespace prefix if available
+//!
+//! @param URI
+//!  the element namespace name if available
+//!
+//! @param namespaces
+//!  array of prefix/URI pairs namespace definitions
+//!
+//! @param defaultedAttrs
+//!  the number of defaulted attributes
+//!
+//! @param attributes
+//!  array of (localname/prefix/URI/value/end) attribute values
+void startElementNs(object parser,
+                    string localname,
+                    string prefix,
+                    string URI,
+                    array namespaces,
+                    int defaultedAttrs,
+                    array attributes,
+                    void|mixed userData)
+{}
+
+//! Called when an element end has been detected by the parser. It
+//! provides the namespace information for the element.
+//!
+//! @param localname
+//!  the local name of the element
+//!
+//! @param prefix
+//!  the element namespace prefix if available
+//!
+//! @param URI
+//!  the element namespace name if available
+void endElementNs(object parser, string localname, string prefix,
+                  string URI, void|mixed userData)
+{}
+
+//! New style error handler. Provides more information than the old one.
+//!
+//! @param error
+//!  A mapping with the following members defined:
+//!   @mapping
+//!    @member string "domain"
+//!     What part of the library rised this error
+//!    @member int "code"
+//!     The error code (one of the XML_ERR_* constants)
+//!    @member string "message"
+//!     The actual error message
+//!    @member int "level"
+//!     The severity of the error
+//!    @member string "file"
+//!     Name of the file where the error occurred
+//!    @member int "line"
+//!     Line in which the error occurred
+//!    @member string "str1"
+//!     An extra information string about the error
+//!    @member string "str2"
+//!     An extra information string about the error
+//!    @member string "str3"
+//!     An extra information string about the error
+//!    @member int "int1"
+//!     An extra information integer about the error
+//!    @member int "int2"
+//!     An extra information integer about the error
+//!   @endmapping
+void structuredError(object parser, mapping error, void|mixed userData)
+{}

@@ -80,8 +80,7 @@ RCSID("$Id$");
 #include <stddef.h>
 #include <limits.h>
 
-#include <libxml/tree.h>
-#include <libxml/SAX.h>
+#include <libxml/SAX2.h>
 #include <libxml/entities.h>
 #include <libxml/parserInternals.h>
 
@@ -129,7 +128,10 @@ static unsigned int   __debug_indent;
 #define getParameterEntitySAX 0x16
 #define cdataBlockSAX 0x17
 #define externalSubsetSAX 0x18
-#define CB_API_SIZE 0x19
+#define startElementNsSAX2 0x19
+#define endElementNsSAX2 0x20
+#define structuredError 0x21
+#define CB_API_SIZE 0x22
 
 typedef enum {
   PARSE_PUSH_PARSER = 0x01,
@@ -186,7 +188,21 @@ static void pextsFatalError(void *ctx, const char *msg, ...);
 static xmlEntityPtr pextsGetParameterEntity(void *ctx, const xmlChar *name);
 static void pextsCdataBlock(void *ctx, const xmlChar *value, int len);
 static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID);
-  
+static void pextsStartElementNs(void * ctx, 
+                                const xmlChar * localname, 
+                                const xmlChar * prefix, 
+                                const xmlChar * URI, 
+                                int nb_namespaces, 
+                                const xmlChar ** namespaces, 
+                                int nb_attributes, 
+                                int nb_defaulted, 
+                                const xmlChar ** attributes);
+static void pextsEndElementNs(void * ctx, 
+                              const xmlChar * localname, 
+                              const xmlChar * prefix, 
+                              const xmlChar * URI);
+static void pextsStructuredError(void * userData, xmlErrorPtr error);
+
 static struct program  *xml_program;
 static struct program  *html_program;
 
@@ -217,9 +233,12 @@ static pikeCallbackAPI  callback_api[] =
   CB_OPT_API(getParameterEntitySAX, getParameterEntity),
   CB_OPT_API(cdataBlockSAX, cdataBlock),
   CB_OPT_API(externalSubsetSAX, externalSubset),
+  CB_OPT_API(startElementNsSAX2, startElementNs),
+  CB_OPT_API(endElementNsSAX2, endElementNs),
+  CB_OPT_API(structuredError, serror),
 };
 
-static xmlSAXHandler   pextsSAX = {
+static struct _xmlSAXHandler   pextsSAX = {
   .internalSubset = pextsInternalSubset,
   .isStandalone = pextsIsStandalone,
   .hasInternalSubset = pextsHasInternalSubset,
@@ -247,9 +266,9 @@ static xmlSAXHandler   pextsSAX = {
   .getParameterEntity = pextsGetParameterEntity,
   .cdataBlock = pextsCdataBlock,
   .externalSubset = pextsExternalSubset,
-  .startElementNsSAX2Func = NULL,
-  .endElementNsSAX2Func = NULL,
-  .xmlStructuredErrorFunc = NULL
+  .startElementNs = pextsStartElementNs,
+  .endElementNs = pextsEndElementNs,
+  .serror = pextsStructuredError,
 };
 
 static struct pike_string  *econtent_type;
@@ -258,6 +277,17 @@ static struct pike_string  *econtent_name;
 static struct pike_string  *econtent_prefix;
 static struct pike_string  *econtent_c1;
 static struct pike_string  *econtent_c2;
+static struct pike_string  *seDomain;
+static struct pike_string  *seCode;
+static struct pike_string  *seMessage;
+static struct pike_string  *seLevel;
+static struct pike_string  *seFile;
+static struct pike_string  *seLine;
+static struct pike_string  *seStr1;
+static struct pike_string  *seStr2;
+static struct pike_string  *seStr3;
+static struct pike_string  *seInt1;
+static struct pike_string  *seInt2;
 
 /* Parser callbacks */
 
@@ -880,6 +910,142 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
   DBG_FUNC_LEAVE();
 }
 
+static void pextsStartElementNs(void * ctx, 
+                                const xmlChar * localname, 
+                                const xmlChar * prefix, 
+                                const xmlChar * URI, 
+                                int nb_namespaces, 
+                                const xmlChar ** namespaces, 
+                                int nb_attributes, 
+                                int nb_defaulted, 
+                                const xmlChar ** attributes)
+{
+  int i;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(startElementNsSAX2)) {
+    DBG_FUNC_LEAVE();
+    return;
+  }
+
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
+  push_object(this_object());
+  safe_push_text(localname);
+  safe_push_text(prefix);
+  safe_push_text(URI);
+
+  if (nb_namespaces) {
+    struct array     *arr;
+    
+    for (i = 0; i < nb_namespaces; i++)
+      safe_push_text(namespaces[i]);
+    arr = aggregate_array(nb_namespaces);
+    push_array(arr);
+  } else
+    push_int(0);
+
+  if (nb_attributes) {
+    struct array     *arr;
+    
+    push_int(nb_defaulted);
+    for (i = 0; i < nb_attributes; i++)
+     safe_push_text(attributes[i]);
+    arr = aggregate_array(nb_attributes);
+    push_array(arr);
+  } else {
+    push_int(0);
+    push_int(0);
+  }
+  push_svalue(&THIS->user_data);
+  CB_CALL(startElementNsSAX2, 7);
+  pop_stack();
+
+  DBG_FUNC_LEAVE();
+}
+
+static void pextsEndElementNs(void * ctx, 
+                              const xmlChar * localname, 
+                              const xmlChar * prefix, 
+                              const xmlChar * URI)
+{
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(endElementNsSAX2)) {
+    DBG_FUNC_LEAVE();
+    return;
+  }
+
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
+  push_object(this_object());
+  safe_push_text(localname);
+  safe_push_text(prefix);
+  safe_push_text(URI);
+  push_svalue(&THIS->user_data);
+  CB_CALL(endElementNsSAX2, 7);
+  pop_stack();
+
+  DBG_FUNC_LEAVE();
+}
+
+static void pextsStructuredError(void * userData, xmlErrorPtr error)
+{
+  int mcount = 6;
+  
+  DBG_FUNC_ENTER();
+  if (CB_ABSENT(structuredError)) {
+    DBG_FUNC_LEAVE();
+    return;
+  }
+
+  push_object(this_object());
+
+  push_string(seDomain);
+  push_int(error->domain);
+  push_string(seCode);
+  push_int(error->code);
+  if (error->message) {
+    push_string(seMessage);
+    safe_push_text(error->message);
+    mcount++;
+  }
+  push_string(seLevel);
+  push_int(error->level);
+  if (error->file) {
+    push_string(seFile);
+    safe_push_text(error->file);
+    mcount++;
+  }
+  push_string(seLine);
+  push_int(error->line);
+  if (error->str1) {  
+    push_string(seStr1);
+    safe_push_text(error->str1);
+    mcount++;
+  }
+  if (error->str2) {  
+    push_string(seStr2);
+    safe_push_text(error->str2);
+    mcount++;
+  }
+  if (error->str3) {  
+    push_string(seStr3);
+    safe_push_text(error->str3);
+    mcount++;
+  }
+  push_string(seInt1);
+  push_int(error->int1);
+  push_string(seInt2);
+  push_int(error->int2);
+  f_aggregate_mapping(mcount << 1);
+  
+  push_svalue(&THIS->user_data);
+  CB_CALL(structuredError, 3);
+  pop_stack();
+
+  DBG_FUNC_LEAVE();
+}
+
 /* To learn which callbacks are required take a look at the callbacks_api
  * array above.
  */
@@ -943,7 +1109,7 @@ static void f_getLineNumber(INT32 args)
   if (!THIS->ctxt)
     push_int(-1);
   else
-    push_int(getLineNumber(THIS->ctxt));
+    push_int(xmlSAX2GetLineNumber(THIS->ctxt));
 }
 
 /*! @decl int getColumnNumber()
@@ -955,7 +1121,7 @@ static void f_getColumnNumber(INT32 args)
   if (!THIS->ctxt)
     push_int(-1);
   else
-    push_int(getColumnNumber(THIS->ctxt));
+    push_int(xmlSAX2GetColumnNumber(THIS->ctxt));
 }
 
 /*! @decl void create(string|object input, object callbacks, mapping|void  entities, mixed|void user_data, int|void input_is_data)
@@ -1124,6 +1290,17 @@ static void init_sax(struct object *o)
   econtent_prefix = make_shared_string("prefix");
   econtent_c1 = make_shared_string("child1");
   econtent_c2 = make_shared_string("child2");
+  seDomain = make_shared_string("domain");
+  seCode = make_shared_string("code");
+  seMessage = make_shared_string("message");
+  seLevel = make_shared_string("level");
+  seFile = make_shared_string("file");
+  seLine = make_shared_string("line");
+  seStr1 = make_shared_string("str1");
+  seStr2 = make_shared_string("str2");
+  seStr3 = make_shared_string("str3");
+  seInt1 = make_shared_string("int1");
+  seInt2 = make_shared_string("int2");
 }
 
 static void exit_sax(struct object *o)
