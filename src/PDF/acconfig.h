@@ -56,6 +56,18 @@ void f_show(INT32 args);
 void f_continue_text(INT32 args);
 void f_set_text_pos(INT32 args);
 void f_generate(INT32 args);
+void f_stringwidth(INT32);
+// Graphics Functions
+void f_setdash(INT32);
+void f_moveto(INT32);
+void f_lineto(INT32);
+void f_curveto(INT32);
+void f_circle(INT32);
+void f_arc(INT32);
+void f_rect(INT32);
+void f_stroke(INT32);
+
+// pike module functions
 void pike_module_init(void);
 void pike_module_exit(void);
 #endif

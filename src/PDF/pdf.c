@@ -121,9 +121,10 @@ void f_findfont(INT32 args) {
 }
 
 void f_setfont(INT32 args) {
-	int font, size;
+	int font;
+	float size;
 
-	get_all_args("setfont",args,"%d%d",&font,&size);
+	get_all_args("setfont",args,"%d%f",&font,&size);
 	PDF_setfont(THIS->pdf, font, size );
 	pop_n_elems(args);
 }
@@ -163,6 +164,83 @@ void f_set_text_pos(INT32 args) {
 	pop_n_elems(args);
 }
 
+void f_stringwidth(INT32 args) {
+	float size;
+	int font,len;
+	char *text;
+	float width;
+	
+	if( args == 3 ) {
+		get_all_args("stringwidth",args,"%s%d%f",&text,&font,&size);
+		width=PDF_stringwidth(THIS->pdf, text, font, size);
+	} else {
+		get_all_args("stringwidth",args,"%s%d%d%f",&text,&len,&font,&size);
+		width=PDF_stringwidth2(THIS->pdf, text, len, font, size);
+	}
+
+	pop_n_elems(args);
+	push_float(width);
+}
+
+// Graphical Functions
+void f_setdash(INT32 args) {
+	float b,w;
+	get_all_args("setdash",args,"%f%f",&b,&w);
+	PDF_setdash(THIS->pdf, b, w );
+	pop_n_elems(args);
+}
+
+void f_moveto(INT32 args) {
+	float x,y;
+	get_all_args("moveto",args,"%f%f",&x,&y);
+	PDF_moveto(THIS->pdf, x, y );
+	pop_n_elems(args);
+}
+
+void f_lineto(INT32 args) {
+	float x,y;
+	get_all_args("lineto",args,"%f%f",&x,&y);
+	PDF_lineto(THIS->pdf, x, y );
+	pop_n_elems(args);
+}
+
+void f_curveto(INT32 args) {
+	float x1,y1,x2,y2,x3,y3;
+	
+	get_all_args("curveto",args,"%f%f%f%f%f%f",
+			&x1,&y1,&x2,&y2,&x3,&y3 );
+	PDF_curveto(THIS->pdf,x1,y1,x2,y2,x3,y3);
+	pop_n_elems(args);
+}
+
+void f_circle(INT32 args) {
+	float x,y,r;
+
+	get_all_args("circle",args,"%f%f%f",&x,&y,&r);
+	PDF_circle(THIS->pdf, x,y,r);
+	pop_n_elems(args);
+}
+
+void f_arc(INT32 args) {
+	float x,y,r,start,end;
+
+	get_all_args("arc",args,"%f%f%f%f%f",&x,&y,&r,&start,&end);
+	PDF_arc(THIS->pdf, x,y,r,start,end);
+	pop_n_elems(args);
+}
+
+void f_rect(INT32 args) {
+	float x,y,width,height;
+
+	get_all_args("rect",args,"%f%f%f%f",&x,&y,&width,&height);
+	PDF_rect(THIS->pdf, x,y,width,height);
+	pop_n_elems(args);
+}
+
+void f_stroke(INT32 args) {
+	PDF_stroke(THIS->pdf);
+	pop_n_elems(args);
+}
 static struct program *pdf_program;
 static void free_pdf(struct object *o)
 {
@@ -198,13 +276,32 @@ void pike_module_init(void)
   add_function( "findfont", f_findfont,
 		"function(string,string,int:int)",0);
   add_function( "setfont", f_setfont,
-		"function(int,int:void)",0);
+		"function(int,float:void)",0);
   add_function( "show", f_show,
 		"function(string,int|void:void)",0);
   add_function( "continue_text", f_continue_text,
 		"function(string,int|void:void)",0);
   add_function( "set_text_pos", f_set_text_pos,
 		"function(float,float:void)",0);
+  add_function( "stringwidth", f_stringwidth,
+		"function(string,int,float|int,float|void:void)",0);
+// Graphical funcs
+  add_function( "setdash", f_setdash,
+		"function(float,float:void)",0);
+  add_function( "moveto", f_moveto,
+		"function(float,float:void)",0);
+  add_function( "lineto", f_lineto,
+		"function(float,float:void)",0);
+  add_function( "curveto", f_curveto,
+		"function(float,float,float,float,float,float:void)",0);
+  add_function( "circle", f_circle,
+		"function(float,float,float:void)",0);
+  add_function( "arc", f_arc,
+		"function(float,float,float,float,float:void)",0);
+  add_function( "rect", f_rect,
+		"function(float,float,float,float:void)",0);
+  add_function( "stroke", f_stroke,
+		"function(void:void)",0);
 
   set_init_callback(init_pdf);
   set_exit_callback(free_pdf);
@@ -220,7 +317,7 @@ void pike_module_exit( void )
 }
 
 
-#endif /* HAVE_PCRE */
+#endif /* HAVE_PDFLIB */
 
 /*
  * Local variables:
