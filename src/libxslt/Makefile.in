@@ -1,0 +1,27 @@
+CC= gcc
+INSTALL=@installprg@
+CFLAGS=@CFLAGS@ -I@PIKE_INCLUDE_PREFIX@ -I@LIBXML2_INCLUDE@ -I@LIBXSL_INCLUDE@
+OBJS= xslt.o
+SOURCES=xslt.c
+MODULE_LIBS=@LIBS@
+MODULE_CFLAGS=@CFLAGS@
+MODULE_LDFLAGS=@LDFLAGS@
+LD=@LDSHARED@
+
+all:    $(SOURCES) libxslt.so
+
+xslt.c:
+	$(CC) -o $@ $(OBJS) -O2 $(CFLAGS) 
+
+libxslt.so:     xslt.o
+	$(LD) $(MODULE_LDFLAGS) -R @LIBDIR@ $(MODULE_LIBS) -o libxslt.so $(OBJS)
+
+install:
+	$(INSTALL) libxslt.so /usr/local/caudium/local/pmods/xslt.pmod.so
+
+clean:
+	rm -f *.o *~ libxslt.so
+
+
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
