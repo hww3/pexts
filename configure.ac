@@ -9,6 +9,15 @@ dnl $host, $host_cpu, $host_vendor variables
 dnl to see what kind of OS are we running on and on what machine
 AC_CANONICAL_HOST
 
+#
+# Some prerequisites of ours
+#
+REQ_PIKE_MAJOR=7
+REQ_PIKE_MINOR=0
+REQ_PIKE_BUILD=78
+REQ_PIKE_VER="$REQ_PIKE_MAJOR.$REQ_PIKE_MINOR.$REQ_PIKE_BUILD"
+REQ_PIKE_VERNUM="$REQ_PIKE_MAJOR$REQ_PIKE_MINOR$REQ_PIKE_BUILD"
+
 AC_SET_MAKE
 
 AC_PROG_INSTALL
@@ -212,7 +221,7 @@ AC_SUBST(LD)
 ######################
 
 AC_ARG_WITH(pike, 
-[  --with-pike[=binary]    Use the specified Pike. ],
+AC_HELP_STRING([--with-pike[=binary]],[Use the specified Pike.]),
 [
     if test ! -z "$withval" -a "$withval" != "yes"; then 
 		extpike="`type  $withval |sed "s:$withval is ::" 2>/dev/null`"
@@ -231,60 +240,142 @@ AC_ARG_WITH(pike,
 	fi
 ])
 RESULT=no
-AC_MSG_CHECKING(for a working Pike)
+AC_MSG_CHECKING([for a working Pike (>= $REQ_PIKE_VER)])
 AC_MSG_RESULT( )
-pathpike="`type  pike |sed 's/pike is//' 2>/dev/null`"
+pathpike="`type  pike 2> /dev/null |sed 's/pike is//' 2>/dev/null`"
 if test "$prefix" != "NONE"; then
   PREFIXPIKE="$prefix/bin/pike"
 fi
-for a in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pike \
-  /sw/local/bin/pike /opt/local/bin/pike /usr/gnu/bin/pike /usr/bin/pike ; do
-  if test  "x$PIKE" != "x" ; then
-    break;
-  fi
-  AC_MSG_CHECKING(${a})
-  if test -x ${a}; then
-    PIKE="${a}"
-    if $PIKE -e 'float v; int rel;sscanf(version(), "Pike v%f release %d", v, rel);v += rel/10000.0; if(v < 7.0078) exit(1); exit(0);'; then
-		PIKE_MODULE_DIR=`$PIKE --show-paths 2>&1| grep lib|grep modules|head -1 | sed -e 's/.*: //;s/\(^[ \t]*\)\(.*\)/\2/'`
-		PIKE_INCLUDE_DIRS="-I`echo "$PIKE_MODULE_DIR" | sed -e 's,lib/pike/modules,include/pike,' -e 's,lib/modules,include/pike,'`"
+FOUND_PIKE=0
+PIKE_INCLUDE_DIRS=""
+for PIKE in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pike /sw/local/bin/pike /opt/local/bin/pike /usr/gnu/bin/pike /usr/bin/pike ; do
+  if test -x $PIKE; then
+    echo -n "  ...${PIKE}"
+    THIS_PIKE_VER=`$PIKE -e 'int maj,min,bld;sscanf(version(),"Pike v%d.%d release %d",maj,min,bld);write(sprintf("%d.%d.%d",maj,min,bld));exit(0);'`
+    if test -z "$THIS_PIKE_VER"; then
+      continue
+    fi
+    echo -n " ${THIS_PIKE_VER}"
+    THIS_PIKE_MAJOR=`echo $THIS_PIKE_VER | cut -d '.' -f 1`
+    THIS_PIKE_MINOR=`echo $THIS_PIKE_VER | cut -d '.' -f 2`
+    THIS_PIKE_BUILD=`echo $THIS_PIKE_VER | cut -d '.' -f 3`
+    THIS_PIKE_VERNUM=$THIS_PIKE_MAJOR$THIS_PIKE_MINOR$THIS_PIKE_BUILD
+    THIS_PIKE_DECNUM=`expr '(' $THIS_PIKE_MAJOR '*' 10000 ')' + '(' $THIS_PIKE_MINOR '*' 1000 ')' + $THIS_PIKE_BUILD`
 
-		if test -z "$PIKE_INCLUDE_DIRS" -o -z "$PIKE_MODULE_DIR"; then
-			AC_MSG_RESULT(no dirs found)
-			PIKE=""
-		else
-		   AC_MSG_RESULT(ok)
-		   PIKE_C_INCLUDE=/usr/include/`basename ${PIKE}`
-		   AC_MSG_CHECKING(for C includes in ${PIKE_C_INCLUDE})
-		   if test -d $PIKE_C_INCLUDE; then
-			PIKE_INCLUDE_DIRS="$PIKE_INCLUDE_DIRS -I$PIKE_C_INCLUDE"
-			AC_MSG_RESULT(found)
-		   else
-			AC_MSG_RESULT(not found)
-		   fi
-		fi
-	else
-		AC_MSG_RESULT(too old)
-		PIKE=""
-	fi
-  else
-    AC_MSG_RESULT(no)
+    REQ_PIKE_DECNUM=`expr '(' $REQ_PIKE_MAJOR '*' 10000 ')' + '(' $REQ_PIKE_MINOR '*' 1000 ')' + $REQ_PIKE_BUILD`
+    
+    if test $THIS_PIKE_DECNUM -lt $REQ_PIKE_DECNUM; then
+       echo " => too old"
+       continue
+    fi
+
+    echo -n " => good version"
+
+    PIKE_INCDIR="`dirname $PIKE`/.."
+    for INCDIR in $PIKE_INCDIR/pike/$THIS_PIKE_VER/include/pike $PIKE_INCDIR/include/`basename $PIKE` \
+                  $PIKE_INCDIR/include/pike$THIS_PIKE_VER $PIKE_INCDIR/include/pike${THIS_PIKE_MAJOR}.${THIS_PIKE_MINOR} $PIKE_INCDIR/include/pike; do
+      OLD_DIR=`pwd`
+      cd $INCDIR &> /dev/null
+      if test $? -ne 0; then
+        continue
+      fi
+      INCLUDE_DIR=`pwd`
+      if test -f version.h; then
+        C_PIKE_MAJOR=`cat version.h | grep PIKE_MAJOR_VERSION | tr -s ' ' | cut -d ' ' -f 3`
+        C_PIKE_MINOR=`cat version.h | grep PIKE_MINOR_VERSION | tr -s ' ' | cut -d ' ' -f 3`
+        C_PIKE_BUILD=`cat version.h | grep PIKE_BUILD_VERSION | tr -s ' ' | cut -d ' ' -f 3`
+
+        if test $C_PIKE_MAJOR -ne $THIS_PIKE_MAJOR -o $C_PIKE_MINOR -ne $THIS_PIKE_MINOR -o $C_PIKE_BUILD -ne $THIS_PIKE_BUILD; then
+          echo
+          break
+        fi
+        echo ", $INCLUDE_DIR"
+        FOUND_PIKE=1
+        PIKE_VERSION=$THIS_PIKE_VER
+        PIKE_INCLUDE_DIRS="$PIKE_INCLUDE_DIRS -I$INCLUDE_DIR"
+        cd $OLD_DIR
+        break
+      else
+        echo
+      fi
+    done
+  fi
+  if test x"$FOUND_PIKE" = "x1"; then
+    break
   fi
 done
-if test "$PIKE" != ""; then 
-  tmppike=`ls -l $PIKE | awk -F ' -> ' '{ print $2 }' 2>/dev/null`
-  if test -x "$tmppike"; then
- 	PIKE=$tmppike
-  fi
-  PIKE_VERSION=`$PIKE -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);'`
+
+if test x"$FOUND_PIKE" = "x1"; then 
+  AC_MSG_RESULT([found Pike $PIKE_VERSION ($PIKE) with C headers in $PIKE_INCLUDE_DIRS])
 else
-  echo "Failed to find a suitable pike!"
+  cat << EOF
+*****************************************************************************
+*** I couldn't find a suitable Pike for Pexts. Pexts
+*** require Pike $REQ_PIKE_VER or newer. You can download and install one of
+*** our Pike $REQ_PIKE_MAJOR.$REQ_PIKE_MINOR snapshots available from our website at:
+***
+***     http://caudium.net/download/source/caudiumbuild.rxml 
+***
+*** PLEASE NOTE: THIS VERSION OF PEXTS NO LONGER SUPPORTS PIKE < $REQ_PIKE_MAJOR.$REQ_PIKE_MINOR.$REQ_PIKE_BUILD!
+***
+*** If you have this or newer version of Pike installed in a different 
+*** location or under a different name, please use the --with-pike argument
+*** to the configure script to specify the location of the Pike binary you
+*** want to use with Pexts.
+***
+*****************************************************************************
+EOF
   exit 1;
 fi
 
-export PIKE PIKE_INCLUDE_DIRS PIKE_VERSION PIKE_MODULE_DIR
+dnl find the module dirs for this pike
+dnl we work only with pike 7.x.x, so no checks for major < 7 needed
+dnl Code below builds a variable with a list of module directories
+PIKE_MODULE_DIR=""
+AC_MSG_CHECKING([for a available module locations])
+AC_MSG_RESULT( )
+
+if test -z "$prefix"; then
+  TMP_PREFIX=/usr/local
+  TMP_ANY_PREFIX="yes"
+else
+  TMP_PREFIX="$prefix"
+  TMP_ANY_PREFIX="no"
+fi
+
+TMP_MD_PREFIX="`$PIKE foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\"$TMP_PREFIX\",p})) == \"$TMP_PREFIX\") write(p);`"
+TMP_MD_NOPREFIX="`$PIKE foreach(sort(master()->pike_module_path), string p) if(String.common_prefix(({\"$TMP_PREFIX\",p})) != \"$TMP_PREFIX\") write(p);`"
+
+for md in $TMP_MD_PREFIX; do
+  echo -n "considering $md => "
+  if test -d $md; then
+    echo winner
+    PIKE_MODULE_DIR="$md"
+    break
+  fi
+done
+
+if test -z "$PIKE_MODULE_DIR" -a "x$TMP_ANY_PREFIX" = "xyes"; then
+  for md in $TMP_MD_NOPREFIX; do
+    echo -n "considering $md => "
+    if test -d $md; then
+      echo winner
+      PIKE_MODULE_DIR="$md"
+      break
+    fi
+  done
+fi
+
+if test -z "$PIKE_MODULE_DIR"; then
+  echo
+  echo "Cannot find a suitable directory for modules. Aborting"
+  exit 1
+fi
+
 AC_SUBST(PIKE)
 AC_SUBST(PIKE_VERSION)
+
+export PIKE PIKE_INCLUDE_DIRS PIKE_VERSION PIKE_MODULE_DIR
 
 #############################################################################
 
