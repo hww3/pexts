@@ -486,7 +486,7 @@ f_ldap_explode_dn(INT32 args)
         case 1:
             if (ARG(1).type != T_STRING)
                 Pike_error("OpenLDAP.Client->explode_dn(): argument 1 must be an integer\n");
-            dn = ARG(1).u.string->str;
+            dn = ARG(1).u.string;
             break;
             
         default:
