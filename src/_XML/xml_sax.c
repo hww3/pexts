@@ -439,7 +439,7 @@ static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fu
   DBG_FUNC_LEAVE();
 }
 
-inline static struct mapping *tree2mapping(xmlElementContentPtr content)
+static struct mapping *tree2mapping(xmlElementContentPtr content)
 {
   struct mapping *ret;
   struct svalue   sv;
@@ -650,7 +650,7 @@ static void pextsCharacters(void *ctx, const xmlChar *ch, int len)
   
   push_object(this_object());
   if (ch && len)
-    push_text(make_shared_binary_string((const char*)ch, len));
+    push_string(make_shared_binary_string((const char*)ch, (size_t) len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
@@ -672,7 +672,7 @@ static void pextsIgnorableWhitespace(void *ctx, const xmlChar *ch, int len)
   
   push_object(this_object());
   if (ch && len)
-    push_text(make_shared_binary_string((const char*)ch, len));
+    push_string(make_shared_binary_string((const char*)ch, (size_t) len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
@@ -838,7 +838,7 @@ static void pextsCdataBlock(void *ctx, const xmlChar *value, int len)
   
   push_object(this_object());
   if (value)
-    push_text(make_shared_binary_string((const char*)value, len));
+    push_string(make_shared_binary_string((const char*)value, (size_t) len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
