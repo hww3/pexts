@@ -65,4 +65,5 @@
 
 struct program* _at_shadow_init(void);
 struct program* _at_directory_init(void);
+struct program* _at_quota_init(void);
 #endif

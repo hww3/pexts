@@ -1,5 +1,5 @@
-#ifndef PCRE_CONFIG_H
-#define PCRE_CONFIG_H
+#ifndef AT_CONFIG_H
+#define AT_CONFIG_H
 
 @TOP@
 
@@ -23,5 +23,8 @@
 
 /* Define if your system has the d_off member in struct dirent */
 #undef HAVE_DIRENT_D_OFF
+
+/* Define if your system has known quotactl support */
+#undef HAVE_QUOTA_SUPPORT
 
 #endif

@@ -3,10 +3,11 @@ AC_CONFIG_HEADER(at_config.h)
 
 PEXTS_MODULE_INIT()
 
-AC_CHECK_HEADERS(shadow.h dirent.h)
+AC_CHECK_HEADERS(shadow.h dirent.h sys/quota.h mntent.h)
 AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
 			   readdir readdir_r rewinddir seekdir telldir scandir      \
-			   alphasort versionsort sysconf setspent endspent) 
+			   alphasort versionsort sysconf setspent endspent \
+			   quotactl hasmntopt getmntent setmntent) 
 
 AC_MSG_CHECKING(for working (and failsafe) strerror)
 AC_CACHE_VAL(atools_cv_func_failsafe_strerror,
@@ -161,6 +162,20 @@ if test "$ac_cv_func_getspent_r" = "yes"; then
     AC_MSG_RESULT([4 - Linux])
   fi
 else :; fi
+
+AC_MSG_CHECKING(for known quotactl interface)
+if test "`uname`" = "Linux"; then
+  if test "$ac_cv_func_quotactl" = "yes" -a \
+     "$ac_cv_header_sys_quota_h" = "yes" -a \
+     "$ac_cv_header_mntent_h" = "yes"; then
+    AC_DEFINE(HAVE_QUOTA_SUPPORT)
+    AC_MSG_RESULT(Linux)
+  else
+    AC_MSG_RESULT(unsupported Linux)
+  fi
+else
+    AC_MSG_RESULT(not found)
+fi
 
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 
