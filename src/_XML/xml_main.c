@@ -105,11 +105,11 @@ static void f_utf8ToHTML(INT32 args)
 
   str = Pike_sp[-args].u.string;
 
-  html = malloc(2*str->len*sizeof(char *));
+  outlen = str->len << 1;
+  html = (char*)malloc(outlen + 1);
   if (!html)
     Pike_error("Out of memory");
-
-  outlen = 2*str->len;
+  
   inlen = str->len;
   if ( UTF8ToHtml(html, &outlen, str->str, &inlen) < 0 ) {
     free(html);
@@ -129,10 +129,11 @@ static void f_utf8ToISO(INT32 args)
 
   str = Pike_sp[-args].u.string;
 
-  html = malloc(2*str->len*sizeof(char *));
+  outlen = str->len << 1;
+  html = (char*)malloc(outlen + 1);
   if (!html)
     Pike_error("Out of memory");
-  outlen = 2*str->len;
+  
   inlen = str->len;
   if ( UTF8Toisolat1(html, &outlen, str->str, &inlen) < 0 ) {
     free(html);
