@@ -57,6 +57,7 @@ struct quota_struct
 {
     struct dqblk     dq;
     struct dqstats   stats;
+    char             *fs; /* which FS do we operate on? */
 };
 
 static char *_object_name = "Quota";
@@ -169,10 +170,18 @@ f_getstats(INT32 args)
 {}
 
 static void
+f_create(INT32 args)
+{
+    if (THIS->fs)
+	free(THIS->fs);
+}
+
+static void
 init_quota(struct object *o)
 {
     memset(&THIS->dq, 0, sizeof(THIS->dq));
     memset(&THIS->stats, 0, sizeof(THIS->stats));
+    THIS->fs = NULL;
 }
 
 static void
