@@ -1,3 +1,9 @@
+pexts (0.0.20010528-1) unstable; urgency=low
+
+  * Added missing build dependencies. Closes: #98901
+
+ -- Marek Habersack <grendel@debian.org>  Mon, 28 May 2001 14:53:59 +0200
+
 pexts (0.0.20010514-1) unstable; urgency=low
 
   * Latest snapshot

@@ -2,7 +2,7 @@ Source: pexts
 Section: interpreters
 Priority: optional
 Maintainer: Marek Habersack <grendel@debian.org>
-Build-Depends: debhelper (>= 1.1.17), pike7, libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev
+Build-Depends: debhelper (>= 1.1.17), pike7, libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev
 Standards-Version: 3.1.1
 
 Package: pexts-admintools
