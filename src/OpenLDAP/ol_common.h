@@ -60,6 +60,9 @@
 #define ATTRIBUTE(x)
 #endif
 
+#define OL_CACHE_MAX      8192
+#define OL_CACHE_TIMEOUT  300
+
 typedef struct 
 {
     LDAP                *conn;
@@ -67,6 +70,7 @@ typedef struct
 
     int                  lerrno;
     int                  bound:1;
+    int                  caching:1;
 } OLSTORAGE;
 
 struct program* _ol_ldap_program_init(void);
