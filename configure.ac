@@ -698,7 +698,7 @@ if test -z "$LDSHARED" ; then
     SCO_SV*) LDSHARED="cc -G -KPIC -Wl,-Bexport";;
     UNIX_SV*) LDSHARED="ld -G";;
     Darwin*)
-        LD_SHARED="$CC -bundle -undefined error -bundle_loader $PIKE";;
+        LD_SHARED="$CC -bundle -undefined error -bundle_loader $PIKE"
         AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD, Darwin, ...)])
         ;;
     UnixWare*)
