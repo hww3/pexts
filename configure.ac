@@ -722,12 +722,14 @@ if test -z "$CCSHARED" ; then
   if test "$GCC" = yes ; then
     case $caudium_cv_sys_os in
       BSD/OS*) CCSHARED="";;
+      Darwin*) CCSHARED="-fPIC";;
       *) CCSHARED="-fpic";;
     esac
   else
     case $caudium_cv_sys_os in
 	hp*|HP*) CCSHARED="+z"; ;;
 	FreeBSD*) CCSHARED="-fpic";;
+	Darwin*) CCSHARED="-fPIC";;
 	SCO_SV*) CCSHARED="-KPIC -dy -Bdynamic";;
 	UnixWare*) CCSHARED="-KPIC -dy -Bdynamic";;
 	Solaris*) CCSHARED="-KPIC -Bdynamic";;
