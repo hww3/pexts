@@ -2477,6 +2477,7 @@ f_form(INT32 args)
     OUTFUN();
 }
 
+#ifdef HAVE_NEWTFORMSETTIMER
 static void
 f_formSetTimer(INT32 args)
 {
@@ -2505,6 +2506,7 @@ f_formSetTimer(INT32 args)
 
     OUTFUN();
 }
+#endif
 
 /* IMPLEMENT */
 /* We need to take a Stdio.File or an int as the arg (?)*/
@@ -3631,8 +3633,10 @@ void init_functions()
 
     ADD_FUNCTION("form", f_form,
                  tFunc(tOr(tObj, tInt) tString tInt, tVoid), 0);
+#ifdef HAVE_NEWTFORMSETTIMER
     ADD_FUNCTION("formSetTimer", f_formSetTimer,
                  tFunc(tInt, tVoid), 0);
+#endif
     /* formWatchFd here */
     ADD_FUNCTION("formSetSize", f_formSetSize,
                  tFunc(tVoid, tVoid), 0);
