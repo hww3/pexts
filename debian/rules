@@ -48,7 +48,8 @@ clean:
 	rm -f build-stamp configure-stamp
 	# Add here commands to clean up after the build process.
 	-$(MAKE) spotless
-
+	-$(MAKE) -C src/PCRE/pcrelib/ clean
+	-rm -f src/PCRE/pcrelib/dftables
 	dh_clean
 
 install: DH_OPTIONS=
