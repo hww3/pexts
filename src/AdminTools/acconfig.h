@@ -5,6 +5,8 @@
 
 @BOTTOM@
 
+#include "../../config.h"
+
 /* Define if you have a failsafe strerror */
 #undef HAVE_STRERROR
 

@@ -585,9 +585,18 @@ if test -z "$LDSHARED" ; then
     next*) LDSHARED="$CC $CFLAGS -nostdlib -r";;
     Linux*) LDSHARED="$CC -shared";;
     GNU*) LDSHARED="ld -Bshareable";;
-    FreeBSD*) LDSHARED="$CC -Wl,-Bshareable";;
-    NetBSD*) LDSHARED="ld -Bshareable";;
-    OpenBSD*) LDSHARED="ld -Bshareable";;
+    FreeBSD*) 
+	LDSHARED="$CC -Wl,-Bshareable"
+	AC_DEFINE(RUNNING_BSD)
+	;;
+    NetBSD*) 
+	LDSHARED="ld -Bshareable"
+	AC_DEFINE(RUNNING_BSD)
+	;;
+    OpenBSD*)
+	LDSHARED="ld -Bshareable"
+	AC_DEFINE(RUNNING_BSD)
+	;;
     BSD/OS*) LDSHARED="shlicc -r";;
     SCO_SV*) LDSHARED="cc -G -KPIC -Wl,-Bexport";;
     UNIX_SV*) LDSHARED="ld -G";;
@@ -659,6 +668,7 @@ CPPFLAGS="-I$srcdir/src/  $CPPFLAGS"
 CFLAGS="$CFLAGS $CCSHARED $WARN $OPTIMIZE"
 export CC CFLAGS CPPFLAGS LDFLAGS LDSHARED SO CLIBRARY_LINK
 
+AC_CONFIG_HEADER(config.h)
 AC_CONFIG_SUBDIRS(src)
 AC_OUTPUT(Makefile)
 

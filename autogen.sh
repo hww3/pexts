@@ -9,4 +9,5 @@ for a in `find src tools -name "autogen.sh" |sort`; do
   cd $mydir >/dev/null 2>&1
 done  
 
+autoheader >/dev/null 2>&1
 autoconf >/dev/null 2>&1
