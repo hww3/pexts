@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=Magic
+OBJS= magic_main.o
+SOURCES=magic_main.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=magic_config.h magic_config.h.in Magic.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

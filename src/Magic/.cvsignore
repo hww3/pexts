@@ -1,0 +1,9 @@
+configure
+magic_config.h
+magic_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+Magic.so
+autom4te.cache
