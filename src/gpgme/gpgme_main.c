@@ -29,11 +29,9 @@ RCSID("$Id$");
 
 #include "gpgme_config.h"
 
-#ifdef HAVE_LIBGPGME
-
 #ifdef HAVE_GPGME_H
+
 #include <gpgme.h>
-#endif
 
 #include "caudium_util.h"
 
