@@ -50,6 +50,26 @@ void pike_module_init(void)
     pexts_init();
 #endif    
 
+    /* LDAP constants */
+    /* AUTH stuff */
+    add_integer_constant("LDAP_AUTH_NONE", LDAP_AUTH_NONE, 0);
+    add_integer_constant("LDAP_AUTH_SIMPLE", LDAP_AUTH_SIMPLE, 0);
+    add_integer_constant("LDAP_AUTH_SASL", LDAP_AUTH_SASL, 0);
+    add_integer_constant("LDAP_AUTH_KRBV4", LDAP_AUTH_KRBV4, 0);
+    add_integer_constant("LDAP_AUTH_KRBV41", LDAP_AUTH_KRBV41, 0);
+    add_integer_constant("LDAP_AUTH_KRBV42", LDAP_AUTH_KRBV42, 0);
+
+    /* Cache stuff
+    add_integer_constant("LDAP_CACHE_OPT_CACHENOERRS", LDAP_CACHE_OPT_CACHENOERRS, 0);
+    add_integer_constant("LDAP_CACHE_OPT_CACHEALLERRS", LDAP_CACHE_OPT_CACHEALLERRS, 0);
+    */
+    
+    /* Scope stuff */
+    add_integer_constant("LDAP_SCOPE_DEFAULT", LDAP_SCOPE_DEFAULT, 0);
+    add_integer_constant("LDAP_SCOPE_BASE", LDAP_SCOPE_BASE, 0);
+    add_integer_constant("LDAP_SCOPE_ONELEVEL", LDAP_SCOPE_ONELEVEL, 0);
+    add_integer_constant("LDAP_SCOPE_SUBTREE", LDAP_SCOPE_SUBTREE, 0);
+    
     ldap_program = _ol_ldap_program_init();
 }
 
