@@ -5,7 +5,7 @@ SOURCES=mailstore_main.c
 MODULE_LIBS=@LIBS@
 MODULE_CFLAGS=-I./libmutt/src -I./libmutt/imap
 
-EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so
+EXTRA_CLEAN=mailstore_config.h mailstore_config.h.in Mailstore.so libmuttclean
 
 @module_makefile@
 
@@ -14,6 +14,9 @@ extrainstall:
 liubmutt/imap/libimap.a:
 libmutt/src/libmutt.a:
 	(cd libmutt ; ${MAKE})
+
+libmuttclean:
+	(cd libmutt ; ${MAKE} clean)
 
 # DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
 
