@@ -1,9 +1,9 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
-MODNAME=McastUDP
+MODNAME= mcast
 OBJS= mcast.o
 SOURCES= mcast.c
 MODULE_LIBS=@LIBS@
-EXTRA_CLEAN=config.log config.status mcast_config.h mcast_config.h.in McastUDP.so
+EXTRA_CLEAN=config.log config.status mcast_config.h mcast_config.h.in mcast.so
 
 @module_makefile@
 
