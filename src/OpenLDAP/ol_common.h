@@ -93,6 +93,8 @@ typedef struct
 void _ol_ldap_program_init(void);
 void _ol_result_program_init(void);
 
+struct array* make_pike_array(char **carr);
+
 extern struct program   *ldap_program;
 extern struct program   *result_program;
 

@@ -70,27 +70,62 @@ f_ldap_get_dn(INT32 args)
 }
 
 static void
-f_ldap_dn2ufn(INT32 args)
+add_attr_to_mapping(struct mapping *m, char *attr, struct berval **bvals)
 {
-    struct pike_string   *dn = NULL;
-    char                 *ufn;
-    
-    if (args != 1)
-        Pike_error("OpenLDAP.Client.Result->dn2ufn(): requires exactly one 8-bit string argument\n");
+    struct svalue   val, key;
 
-    get_all_args("OpenLDAP.Client.Result->dn2ufn()", args, "%S", &dn);
-    if (!dn) {
+    key.type = T_STRING;
+    val.type = T_ARRAY;
+    
+}
+
+static void
+f_fetch(INT32 args)
+{
+    int              idx = 0;
+    int              cnt = 0;
+    char           **values;
+    char            *attr;
+    BerElement      *ber;
+    struct berval  **bervals;
+    struct mapping  *ret = NULL;
+    
+    if (args > 1)
+        Pike_error("OpenLDAP.Client.Result->fetch(): requires at most one argument\n");
+
+    get_all_args("OpenLDAP.Client.Result->fetch()", args, "%i", &idx);
+
+    if (idx > THIS->num_entries || idx < 0) {
         push_int(0);
         return;
     }
-
-    ufn = ldap_dn2ufn(dn->str);
-    if (!ufn) {
-        push_int(0);
-    } else {
-        push_string(make_shared_string(ufn));
-        ldap_memfree(ufn);
+    
+    attr = ldap_first_attribute(THIS->conn, THIS->cur, &ber);
+    while (attr) {
+        if (!ret)
+            ret = allocate_mapping(1);
+        bervals = ldap_get_values_len(THIS->conn, THIS->cur, attr);
+        if (!bervals && THIS->ld_errno != LDAP_SUCCESS)
+            Pike_error("OpenLDAP.Client.Result->fetch(): %s",
+                       ldap_err2string(THIS->ld_errno));
+        add_attr_to_mapping(ret, attr, bervals);
+        if (bervals)
+            ldap_value_free_len(bervals);
+        cnt++;
+        attr = ldap_next_attribute(THIS->conn, THIS->cur, &ber);
     }
+
+    if (THIS->ld_errno != LDAP_SUCCESS)
+        Pike_error("OpenLDAP.Client.Result->fetch(): %s",
+                   ldap_err2string(THIS->ld_errno));
+
+    if (!cnt) {
+        free_mapping(ret);
+        push_int(0);
+        return;
+    }
+    
+    push_mapping(ret);
 }
 
 static void
@@ -126,8 +161,6 @@ _ol_result_program_init(void)
                  tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("get_dn", f_ldap_get_dn,
                  tFunc(tVoid, tString), 0);
-    ADD_FUNCTION("dn2ufn", f_ldap_dn2ufn,
-                 tFunct(tString, tString), 0);
     
     result_program = end_program();
     add_program_constant("Result", result_program, 0);

@@ -72,6 +72,13 @@ f_create(INT32 args)
 }
 
 static void
+f_ldap_errno(INT32 args)
+{
+    pop_n_elems(args);
+    push_int(THIS->ld_errno);
+}
+
+static void
 f_ldap_bind(INT32 args)
 {
     char    *who = "", *cred = "";
@@ -205,6 +212,63 @@ f_ldap_err2string(INT32 args)
     
     str = ldap_err2string(err);
     push_string(make_shared_string(str));
+}
+
+static void
+f_ldap_dn2ufn(INT32 args)
+{
+    struct pike_string   *dn = NULL;
+    char                 *ufn;
+    
+    if (args != 1)
+        Pike_error("OpenLDAP.Client->dn2ufn(): requires exactly one 8-bit string argument\n");
+
+    get_all_args("OpenLDAP.Client->dn2ufn()", args, "%S", &dn);
+
+    pop_n_elems(args);
+    
+    if (!dn) {
+        push_int(0);
+        return;
+    }
+
+    ufn = ldap_dn2ufn(dn->str);
+    if (!ufn) {
+        push_int(0);
+    } else {
+        push_string(make_shared_string(ufn));
+        ldap_memfree(ufn);
+    }
+}
+
+/*
+ * see ldap_explode_dn(3)
+ */
+static void
+f_ldap_explode_dn(INT32 args)
+{
+    struct pike_string       *dn;
+    char                    **edn;
+    int                       notypes = 1;
+    
+    if (args < 1 || args > 2)
+        Pike_error("OpenLDAP.Client->explode_dn(): requires at most two and at least one argument\n");
+
+    get_all_args("OpenLDAP.Client->explode_dn()", args, "%S%i", &dn, &notypes);
+    if (!dn) {
+        push_int(0);
+        return;
+    }
+
+    pop_n_elems(args);
+    edn = ldap_explode_dn(dn->str, notypes);
+    if (!edn) {
+        push_int(0);
+        return;
+    }
+
+    push_array(make_pike_array(edn));
+    ldap_value_free(edn);
 }
 
 static void
@@ -512,6 +576,8 @@ _ol_ldap_program_init(void)
     
     ADD_FUNCTION("create", f_create,
                  tFunc(tString, tVoid), 0);
+    ADD_FUNCTION("errno", f_ldap_errno,
+                 tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("bind", f_ldap_bind,
                  tFunc(tOr(tString, tVoid) tOr(tString, tVoid) tOr(tInt, tVoid),
                        tInt), 0);
@@ -540,6 +606,10 @@ _ol_ldap_program_init(void)
                  tFunc(tOr(tMapping,
                            tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
                        tOr(tObj, tInt)), 0);
+    ADD_FUNCTION("dn2ufn", f_ldap_dn2ufn,
+                 tFunc(tString, tString), 0);
+    ADD_FUNCTION("explode_dn", f_ldap_explode_dn,
+                 tFunc(tString tOr(tInt, tVoid), tArr(tString)), 0);
 
     _ol_result_program_init();
     
