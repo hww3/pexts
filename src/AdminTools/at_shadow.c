@@ -175,7 +175,7 @@ f_getspnam(INT32 args)
     struct spwd    *spent;
 #endif
 
-    get_all_args("AdminTools.Shadow->getspnam", args, "%S", &name);
+    get_all_args("AdminTools.Shadow->getspnam", args, "%s", &name);
     if (args != 1)
         FERROR("getspnam", "Invalid number of arguments. Expected 1");
     
