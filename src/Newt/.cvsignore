@@ -6,3 +6,4 @@ configure
 newt_config.h
 newt_config.h.in
 
+autom4te.cache

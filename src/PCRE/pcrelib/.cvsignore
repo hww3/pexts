@@ -6,3 +6,4 @@ config.log
 config.h
 dftables
 .cvsignore
+autom4te.cache

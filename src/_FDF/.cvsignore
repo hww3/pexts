@@ -6,3 +6,4 @@ Makefile
 config.status
 Makefile.pre
 _FDF.so
+autom4te.cache

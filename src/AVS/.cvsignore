@@ -6,3 +6,4 @@ Makefile
 config.status
 Makefile.pre
 AVS.so
+autom4te.cache

@@ -8,3 +8,4 @@ Makefile.pre
 output.bin
 output.bin.bz2
 bzip2.so
+autom4te.cache

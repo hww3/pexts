@@ -6,3 +6,4 @@ configure
 curses_config.h
 curses_config.h.in
 
+autom4te.cache

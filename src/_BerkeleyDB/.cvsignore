@@ -5,3 +5,4 @@ config.status
 Makefile.pre
 bdb_config.h
 bdb_config.h.in
+autom4te.cache

@@ -6,3 +6,4 @@ Makefile
 config.status
 Makefile.pre
 OpenLDAP.so
+autom4te.cache

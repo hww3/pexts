@@ -5,3 +5,4 @@ config.log
 Makefile
 config.status
 Makefile.pre
+autom4te.cache

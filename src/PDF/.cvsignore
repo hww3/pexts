@@ -6,3 +6,4 @@ configure
 pdf_config.h
 pdf_config.h.in
 
+autom4te.cache

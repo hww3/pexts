@@ -5,3 +5,4 @@ config.status
 configure
 geoip_config.h
 geoip_config.h.in
+autom4te.cache

@@ -6,3 +6,4 @@ config.status
 Makefile.pre
 pcre_config.h
 
+autom4te.cache

@@ -6,3 +6,4 @@ config.status
 configure
 mcast_config.h
 mcast_config.h.in
+autom4te.cache
