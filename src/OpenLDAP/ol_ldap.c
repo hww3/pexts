@@ -154,6 +154,9 @@ f_create(INT32 args)
     if ((THIS->lerrno = ldap_url_parse(ARG(1).u.string->str, &THIS->server_url)))
         Pike_error("OpenLDAP.Client->create():: badly formed server URL\n");
 
+    if (!THIS)
+        Pike_error("Serious problem - no THIS...\n");
+    
     THIS->conn = ldap_init(THIS->server_url->lud_host,
                            THIS->server_url->lud_port);
 
@@ -229,8 +232,10 @@ f_ldap_bind(INT32 args)
     char    *who = "", *cred = "";
     int      auth  = LDAP_AUTH_SIMPLE, ret;
 
-    if (THIS->bound)
-        Pike_error("OpenLDAP.Client->bind(): cannot re-bind, unbind first\n");
+    if (!THIS->conn)
+        Pike_error("Connection not opened");
+
+    printf("binding...\n");
     
     switch (args) {
         case 3:

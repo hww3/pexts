@@ -135,9 +135,6 @@ f_fetch(INT32 args)
     
     if (args > 1)
         Pike_error("OpenLDAP.Client.Result->fetch(): requires at most one argument\n");
-
-    if (!THIS_PARENT->bound)
-        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     get_all_args("OpenLDAP.Client.Result->fetch()", args, "%i", &idx);
 
@@ -164,9 +161,6 @@ f_fetch_all(INT32 args)
     struct berval **bervals;
     struct mapping *tmp;
     LDAPMessage    *cur;
-
-    if (!THIS_PARENT->bound)
-        Pike_error("OpenLDAP.Client: attempting operation on an unbound connection\n");
     
     pop_n_elems(args);
     
