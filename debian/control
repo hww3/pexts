@@ -1,0 +1,78 @@
+Source: pexts
+Section: interpreters
+Priority: optional
+Maintainer: Marek Habersack <grendel@vip.net.pl>
+Build-Depends: debhelper (>= 1.1.17), pike7-cvs, libnewt-dev, libmhash-dev, libpcre3-dev, libbz2-dev
+Standards-Version: 3.1.1
+
+Package: pexts-admintools
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike AdminTools module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the more advanced Unix
+ system interfaces which aren't supported by the core Pike modules.
+
+Package: pexts-curses
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike (N)Curses module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the (N)Curses portable
+ terminal access library.
+
+Package: pexts-mhash
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike Mhash module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the Mhash library of strong
+ hashes.
+
+Package: pexts-newt
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike Newt module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the Newt user interface
+ library.
+
+Package: pexts-pcre
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike PCRE module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the PCRE - perl compatible
+ regular expression library.
+
+Package: pexts-bzip2
+Architecture: any
+Depends: ${shlibs:Depends}, pike7-cvs (= ${pikever})
+Description: Pike bzip2 module
+ WARNING: This code is Work In Progress!
+ .
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the bzip2 compression
+ library.

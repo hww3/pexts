@@ -1,0 +1,10 @@
+pexts (0.0.20001206-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Marek Habersack <grendel@vip.net.pl>  Wed,  6 Dec 2000 17:48:46 +0100
+
+Local variables:
+mode: debian-changelog
+add-log-mailing-address "grendel@vip.net.pl"
+End:
