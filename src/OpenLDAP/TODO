@@ -5,7 +5,8 @@ Short term goals
  - implement the display templates [PENDING]
  - implement the user friendly interfaces [PENDING]
  - unify error handling (either return an int or throw an error?) [PENDING]
-
+ - documentation [PENDING]
+ 
 Long term goals:
 
  - using the asynchronous interface [PENDING]

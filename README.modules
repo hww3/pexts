@@ -78,3 +78,10 @@ mnoGo:
   Principal Author: David Hedbor <david@hedbor.org>
   Notes: Similar interface Sql.sql.
   TODO: Documentation.
+
+OpenLDAP:
+  Glue to the OpenLDAP v2 library.
+  Requires: OpenLDAP v2 from http://www.openldap.org/
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  TODO: See the TODO file in the source directory
+  
