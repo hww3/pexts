@@ -10,16 +10,16 @@
 #export DH_VERBOSE=1
 
 # This is the debhelper compatability version to use.
-export DH_COMPAT=2
+#export DH_COMPAT=2
 
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-PIKE7_CHANGELOG=/usr/share/doc/pike7/changelog.Debian.gz
-PIKE=/usr/bin/pike7
+PIKE=/usr/bin/pike$(PVER)
+PIKE_CHANGELOG=/usr/share/doc/pike$(PVER)/changelog.Debian.gz
 PIKE_VERSION=$(shell $(PIKE) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
-CVS_SNAPSHOT=$(shell if test -f configure; then echo no; else echo yes; fi)
-PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE7_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
+CVS_SNAPSHOT=$(shell if test -x configure; then echo no; else echo yes; fi)
+PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
 
 CFLAGS=-O2 -fPIC
 # Temporary workaround for hppa linker issues
@@ -28,42 +28,63 @@ CFLAGS+=-ffunction-sections
 endif
 export CFLAGS
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
+configure: configure-stamp-7 configure-stamp-72 configure-stamp-74
+configure-stamp-7:
+	$(MAKE) -fdebian/rules PVER=7 do-configure
+	touch $@
+
+configure-stamp-72:
+	$(MAKE) -fdebian/rules PVER=7.2 do-configure
+	touch $@
+
+configure-stamp-7.4:
+	$(MAKE) -fdebian/rules PVER=7.4 do-configure
+	touch $@
+
+do-configure:
+	dh_testdir	
 	# Add here commands to configure the package.
 	if test "$(CVS_SNAPSHOT)" = "yes"; then \
 	    ./autogen.sh; \
 	fi
 	 ./configure --prefix=/usr \
-	                       --with-pike=$(PIKE) \
-			       --without-_esmtp \
-			       --without-_FDF \
-			       --without-PDF \
-			       --without-_BerkeleyDB \
-			       --without-Newt \
-			       --without-gpgme \
-			       --without-mnoGo \
-			       --without-OpenSSL \
-			       --without-_XML \
-			       --without-mcast
+	             --with-pike=$(PIKE) \
+		     --without-_esmtp \
+		     --without-_FDF \
+		     --without-PDF \
+		     --without-_BerkeleyDB \
+		     --without-Newt \
+		     --without-gpgme \
+		     --without-mnoGo \
+		     --without-OpenSSL \
+		     --without-_XML \
+		     --without-mcast \
+		     --without-GeoIP
 
-	touch configure-stamp
+build: build-stamp-7 build-stamp-72 build-stamp-74
+build-stamp-7: configure-stamp-7
+	$(MAKE) -fdebian/rules PVER=7 do-build
+	$(MAKE) -fdebian/rules inter-clean
+	touch $@
 
-build: configure-stamp build-stamp
-build-stamp:
+build-stamp-72: configure-stamp-72
+	$(MAKE) -fdebian/rules PVER=7.2 do-build
+	$(MAKE) -fdebian/rules inter-clean
+	touch $@
+
+build-stamp-74: configure-stamp-74
+	$(MAKE) -fdebian/rules PVER=7.4 do-build
+	$(MAKE) -fdebian/rules inter-clean
+	touch $@
+
+do-build:
 	dh_testdir
-
 	# Add here commands to compile the package.
 	$(MAKE)
 
 	touch build-stamp
 
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
-	# Add here commands to clean up after the build process.
+inter-clean:
 	-$(MAKE) spotless
 	-$(MAKE) -C src/PCRE/pcrelib/ clean
 	-rm -f src/PCRE/pcrelib/dftables
@@ -71,6 +92,11 @@ clean:
 	-rm -rf `find -name "CVS" -type d -print`
 	-rm -f smartlink statuslock
 	dh_clean
+
+clean: inter-clean
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74
 
 install: DH_OPTIONS=
 install: build
@@ -80,10 +106,10 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/tmp.
-	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike7/$(PIKE_VERSION)/modules
+	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
 	$(MAKE) install DESTDIR=`pwd`/debian/tmp/
-	install -d -m 755 `pwd`/debian/pexts-newt/usr/lib/pike7/$(PIKE_VERSION)/modules/
-	cp -pr pmod/Newt.pmod/ `pwd`/debian/pexts-newt/usr/lib/pike7/$(PIKE_VERSION)/modules/
+	install -d -m 755 `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+	cp -pr pmod/Newt.pmod/ `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
 	
 	dh_movefiles
 

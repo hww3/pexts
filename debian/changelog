@@ -1,3 +1,14 @@
+pexts (0.1.1-1) unstable; urgency=low
+
+  * Latest cvs snapshot.
+  * Switched to "normal" versioning scheme.
+  * Builds binary packages for pike 7.0, 7.2 and 7.4
+  * Packages renamed so that they are prefixed with the pike name for
+    which they were compiled.
+  * Removed the buggy OpenLDAP module
+
+ -- Marek Habersack <grendel@debian.org>  Thu, 26 Dec 2002 04:08:21 +0100
+
 pexts (0.0.20021010-3) unstable; urgency=low
 
   * Disabled the mcast module - it's not working yet, anyway.
