@@ -49,8 +49,9 @@ struct formobj {
 /* Pike 0.6 */
 #define ADD_STORAGE(x) add_storage(sizeof(x))
 #endif
-#endif
+
 int store_component( newtComponent elem, char *, char *);
+#endif
 // pike module functions
 void pike_module_init(void);
 void pike_module_exit(void);
