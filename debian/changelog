@@ -1,3 +1,9 @@
+pexts (0.0.20010227-1) unstable; urgency=low
+
+  * Depends on pike7 now
+
+ -- Marek Habersack <grendel@vip.net.pl>  Tue, 27 Feb 2001 17:35:36 +0100
+
 pexts (0.0.20010210-1) unstable; urgency=low
 
   * Latest CVS snapshot

@@ -15,8 +15,8 @@ export DH_COMPAT=2
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
-PIKE7_CHANGELOG=/usr/share/doc/pike7-cvs/changelog.Debian.gz
-PIKE=/usr/bin/pike7-cvs
+PIKE7_CHANGELOG=/usr/share/doc/pike7/changelog.Debian.gz
+PIKE=/usr/bin/pike7
 PIKE_VERSION=$(shell $(PIKE) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
 CVS_SNAPSHOT=$(shell if test -f configure; then echo no; else echo yes; fi)
 PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE7_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
@@ -59,7 +59,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/tmp.
-	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike7-cvs/$(PIKE_VERSION)/modules
+	install -d -m 755 `pwd`/debian/tmp/usr/lib/pike7/$(PIKE_VERSION)/modules
 	$(MAKE) install DESTDIR=`pwd`/debian/tmp/
 
 	dh_movefiles
