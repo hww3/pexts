@@ -30,7 +30,7 @@ RCSID("$Id$");
 /*
  * Pike includes
  */
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "at_common.h"
 

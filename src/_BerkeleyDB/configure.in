@@ -1,6 +1,6 @@
 AC_INIT(bdb.c)
 AC_CONFIG_HEADER(bdb_config.h)
-PEXTS_MODULE_INIT()
+CAUDIUM_MODULE_INIT()
 
 OLD_LIBS=$LIBS
 OLD_LDFLAGS=$LDFLAGS
@@ -19,9 +19,9 @@ else
     dirs="$withBerkeleyDB $dirs"
   fi
 
-  AC_CACHE_VAL(pexts_cv_bdb_dir, [
-    for pexts_cv_bdb_dir in $dirs; do
-      if test -d $pexts_cv_bdb_dir/.; then
+  AC_CACHE_VAL(caudium_cv_bdb_dir, [
+    for caudium_cv_bdb_dir in $dirs; do
+      if test -d $caudium_cv_bdb_dir/.; then
         break
       else
         :
@@ -29,11 +29,11 @@ else
     done
   ])
 
-  AC_MSG_RESULT($pexts_cv_bdb_dir)
+  AC_MSG_RESULT($caudium_cv_bdb_dir)
 
-  if test x$pexts_cv_bdb_dir = xno; then :; else
-    LIBS="-R$pexts_cv_bdb_dir/lib/ -L$pexts_cv_bdb_dir/lib/"
-    CFLAGS="-I$pexts_cv_bdb_dir/include/"
+  if test x$caudium_cv_bdb_dir = xno; then :; else
+    LIBS="-R$caudium_cv_bdb_dir/lib/ -L$caudium_cv_bdb_dir/lib/"
+    CFLAGS="-I$caudium_cv_bdb_dir/include/"
   fi
 fi
 AC_CHECK_HEADERS( db.h )
@@ -45,7 +45,7 @@ if test "$ac_cv_lib_db_3_1_db_create" = "no"; then
   AC_CHECK_LIB(db-3.1, db_create)
 fi
 AC_MSG_CHECKING(if Berkeley DB is new enough)
-AC_CACHE_VAL(pexts_cv_bdb_new_enough, 
+AC_CACHE_VAL(caudium_cv_bdb_new_enough, 
   AC_TRY_RUN([#include <db.h>
     int main(int argc, char **argv) {
     int M,m;
@@ -53,12 +53,12 @@ AC_CACHE_VAL(pexts_cv_bdb_new_enough,
     if(M < 3 || (M == 3 && m < 1))
       exit(1);
     exit(0);
-  }],[pexts_cv_bdb_new_enough=yes], [pexts_cv_bdb_new_enough=no],[pexts_cv_bdb_new_enough=yes])
+  }],[caudium_cv_bdb_new_enough=yes], [caudium_cv_bdb_new_enough=no],[caudium_cv_bdb_new_enough=yes])
 )
-if test "$pexts_cv_bdb_new_enough" = "yes"; then
+if test "$caudium_cv_bdb_new_enough" = "yes"; then
   AC_DEFINE(HAVE_BDB)
 fi
-AC_MSG_RESULT($pexts_cv_bdb_new_enough)
+AC_MSG_RESULT($caudium_cv_bdb_new_enough)
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 
 

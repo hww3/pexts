@@ -28,7 +28,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "at_config.h"
 
@@ -101,15 +101,15 @@ static struct program   *dir_program;
 static struct program   *quota_program;
 static struct program   *system_program;
 
-#include "pexts_ver.c"
-
 void pike_module_init(void)
 {
     init_interleave_mutex(&at_shadow_mutex);
 
     init_common("AdminTools");
 
-    pexts_init();
+    #ifdef PEXTS_VERSION
+  pexts_init();
+#endif
     
     /* Shadow stuff */
     shadow_program = _at_shadow_init();

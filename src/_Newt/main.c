@@ -35,8 +35,8 @@ RCSID("$Id$");
 #define MODULE_MINOR 0
 #define MODULE_BUILD 1
 
-#include "pexts.h"
-#include "pexts_ver.c"
+#include "caudium_util.h"
+
 
 #include "newt_config.h"
 

@@ -23,7 +23,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 
 /*   struct formobj *foo = (struct formobj *)get_storage(obj,Form_program);
  *   ..
@@ -561,11 +561,13 @@ int store_component( newtComponent elem, char *nev, char *value )
 #endif /* HAVE_NEWT */
 /*----------------------------- - - --- - -  - - */
 
-#include "pexts_ver.c"
+
 
 void pike_module_init(void)
 {
+  #ifdef PEXTS_VERSION
   pexts_init();
+#endif
 
 #ifdef HAVE_NEWT
   start_new_program();

@@ -22,10 +22,10 @@
 
 #include "global.h"
 RCSID("$Id$");
-#include "pexts.h"
+#include "caudium_util.h"
 #include "pcre_config.h"
 
-#include "pexts_ver.c"
+
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -306,7 +306,9 @@ static void init_regexp(struct object *o)
 /* Init the module */
 void pike_module_init(void)
 {
+  #ifdef PEXTS_VERSION
   pexts_init();
+#endif
 
   start_new_program();
   ADD_STORAGE( PCRE_Regexp  );

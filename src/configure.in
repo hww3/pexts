@@ -1,7 +1,7 @@
 # $Id$
 AC_INIT(configure.in)
 
-PEXTS_LOW_MODULE_INIT()
+CAUDIUM_LOW_MODULE_INIT()
 
 dirs=
 

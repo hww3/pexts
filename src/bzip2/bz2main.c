@@ -25,14 +25,14 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 #include "bz2_config.h"
 
 #define MODULE_MAJOR 0
 #define MODULE_MINOR 5
 #define MODULE_BUILD 1
 
-#include "pexts_ver.c"
+
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -332,7 +332,9 @@ exit_deflate(struct object *o)
 
 void pike_module_init(void)
 {
-    pexts_init();
+    #ifdef PEXTS_VERSION
+  pexts_init();
+#endif
 
     /* Compression program */
     start_new_program();
@@ -375,7 +377,9 @@ void pike_module_exit(void)
 #else /* !HAVE_BZLIB_H */
 void pike_module_init(void)
 {
-    pexts_init();
+    #ifdef PEXTS_VERSION
+  pexts_init();
+#endif
 }
 
 void pike_module_exit(void)

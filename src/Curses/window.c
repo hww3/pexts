@@ -21,7 +21,7 @@
 /* Curses/Ncurses Support - This module adds Curses support to Pike. */
 
 #include "global.h"
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "curses_config.h"
 

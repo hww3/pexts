@@ -1,4 +1,4 @@
-define([PEXTS_LOW_MODULE_INIT],
+define([CAUDIUM_LOW_MODULE_INIT],
 [
 # $Id$
 
@@ -31,9 +31,9 @@ AC_DEFINE(POSIX_SOURCE)
 ])
 
 
-define([PEXTS_MODULE_INIT],
+define([CAUDIUM_MODULE_INIT],
 [
-  PEXTS_LOW_MODULE_INIT()
+  CAUDIUM_LOW_MODULE_INIT()
 
   AC_MSG_CHECKING([for the Pike Extension Package base directory])
 

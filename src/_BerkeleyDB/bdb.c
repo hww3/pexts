@@ -21,16 +21,18 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 #include "bdb.h"
 
 /* Initialize and start module */
 
-#include "pexts_ver.c"
-
 void pike_module_init( void )
 {
+#ifdef PEXTS_VERSION
+  #ifdef PEXTS_VERSION
   pexts_init();
+#endif
+#endif
   
 #ifdef HAVE_BDB
   f_bdb_init_db_program();

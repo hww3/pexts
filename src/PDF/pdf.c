@@ -24,7 +24,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include <stdio.h>
 #include <fcntl.h>

@@ -23,7 +23,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "pexts.h"
+#include "caudium_util.h"
 #include "threads.h"
 
 #include "bdb.h"

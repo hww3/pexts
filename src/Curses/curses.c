@@ -21,7 +21,7 @@
 /* Curses/Ncurses Support - This module adds Curses support to Pike. */
 
 #include "global.h"
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "curses_config.h"
 
@@ -273,11 +273,13 @@ VOID_INT_FN(has_colors)
 VOID_INT_FN(can_change_color)
 #endif /* HAVE_CURSES */
 
-#include "pexts_ver.c"
+
 		
 void pike_module_init(void)
 {
+  #ifdef PEXTS_VERSION
   pexts_init();
+#endif
 
 #ifdef HAVE_CURSES
   init_screen_program();

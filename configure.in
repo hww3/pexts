@@ -12,24 +12,24 @@ AC_PROG_INSTALL
 case "$ac_cv_path_install" in
   *installbsd*)
     AC_MSG_CHECKING(if $ac_cv_path_install works)
-    AC_CACHE_VAL(pexts_cv_install_works,
+    AC_CACHE_VAL(caudium_cv_install_works,
 [
     if $ac_cv_path_install "$srcdir/configure.in" ./conftest >/dev/null 2>&1
     then
       if cmp "$srcdir/configure.in" ./conftest >/dev/null 2>&1; then
-        pexts_cv_install_works=yes;
+        caudium_cv_install_works=yes;
       else
-        pexts_cv_install_works=no;
+        caudium_cv_install_works=no;
       fi
     else
-      pexts_cv_install_works=no;
+      caudium_cv_install_works=no;
     fi
     if test -f ./conftest; then
       rm -f ./conftest
     fi
 ])
-    AC_MSG_RESULT($pexts_cv_install_works)
-    if test "$pexts_cv_install_works" = "no"; then
+    AC_MSG_RESULT($caudium_cv_install_works)
+    if test "$caudium_cv_install_works" = "no"; then
       echo "Warning: Falling back to $ac_install_sh"
       INSTALL="$ac_install_sh"
     fi
@@ -52,7 +52,7 @@ esac
 # Compiler checks
 #--------------------------
 
-if test ! -z "$pexts_cv_prog_CC" -a ! -z "$CC" -a "$CC" != "$pexts_cv_prog_CC"
+if test ! -z "$caudium_cv_prog_CC" -a ! -z "$CC" -a "$CC" != "$caudium_cv_prog_CC"
 then
   AC_MSG_WARN([CC is different than last time Pexts was compiled,
 It is probably best to delete ./config.cache before proceeding])
@@ -81,7 +81,7 @@ else
   ldflags_is_set=yes
 fi
 
-pexts_cv_prog_CC="$CC"
+caudium_cv_prog_CC="$CC"
 
 AC_PROG_CC
 AC_AIX
@@ -99,15 +99,15 @@ AC_DEFUN(AC_SYS_COMPILER_FLAG,
 [
   AC_MSG_CHECKING($1)
   OLD_CFLAGS="[$]CFLAGS"
-  AC_CACHE_VAL(pexts_cv_option_$2,
+  AC_CACHE_VAL(caudium_cv_option_$2,
   [
     CFLAGS="[$]OLD_CFLAGS $1"
-    AC_TRY_RUN([int main(){exit(0);}],pexts_cv_option_$2=yes,pexts_cv_option_$2=no)
+    AC_TRY_RUN([int main(){exit(0);}],caudium_cv_option_$2=yes,caudium_cv_option_$2=no)
   ])
   
   CFLAGS="[$]OLD_CFLAGS"
   
-  if test x"[$]pexts_cv_option_$2" = "xyes" ; then
+  if test x"[$]caudium_cv_option_$2" = "xyes" ; then
     $3="[$]$3 $1"
     AC_MSG_RESULT(yes)
   else
@@ -124,7 +124,7 @@ AC_DEFUN(AC_SYS_CPU_COMPILER_FLAG,
 
 AC_DEFUN(AC_SYS_OS_COMPILER_FLAG,
 [
-  if test "x$pexts_cv_sys_os" = "x$1" ; then
+  if test "x$caudium_cv_sys_os" = "x$1" ; then
     AC_SYS_COMPILER_FLAG($2,$3,$4)
   fi
 ])
@@ -141,25 +141,25 @@ esac
 # We need some special hacks when running slowaris
 AC_PATH_PROG(uname_prog,uname,no)
 AC_MSG_CHECKING(operating system)
-AC_CACHE_VAL(pexts_cv_sys_os,
+AC_CACHE_VAL(caudium_cv_sys_os,
 [
 if test "$uname_prog" != "no"; then
-  pexts_cv_sys_os="`uname`"
+  caudium_cv_sys_os="`uname`"
 
-  case "$pexts_cv_sys_os" in
+  case "$caudium_cv_sys_os" in
     SunOS)
       case "`uname -r`" in
-        5.*) pexts_cv_sys_os="Solaris";
+        5.*) caudium_cv_sys_os="Solaris";
       esac
     ;;
   esac
 else
-  pexts_cv_sys_os="Not Solaris"
+  caudium_cv_sys_os="Not Solaris"
 fi
 ])
-AC_MSG_RESULT($pexts_cv_sys_os)
+AC_MSG_RESULT($caudium_cv_sys_os)
 
-case "$pexts_cv_sys_os" in
+case "$caudium_cv_sys_os" in
   SCO*)
     case "$CFLAGS" in
       *-belf*) 
@@ -404,7 +404,7 @@ if test $cflags_is_set = no; then
   # sopt disabled since it takes too much time on interpret.c (>45min on an O²)
   # AC_SYS_OS_COMPILER_FLAG(IRIX,-sopt,sopt)
   AC_SYS_OS_COMPILER_FLAG(IRIX,-n32,n32,CFLAGS)
-  if test x$pexts_cv_option_n32 = xyes ; then
+  if test x$caudium_cv_option_n32 = xyes ; then
     echo Adding -n32 to LDFLAGS.
     LDFLAGS="$LDFLAGS -n32"
   fi
@@ -443,14 +443,14 @@ esac
      *-fast*) ;;
      *)
        if test "$GCC" != "yes"; then
-         case "$pexts_cv_sys_os" in
+         case "$caudium_cv_sys_os" in
            UnixWare*)
              OPTIMIZE=""
 	   ;;
          esac
        else
          AC_SYS_COMPILER_FLAG(-O2,O2,OPTIMIZE)
-         if test "x$pexts_cv_option_O2" != "xyes"; then
+         if test "x$caudium_cv_option_O2" != "xyes"; then
            AC_SYS_COMPILER_FLAG(-O,O,OPTIMIZE)
          fi
        fi
@@ -472,7 +472,7 @@ else
 #
 # Special hack for HP-UX stupid cc
 #
-  if test "$pexts_cv_sys_os" = "HP-UX"; then
+  if test "$caudium_cv_sys_os" = "HP-UX"; then
     AC_TRY_COMPILE([int foo(int bar);],[],[],
     [
       OLD_CC="${CC-cc}"
@@ -491,24 +491,24 @@ fi
 
 if test $ac_cv_prog_gcc = yes; then
   AC_MSG_CHECKING(for libgcc file name)
-  AC_CACHE_VAL(pexts_cv_libgcc_filename,
+  AC_CACHE_VAL(caudium_cv_libgcc_filename,
   [
-    pexts_cv_libgcc_filename="`${CC-cc} -print-libgcc-file-name`"
-    if test -z "$pexts_cv_libgcc_filename"; then
-      pexts_cv_libgcc_filename=no
+    caudium_cv_libgcc_filename="`${CC-cc} -print-libgcc-file-name`"
+    if test -z "$caudium_cv_libgcc_filename"; then
+      caudium_cv_libgcc_filename=no
     else
-       if test -f "$pexts_cv_libgcc_filename"; then
+       if test -f "$caudium_cv_libgcc_filename"; then
          :
        else
-         pexts_cv_libgcc_filename=no
+         caudium_cv_libgcc_filename=no
        fi
     fi
   ])
-  AC_MSG_RESULT($pexts_cv_libgcc_filename)
-  if test x"$pexts_cv_libgcc_filename" = xno; then
+  AC_MSG_RESULT($caudium_cv_libgcc_filename)
+  if test x"$caudium_cv_libgcc_filename" = xno; then
     LIBGCC=""
   else
-    LIBGCC="$pexts_cv_libgcc_filename"
+    LIBGCC="$caudium_cv_libgcc_filename"
   fi
 else
   LIBGCC=""
@@ -521,7 +521,7 @@ export LIBGCC
 AC_MSG_CHECKING(SO)
 if test -z "$SO"
 then
-	case "$pexts_cv_sys_os" in
+	case "$caudium_cv_sys_os" in
 	hp*|HP*)   SO=sl;;
 	*)	   SO=so;;
 	esac
@@ -532,7 +532,7 @@ AC_MSG_RESULT($SO)
 # -- "ld" on SunOS 4.x.x, "ld -G" on SunOS 5.x, "ld -shared" on IRIX 5
 AC_MSG_CHECKING(LDSHARED)
 if test -z "$LDSHARED" ; then
-  case "$pexts_cv_sys_os" in
+  case "$caudium_cv_sys_os" in
     AIX*)
       if test "$GCC" = yes ; then
         if test "`uname -r`" -ge 2 -a "`uname -v`" -ge 4 ; then
@@ -547,7 +547,7 @@ if test -z "$LDSHARED" ; then
 	    #
 	    # Even AIX 4.2.1 has buggy dlopen -- NEVER attempt
 	    # to dlopen a file that hasn't been linked with -G.
-	    pexts_cv_sys_dynamic_loading=no
+	    caudium_cv_sys_dynamic_loading=no
 	    LDSHARED="ld"
 	  fi
         fi
@@ -557,7 +557,7 @@ if test -z "$LDSHARED" ; then
 	# In addition, the dynamic loading test seems to
 	# cause our RS/6000 to hang, which causes the
 	# watchdog-timer to PANIC.
-	pexts_cv_sys_dynamic_loading=no
+	caudium_cv_sys_dynamic_loading=no
         LDSHARED="ld"
       fi
     ;;
@@ -603,15 +603,15 @@ AC_MSG_RESULT($LDSHARED)
 # CCSHARED are the C *flags* used to create objects to go into a shared
 # library -- this is only needed for a few systems
 AC_MSG_CHECKING(CCSHARED)
-AC_CACHE_VAL(pexts_cv_sys_ccshared,[
+AC_CACHE_VAL(caudium_cv_sys_ccshared,[
 if test -z "$CCSHARED" ; then
   if test "$GCC" = yes ; then
-    case $pexts_cv_sys_os in
+    case $caudium_cv_sys_os in
       BSD/OS*) CCSHARED="";;
       *) CCSHARED="-fpic";;
     esac
   else
-    case $pexts_cv_sys_os in
+    case $caudium_cv_sys_os in
 	hp*|HP*) CCSHARED="+z"; ;;
 	FreeBSD*) CCSHARED="-fpic";;
 	SCO_SV*) CCSHARED="-KPIC -dy -Bdynamic";;
@@ -624,19 +624,19 @@ fi
   OLD_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $CCSHARED"
   AC_TRY_COMPILE([], [int main() { exit(0); }],
-    pexts_cv_sys_ccshared="$CCSHARED", pexts_cv_sys_ccshared='')
+    caudium_cv_sys_ccshared="$CCSHARED", caudium_cv_sys_ccshared='')
   CFLAGS="$OLD_CFLAGS"
 ])
 
 if test "$GCC" != "yes"; then
-  case $pexts_cv_sys_os in
+  case $caudium_cv_sys_os in
     UnixWare*) CCSHARED="-KPIC -dy -Bdynamic"
-    pexts_cv_sys_ccshared="$CCSHARED"
+    caudium_cv_sys_ccshared="$CCSHARED"
     ;;
   esac
 fi
 
-CCSHARED="$pexts_cv_sys_ccshared"
+CCSHARED="$caudium_cv_sys_ccshared"
 AC_MSG_RESULT($CCSHARED)
 
 CLIBRARY_LINK="-lc"

@@ -30,7 +30,7 @@ RCSID("$Id$");
 #include <unistd.h>
 #include <stdio.h>
 
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "newt_config.h"
 

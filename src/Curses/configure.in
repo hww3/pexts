@@ -1,7 +1,7 @@
 AC_INIT(curses.c)
 AC_CONFIG_HEADER(curses_config.h)
 
-PEXTS_MODULE_INIT()
+CAUDIUM_MODULE_INIT()
 
 AC_CHECK_HEADERS( curses.h )
 AC_CHECK_LIB(curses, initscr)

@@ -31,7 +31,7 @@ RCSID("$Id$");
  **
  **| cvs_version: $Id$
  */
-#include "pexts.h"
+#include "caudium_util.h"
 
 #include "at_config.h"
 

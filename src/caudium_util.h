@@ -18,13 +18,46 @@
  *
  */
 
-/* This file should be included by ALL source code. It includes standard
- * stuff that should be found in every pexts module. 
- *
- * QUESTION: Maybe this file should be put in pexts.h???
+/* This file should be included by ALL source code. It includes various
+ * stuff to maintain source code compatibility between Pike versions.
  *
  * $Id$
  */
+
+#ifndef HAVE_CAUDIUM_UTIL_H
+#define HAVE_CAUDIUM_UTIL_H
+
+/* Standard Pike include files. */
+#include "bignum.h"
+#include "array.h"
+#include "builtin_functions.h"
+#include "constants.h"
+#include "interpret.h"
+#include "mapping.h"
+#include "module_support.h"
+#include "object.h"
+#include "pike_macros.h"
+#include "pike_types.h"
+#include "program.h"
+#include "stralloc.h"
+#include "svalue.h"
+#include "threads.h"
+#include "version.h"
+
+#if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION == 1 && PIKE_BUILD_VERSION >= 12) || PIKE_MAJOR_VERSION > 7 || (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION > 1)
+# include "pike_error.h"
+#else
+# include "error.h"
+# ifndef Pike_error
+#  define Pike_error error
+# endif
+#endif
+
+/* Pexts version */
+#define PEXTS_VERSION "0.0.1"
+#define PEXTS_MAJOR   0
+#define PEXTS_MINOR   0
+#define PEXTS_BUILD   1
 
 #ifndef MODULE_MAJOR
 #define MODULE_MAJOR PEXTS_MAJOR
@@ -56,8 +89,8 @@ f_pexts_module_version(INT32 args)
     
     retval = allocate_mapping(3);
     
-    skey.type = T_STRING;
-    sval.type = T_INT;
+    skey.type = PIKE_T_STRING;
+    sval.type = PIKE_T_INT;
     
     skey.u.string = make_shared_string("major");
     sval.u.integer = MODULE_MAJOR;
@@ -92,8 +125,8 @@ f_pexts_version(INT32 args)
     
     retval = allocate_mapping(3);
     
-    skey.type = T_STRING;
-    sval.type = T_INT;
+    skey.type = PIKE_T_STRING;
+    sval.type = PIKE_T_INT;
     
     skey.u.string = make_shared_string("major");
     sval.u.integer = PEXTS_MAJOR;
@@ -122,3 +155,5 @@ pexts_init(void)
     ADD_FUNCTION("pexts_version", f_pexts_version,
                  tFunc(tVoid, tMap(tString, tInt)), 0);
 }
+
+#endif /* HAVE_CAUDIUM_UTIL_H */
