@@ -43,15 +43,17 @@
 #include <pcreposix.h>
 #include "libmutt/src/mailbox.h"
 #include "libmutt/src/rfc822.h"
+#include "libmutt/src/mutt_socket.h"
+#include "libmutt/src/md5.h"
 
 
 /* pike headers */
-#include "global.h"
 #include "global.h"
 #include "pike_macros.h"
 #include "program.h"
 #include "interpret.h"
 #include "mapping.h"
+#include "object.h"
 #include "svalue.h"
 #include "builtin_functions.h"
 #include "module_support.h"
@@ -74,6 +76,10 @@
 int libmutt_ask_for_cert_acceptance(X509 *);
 #endif
 
+#ifdef DEBUG
+FILE *debugfile;
+int debuglevel;
+#endif
 
 /*
 **! file: mailstore.c
@@ -82,6 +88,7 @@ int libmutt_ask_for_cert_acceptance(X509 *);
 */
 
 RCSID("$Id$");
+/* Mailbox */
 typedef struct {
 	short debug;
 	CONTEXT *ctx;
@@ -89,7 +96,7 @@ typedef struct {
 	char *folder;
 } MAILSTORE_STORAGE;
 
-/* LibMutt.Message */
+/* Mailbox.Message */
 typedef struct {
 	int msgno;
 	MESSAGE *msg;
@@ -135,7 +142,7 @@ typedef struct {
  * Otherwise we'll end up with a .so that doesn't load.
  */
 static void *__dummy_variable[] = {
-    NULL,NULL  /*,
+    NULL,
     mutt_socket_readln_d,
     mutt_socket_close,
     mutt_to_base64,
@@ -150,7 +157,7 @@ static void *__dummy_variable[] = {
     mutt_from_base64,
     mutt_socket_open,
     mutt_conn_find,
-    mutt_account_getuser */
+    mutt_account_getuser
 };
 
 /* forward declarations */
@@ -171,8 +178,6 @@ void exit_message_storage(struct object *);
 void f_msg_create(INT32 args);
 void f_msg_get_header(INT32 args);
 void f_msg_getfd(INT32 args);
-
-
 
 
 void mutt_message(const char *fmt, ...);
@@ -199,15 +204,16 @@ void f_create(INT32 args) {
 	char *path;
 
 	get_all_args("create",args,"%s",&path);
+
 	THIS->debug=0;
 	THIS->folder=strdup(path);
 
 	if( !FileMask.rx ) {
-		FileMask.rx = (regex_t *) safe_malloc (sizeof (regex_t));
+		FileMask.rx = (regex_t *) malloc (sizeof (regex_t));
 		REGCOMP(FileMask.rx,"!^\\.[^.]",0);
 	}
 	if( !ReplyRegexp.rx ) {
-		ReplyRegexp.rx = (regex_t *) safe_malloc (sizeof (regex_t));
+		ReplyRegexp.rx = (regex_t *) malloc (sizeof (regex_t));
 		REGCOMP(ReplyRegexp.rx,"^(re([\\[0-9\\]+])*|aw):[ \t]*",0);
 	}
 	
@@ -220,9 +226,23 @@ void f_create(INT32 args) {
 
 
 void f_debug(INT32 args) {
+#ifdef DEBUG
+	time_t t;
+	char buf[_POSIX_PATH_MAX];
+#endif
 	int debug;
 	get_all_args("debug",args,"%i",&debug);
 	THIS->debug=(debug!=0);
+#ifdef DEBUG
+	t = time (0);
+	debuglevel=THIS->debug;
+	debugfile=stderr;
+//	snprintf(buf, sizeof(buf), "%s/Mailstore_debug", NONULL(Tempdir));
+//	fprintf(stderr,"debug: opening '%s'\n",buf);
+//	if( (debugfile=safe_fopen(buf, "w")) != NULL ) {
+	fprintf(debugfile,"Mailstore debug started at %s",asctime (localtime (&t)));
+//	}
+#endif
 	pop_n_elems(args);
 }
 
@@ -321,14 +341,16 @@ void push_headers(HEADER *header) {
 /* Mailstore.Mailbox.Message */
 void f_msg_create(INT32 args) {
 	int msgno;
-	MESSAGE_STORAGE *ps;
-	ps=(MESSAGE_STORAGE *) parent_storage(1);
+	MAILSTORE_STORAGE *ps;
+	//ps=(MESSAGE_STORAGE *) parent_storage(1);
+	ps=(MAILSTORE_STORAGE *) parent_storage(1);
 	if( !ps ) {
 		Pike_error("LibMutt.Message: Parent lost\n");
 	}
 	THISMSG->ctx=(CONTEXT *) ps->ctx;
 	get_all_args("create",args,"%d",&msgno);
 	THISMSG->msgno=msgno;
+	fprintf(stderr,"Message.create: tring to open msg '%d'\n",THISMSG->msgno);
 	if ((THISMSG->msg=mx_open_message (THISMSG->ctx, THISMSG->msgno))) {
 		THISMSG->header=THISMSG->ctx->hdrs[THISMSG->msgno]; 
 		mutt_parse_part (THISMSG->msg->fp, THISMSG->header->content);
@@ -372,6 +394,7 @@ void f_msg_get_header(INT32 args) {
 
 
 void init_mailstore(struct object *o) {
+	if( !THIS ) return;
 	MEMSET(THIS, 0, sizeof(MAILSTORE_STORAGE));
 }
 
@@ -418,11 +441,11 @@ void pike_module_init() {
 	ADD_INT_CONSTANT("M_NEW",M_NEW,0);
 
 	start_new_program();
+	 ADD_STORAGE(MAILSTORE_STORAGE);
+	
+	 set_init_callback(init_mailstore);
+	 set_exit_callback(exit_mailstore);
 
-	set_init_callback(init_mailstore);
-	set_exit_callback(exit_mailstore);
-
-	ADD_STORAGE(MAILSTORE_STORAGE);
 
 	// public pike methods
 	ADD_FUNCTION("create", f_create,
@@ -455,6 +478,7 @@ void pike_module_init() {
 
 	end_class("Mailbox",0);
 	
+	mutt_error=libmutt_error;
 	/* reference it so that it's not optimized out */
 	__dummy_variable[0] = (void*)NULL;
 }
