@@ -3,8 +3,8 @@
  * Copyright © 2000-2003 The Caudium Group
  */
 
-/* Copyright (C) 2002 The Caudium Group
- * Copyright (C) 2002 Zsolt Varga
+/* Copyright (C) 2002-2003 The Caudium Group
+ * Copyright (C) 2002-2003 Zsolt Varga
  * 
  * This file is part of the Pike Extensions package.
  *
