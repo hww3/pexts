@@ -857,7 +857,6 @@ typedef struct
 #define M_VERIFY	(1<<1) /* perform signature verification */
 #endif
 
-extern void mutt_message(const char *fmt, ...);
 
 
 #define M_PENDINGPREFIX (1<<2) /* prefix to write, but character must follow */
