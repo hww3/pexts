@@ -1,4 +1,4 @@
-#!/usr/bin/pike7
+#!/usr/bin/pike
 
 int|string myEntryFilter(string data, int|string ch, int cursor)
 {

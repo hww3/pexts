@@ -1,0 +1,15 @@
+diff -U3 -r --new-file pexts.orig/tools/smartlink pexts/tools/smartlink
+--- pexts.orig/tools/smartlink	2002-07-09 03:13:13.000000000 +0200
++++ pexts/tools/smartlink	2002-12-26 20:33:06.000000000 +0100
+@@ -147,9 +147,8 @@
+      LDOPTS="$LDOPTS -R$RPATH"
+    ;;
+    Linux\ 2.*)
+-     if test x$LINKING != xno -a "x$RPATH" != x ; then
+-      LDOPTS="$LDOPTS -Wl,-rpath,$RPATH"
+-     fi
++     LD_LIBRARY_PATH="$RPATH"
++     export LD_LIBRARY_PATH
+    ;;
+    UnixWare\ 7.*)
+      if test x$LINKING != xno -a "x$RPATH" != x ; then

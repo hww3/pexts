@@ -28,7 +28,7 @@ CFLAGS+=-ffunction-sections
 endif
 export CFLAGS
 
-configure: configure-stamp-7 configure-stamp-72 configure-stamp-74
+configure: apply-patches configure-stamp-7 configure-stamp-72 configure-stamp-74
 configure-stamp-7:
 	$(MAKE) -fdebian/rules PVER=7 do-configure
 	touch $@
@@ -40,6 +40,20 @@ configure-stamp-72:
 configure-stamp-7.4:
 	$(MAKE) -fdebian/rules PVER=7.4 do-configure
 	touch $@
+
+apply-patches:
+	for f in $(CURDIR)/debian/patches/*.diff; do \
+	    patch -p1 -f --no-backup-if-mismatch -d $(CURDIR) < $$f ; \
+	done
+	touch patched-stamp
+
+unapply-patches:
+	-if [ -f patched-stamp ]; then \
+	    for f in $(CURDIR)/debian/patches/*.diff; do \
+		patch -R -p1 -f --no-backup-if-mismatch -d $(CURDIR) < $$f ; \
+	    done ; \
+	    rm -f patched-stamp ; \
+	fi
 
 do-configure:
 	dh_testdir	
@@ -93,10 +107,10 @@ inter-clean:
 	-rm -f smartlink statuslock
 	dh_clean
 
-clean: inter-clean
+clean: inter-clean unapply-patches
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74
+	rm -f build-stamp-7 configure-stamp-7 build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
 
 install: DH_OPTIONS=
 install: build
@@ -110,7 +124,6 @@ install: build
 	$(MAKE) install DESTDIR=`pwd`/debian/tmp/
 	install -d -m 755 `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
 	cp -pr pmod/Newt.pmod/ `pwd`/debian/pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
-	
 	dh_movefiles
 
 # Build architecture-independent files here.
@@ -123,7 +136,6 @@ binary-indep: build install
 #	dh_testroot 
 #	dh_installdebconf
 #	dh_installdocs 
-	dh_installexamples -ppexts-newt
 #	dh_installmenu
 #	dh_installemacsen
 #	dh_installpam
@@ -154,7 +166,6 @@ binary-arch: build install
 	dh_testroot
 #	dh_installdebconf
 	dh_installdocs
-#	dh_installexamples
 #	dh_installmenu
 #	dh_installemacsen
 #	dh_installpam
