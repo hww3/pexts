@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef PCRE_CONFIG_H
-#define PCRE_CONFIG_H
+#ifndef BDB_CONFIG_H
+#define BDB_CONFIG_H
 
 @TOP@
 
