@@ -487,7 +487,7 @@ static void f_list_keys(INT32 args)
     }
 
     nkeys = 0;
-    while (THIS->lasterr != GPGME_EOF) {
+    while (1) {
         THIS->lasterr = gpgme_op_keylist_next(THIS->context, &key);
         if (THIS->lasterr != GPGME_No_Error && THIS->lasterr != GPGME_EOF) {
             pop_n_elems(args);
@@ -495,6 +495,9 @@ static void f_list_keys(INT32 args)
             return;
         }
 
+        if (THIS->lasterr == GPGME_EOF)
+            break;
+        
         if (asXML) {
             char   *tmp = gpgme_key_get_as_xml(key);
 
@@ -608,7 +611,7 @@ static void f_op_export(INT32 args)
         return;
     }
 
-    buf = (char*)malloc(nread * sizeof(char));
+    buf = (char*)malloc((nread + 1) * sizeof(char));
     if (!buf) {
         gpgme_recipients_release(recipients);
         gpgme_data_release(keydata);
@@ -670,6 +673,137 @@ static void f_op_import(INT32 args)
 
 static void f_op_delete(INT32 args)
 {
+    struct mapping     *m;
+    struct svalue      *keyid;
+    int                 allow_secret = 0;
+    GpgmeKey            key;
+    
+    CHECK_OK;
+    switch(args) {
+        case 1:
+            get_all_args("delete", args, "%m", &m);
+            break;
+
+        case 2:
+            get_all_args("delete", args, "%m%i", &allow_secret);
+            break;
+
+        default:
+            Pike_error("Incorrect number of arguments");
+            break;
+    }
+
+    if (!m || !m->data->num_keypairs) {
+        pop_n_elems(args);
+        push_int(GPGME_Invalid_Key);
+        return;
+    }
+
+    keyid = simple_mapping_string_lookup(m, "keyid");
+    if (!keyid || keyid->type != T_STRING) {
+        pop_n_elems(args);
+        push_int(GPGME_Invalid_Key);
+        return;
+    }
+
+    THIS->lasterr = gpgme_op_keylist_start(THIS->context, keyid->u.string->str, 0);
+    if (THIS->lasterr != GPGME_No_Error) {
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    THIS->lasterr = gpgme_op_keylist_next(THIS->context, &key);
+    if (THIS->lasterr != GPGME_No_Error) {
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    // OK, _finally_ - we have the key the user asked for
+    THIS->lasterr = gpgme_op_delete(THIS->context, key, allow_secret);
+    pop_n_elems(args);
+    push_int(THIS->lasterr);
+}
+
+static void f_decrypt(INT32 args)
+{
+    GpgmeData             cipher;
+    GpgmeData             plain;
+    struct pike_string   *cin;
+    char                 *ret;
+    size_t                nbytes;
+    
+    CHECK_OK;
+    get_all_args("decrypt", args, "%S", &cin);
+
+    if (!cin || !cin->len) {
+        pop_n_elems(args);
+        push_int(GPGME_No_Data);
+        return;
+    }
+
+    THIS->lasterr = gpgme_data_new_from_mem(&cipher, cin->str,
+                                            cin->len, 1);
+    THIS->lasterr = gpgme_data_new(&plain);
+
+    if (THIS->lasterr != GPGME_No_Error) {
+        if (cipher)
+            gpgme_data_release(cipher);
+        if (plain)
+            gpgme_data_release(plain);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    THIS->lasterr = gpgme_op_decrypt(THIS->context, cipher, plain);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_data_release(cipher);
+        gpgme_data_release(plain);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    THIS->lasterr = gpgme_data_read(cipher, NULL, 0, &nbytes);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_data_release(cipher);
+        gpgme_data_release(plain);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    ret = (char*)malloc((nbytes + 1) * sizeof(char));
+    if (!ret) {
+        gpgme_data_release(cipher);
+        gpgme_data_release(plain);
+        Pike_error("Out of memory!");
+    }
+
+    THIS->lasterr = gpgme_data_read(cipher, ret, nbytes, &nbytes);
+    if (THIS->lasterr != GPGME_No_Error) {
+        free(ret);
+        gpgme_data_release(cipher);
+        gpgme_data_release(plain);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    pop_n_elems(args);
+    push_string(make_shared_binary_string(ret, nbytes));
+    free(ret);
+    gpgme_data_release(cipher);
+    gpgme_data_release(plain);
+}
+
+static void f_verify(INT32 args)
+{
+    struct pike_string    *sig;
+    struct pike_string    *plain;
+    
     CHECK_OK;
 }
 
@@ -767,7 +901,14 @@ void pike_module_init(void)
     ADD_FUNCTION("import", f_op_import,
                  tFunc(tString, tInt), 0);
     ADD_FUNCTION("delete", f_op_delete,
-                 tFunc(tString tOr(tMapping, tVoid), tInt), 0);
+                 tFunc(tMapping tOr(tVoid, tInt), tInt), 0);
+
+    /*TBD: trust item management */
+
+    ADD_FUNCTION("decrypt", f_decrypt,
+                 tFunc(tString, tOr(tString, tInt)), 0);
+    ADD_FUNCTION("verify", f_verify,
+                 tFunc(tString tOr(tString, tVoid), tMapping), 0);
     
     gpgme_program = end_program();
     add_program_constant("gpgme", gpgme_program, 0);
