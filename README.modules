@@ -113,4 +113,4 @@ _FDF:
   Pike glue to the Adobe FDF SDK.
   Requires: http://partners.adobe.com/asn/developer/acrosdk/forms.html
   Principal Author: Marek Habersack <grendel@caudium.net>
-  Notes: WIP
+  Notes: WIP, Proprietary lib required
