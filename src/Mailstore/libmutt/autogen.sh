@@ -1,6 +1,7 @@
 #!/bin/sh
 
+libtoolize -c -f
 aclocal
-automake -a -c
 autoheader
+automake -a -c
 autoconf --include=$1
