@@ -1,0 +1,13 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=_BerkeleyDB
+OBJS= bdb.o
+SOURCES=bdb.c
+MODULE_LIBS=@LIBS@
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

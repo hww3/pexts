@@ -4,6 +4,7 @@ AC_CONFIG_HEADER(at_config.h)
 PEXTS_MODULE_INIT()
 
 AC_CHECK_HEADERS(shadow.h)
+AC_CHECK_FUNCS(getspent getspent_r) 
 
 AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
 

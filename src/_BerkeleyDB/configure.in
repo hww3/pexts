@@ -1,0 +1,52 @@
+AC_INIT(bdb.c)
+
+PEXTS_MODULE_INIT()
+
+
+OLD_LIBS=$LIBS
+OLD_LDFLAGS=$LDFLAGS
+OLD_CPPFLAGS=$CPPFLAGS
+BDB_LIBS=""
+
+AC_ARG_WITH(BerkeleyDB,  [  --with-BerkeleyDB=path       Enable support for the Berkeley database],[],[withBerkeleyDB=yes])
+
+if test x$with_BerkeleyDB = xno; then
+  :
+else
+  AC_MSG_CHECKING(for BerkeleyDB)
+
+  dirs="/usr/local/BerkeleyDB.3.1 /opt/BerkeleyDB.3.1 /usr/BerkeleyDB.3.1 /BerkeleyDB.3.1 /sw/BerkeleyDB.3.1 /usr/local/BerkeleyDB /opt/BerkeleyDB /usr/BerkeleyDB /BerkeleyDB /sw/BerkeleyDB  no"
+  if test x$with_BerkeleyDB = xyes; then :; else
+    # Bdb installation directory specified.
+    dirs="$withBerkeleyDB $dirs"
+  fi
+
+  AC_CACHE_VAL(pexts_cv_bdb_dir, [
+    for pexts_cv_bdb_dir in $dirs; do
+      if test -d $pexts_cv_bdb_dir/.; then
+        break
+      else
+        :
+      fi
+    done
+  ])
+
+  AC_MSG_RESULT($pexts_cv_bdb_dir)
+
+  if test x$pexts_cv_bdb_dir = xno; then :; else
+    LDFLAGS="-R$pexts_cv_bdb_dir/lib/ -L$pexts_cv_bdb_dir/lib/ ${LDFLAGS}"
+    CPPFLAGS="-I$pexts_cv_bdb_dir/include/ ${CPPFLAGS}"
+  fi
+fi
+AC_CHECK_HEADERS( db.h )
+AC_CHECK_LIB(db-3, db_create)
+if test "$ac_cv_lib_db-3_db_create" = "no"; then
+  AC_CHECK_LIB(db, db_create)
+fi
+AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
+
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	
