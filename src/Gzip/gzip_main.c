@@ -158,6 +158,8 @@ f_gzip_uncompress(INT32 args)
 
     THIS->out = -1;
     THIS->in = NULL;
+
+    pop_n_elems(args);
 }
 
 static void
