@@ -352,34 +352,53 @@ make_c_array(struct svalue *val)
 }
 
 static struct berval **
-make_berval_array(struct array *arr)
+make_berval_array(struct svalue *val)
 {
     struct berval     **barr = NULL;
-    int                 i;
+    size_t              i = 0;
+    size_t              size;
     
-    if (!arr || !arr->size)
+    if (!val)
         return NULL;
 
-    barr = (struct berval**)malloc((arr->size + 1) * sizeof(struct berval*));
+    if (val->type == T_STRING && val->u.string->size_shift == 0) {
+        size = 2;
+    } else if (val->type == T_ARRAY) {
+        size = val->u.array->size + 1;
+    } else {
+        Pike_error("OpenDAP.Client: expecting a string or an array\n");
+    }
+    
+    barr = (struct berval**)malloc(size * sizeof(struct berval*));
     if (!barr)
         Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
-    memset(barr, 0, arr->size + 1);
+    memset(barr, 0, size);
 
-    for (i = 0; i < arr->size; i++) {
-        if (arr->item[i].type != T_STRING)
-            Pike_error("OpenLDAP.Client: expecting a string\n");
-
-        if (arr->item[i].u.string->size_shift > 0)
-            Pike_error("OpenLDAP.Client: expecting an 8-bit string\n");
-
-        barr[i] = (struct berval*)malloc(sizeof(struct berval));
+    if (val->type == T_STRING) {
+        barr[0] = (struct berval*)malloc(sizeof(struct berval));
         if (!barr[i])
             Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+        barr[0]->bv_len = val->u.string->len;
+        barr[0]->bv_val = val->u.string->str;
+    } else {
+        struct array  *arr = val->u.array;
+        
+        for (i = 0; i < size; i++) {
+            if (arr->item[i].type != T_STRING)
+                Pike_error("OpenLDAP.Client: expecting a string\n");
 
-        barr[i]->bv_len = arr->item[i].u.string->len;
-        barr[i]->bv_val = arr->item[i].u.string->str;
+            if (arr->item[i].u.string->size_shift > 0)
+                Pike_error("OpenLDAP.Client: expecting an 8-bit string\n");
+
+            barr[i] = (struct berval*)malloc(sizeof(struct berval));
+            if (!barr[i])
+                Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+
+            barr[i]->bv_len = arr->item[i].u.string->len;
+            barr[i]->bv_val = arr->item[i].u.string->str;
+        }
     }
-
+    
     return barr;
 }
 
@@ -625,6 +644,8 @@ f_ldap_modify(INT32 args)
             Pike_error("OpenLDAP.Client->modify(): invalid 'op' value in modification mapping.\n");
         }
 
+        mods[i]->mod_op |= LDAP_MOD_BVALUES;
+        
         val = low_mapping_string_lookup(m, modify_type);
         if (!val)
             Pike_error("OpenLDAP.Client->modify(): invalid modification mapping. "
@@ -641,12 +662,68 @@ f_ldap_modify(INT32 args)
         if (val->type != T_ARRAY)
             Pike_error("OpenLDAP.Client->modify(): invalid modification mapping. "
                        "The '%s' field is not an array\n", "values");
-        mods[i]->mod_bvalues = make_berval_array(val->u.array);
+        mods[i]->mod_bvalues = make_berval_array(val);
     }
 
     ret = ldap_modify_s(THIS->conn, dn->str, mods);
     if (ret != LDAP_SUCCESS)
         Pike_error("OpenLDAP.Client->modify(): %s\n",
+                   ldap_err2string(ret));
+
+    ldap_mods_free(mods, 1);
+    
+    pop_n_elems(args);
+}
+
+/*
+ * Takes an array of mappings, similar to modify above, with the
+ * exception that the 'op' field is ignored and not used at all.
+ */
+static void
+f_ldap_add(INT32 args)
+{
+    struct pike_string     *dn;
+    struct array           *arr;
+    struct mapping         *m;
+    struct svalue          *val;
+    LDAPMod               **mods;
+    int                     i, ret;
+    
+    get_all_args("OpenLDAP.Client->add()", args, "%S%a", &dn, &arr);
+    mods = (LDAPMod**)malloc((arr->size + 1) * sizeof(LDAPMod*));
+    if (!mods)
+        Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+    memset(mods, 0, arr->size + 1);
+
+    for (i = 0; i < arr->size; i++) {
+        mods[i]->mod_op = LDAP_MOD_BVALUES;
+
+        if (arr->item[i].type != T_MAPPING)
+            Pike_error("OpenLDAP.Client->add(): array member is not a mapping.\n");
+        m = arr->item[i].u.mapping;
+        
+        val = low_mapping_string_lookup(m, modify_type);
+        if (!val)
+            Pike_error("OpenLDAP.Client->add(): invalid modification mapping. "
+                       "Missing the '%s' field\n", "type");
+        if (val->type != T_STRING || val->u.string->size_shift > 0)
+            Pike_error("OpenLDAP.Client->add(): invalid modification mapping. "
+                       "The '%s' field is not an 8-bit string\n", "type");
+        mods[i]->mod_type = val->u.string->str;
+
+        val = low_mapping_string_lookup(m, modify_values);
+        if (!val)
+            Pike_error("OpenLDAP.Client->add(): invalid modification mapping. "
+                       "Missing the '%s' field\n", "values");
+        if (val->type != T_ARRAY)
+            Pike_error("OpenLDAP.Client->add(): invalid modification mapping. "
+                       "The '%s' field is not an array\n", "values");
+        mods[i]->mod_bvalues = make_berval_array(val);
+    }
+
+    ret = ldap_add_s(THIS->conn, dn->str, mods);
+    if (ret != LDAP_SUCCESS)
+        Pike_error("OpenLDAP.Client->add(): %s\n",
                    ldap_err2string(ret));
 
     ldap_mods_free(mods, 1);
@@ -760,6 +837,8 @@ _ol_ldap_program_init(void)
     ADD_FUNCTION("explode_dn", f_ldap_explode_dn,
                  tFunc(tString tOr(tInt, tVoid), tArr(tString)), 0);
     ADD_FUNCTION("modify", f_ldap_modify,
+                 tFunc(tString tArr(tMap(tString, tMixed)), tVoid), 0);
+    ADD_FUNCTION("add", f_ldap_add,
                  tFunc(tString tArr(tMap(tString, tMixed)), tVoid), 0);
     
     _ol_result_program_init();
