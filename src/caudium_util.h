@@ -156,4 +156,9 @@ pexts_init(void)
                  tFunc(tVoid, tMap(tString, tInt)), 0);
 }
 
+#ifndef ARG
+/* Get argument # _n_ */
+#define ARG(_n_) Pike_sp[-(args - _n_)]
+#endif
+
 #endif /* HAVE_CAUDIUM_UTIL_H */

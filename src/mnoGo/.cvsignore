@@ -1,0 +1,8 @@
+configure
+mnogo_config.h
+mnogo_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+mnoGo.so

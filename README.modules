@@ -71,3 +71,10 @@ AVS:
   Requires: AVS SDK from http://solutions.altavista.com/
   Principal Author: Aleph One <aleph1@caudium.net>
   Other Authors: David Hedbor <david@hedbor.org>
+
+mnoGo:
+  Glue to the mnoGoSearch search engine.
+  Requires: mnoGoSearch from http://www.mnogosearch.ru/
+  Principal Author: David Hedbor <david@hedbor.org>
+  Notes: Similar interface Sql.sql.
+  TODO: Documentation.
