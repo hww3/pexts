@@ -518,6 +518,161 @@ static void f_list_keys(INT32 args)
         push_int(0);
 }
 
+static void f_op_export(INT32 args)
+{
+    struct array      *reca;
+    struct array      *ret;
+    struct svalue      sv;
+    GpgmeRecipients    recipients;
+    GpgmeValidity      val;
+    GpgmeData          keydata;
+    char              *name, *buf;
+    size_t             nread;
+    INT32              i;
+    
+    CHECK_OK;
+    get_all_args("export", args, "%a", &reca);
+
+    if (!reca->size) {
+        pop_n_elems(args);
+        push_int(GPGME_Invalid_Recipients);
+        return;
+    };
+
+    THIS->lasterr = gpgme_recipients_new(&recipients);
+    if (THIS->lasterr != GPGME_No_Error) {
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    for (i = 0; i < reca->size; i++) {
+        array_index_no_free(&sv, reca, i);
+        switch(sv.type) {
+            case T_STRING:
+                THIS->lasterr = gpgme_recipients_add_name(recipients,
+                                                          sv.u.string->str);
+                break;
+
+            case T_MAPPING:
+            {
+                struct mapping  *m = sv.u.mapping;
+                struct svalue   *sn, *sv;
+
+                sn = simple_mapping_string_lookup(m, "name");
+                sv = simple_mapping_string_lookup(m, "validity");
+                if (!sn || !sv)
+                    Pike_error("Index %u of input array is an invalid recipient mapping",
+                               i);
+                
+                if (sn->type != T_STRING || sn->u.string->size_shift > 0)
+                    Pike_error("The recipient name in the mapping must be an 8-bit string");
+                
+                if (sv->type != T_INT)
+                    Pike_error("The recipient validity must be an integer");
+
+                THIS->lasterr = gpgme_recipients_add_name_with_validity(recipients,
+                                                                        sn->u.string->str,
+                                                                        sv->u.integer);
+                break;
+            }
+        }
+        
+        if (THIS->lasterr == GPGME_Invalid_Value)
+            Pike_error("Index %u in the recipients array is has an invalid value", i);
+    };
+
+    THIS->lasterr = gpgme_data_new(&keydata);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_recipients_release(recipients);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    THIS->lasterr = gpgme_op_export(THIS->context, recipients, keydata);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_recipients_release(recipients);
+        gpgme_data_release(keydata);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    };
+
+    THIS->lasterr = gpgme_data_read(keydata, NULL, 0, &nread);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_recipients_release(recipients);
+        gpgme_data_release(keydata);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    buf = (char*)malloc(nread * sizeof(char));
+    if (!buf) {
+        gpgme_recipients_release(recipients);
+        gpgme_data_release(keydata);
+        Pike_error("Out of memory!");
+    }
+
+    THIS->lasterr = gpgme_data_read(keydata, buf, nread, &nread);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_recipients_release(recipients);
+        gpgme_data_release(keydata);
+        free(buf);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    gpgme_recipients_release(recipients);
+    gpgme_data_release(keydata);
+    
+    pop_n_elems(args);
+    push_string(make_shared_binary_string(buf, nread));
+    free(buf);
+}
+
+static void f_op_import(INT32 args)
+{
+    struct pike_string   *s;
+    GpgmeData             keydata;
+    
+    CHECK_OK;
+    get_all_args("import", args, "%S", &s);
+
+    if (!s->len) {
+        pop_n_elems(args);
+        push_int(GPGME_No_Data);
+        return;
+    }
+    
+    THIS->lasterr = gpgme_data_new_from_mem(&keydata, s->str,
+                                            s->len, 1);
+    if (THIS->lasterr != GPGME_No_Error) {
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    THIS->lasterr = gpgme_op_import(THIS->context, keydata);
+    if (THIS->lasterr != GPGME_No_Error) {
+        gpgme_data_release(keydata);
+        pop_n_elems(args);
+        push_int(THIS->lasterr);
+        return;
+    }
+
+    gpgme_data_release(keydata);
+    pop_n_elems(args);
+    push_int(GPGME_No_Error);
+}
+
+static void f_op_delete(INT32 args)
+{
+    CHECK_OK;
+}
+
 static void f_create(INT32 args)
 {
     GpgmeError    err;
@@ -605,6 +760,14 @@ void pike_module_init(void)
     
     /*TBD: passphrase callback */
     /*TBD: progress meter callback */
+    /*TBD: genkey - learn more about the params */
+
+    ADD_FUNCTION("export", f_op_export,
+                 tFunc(tArray, tOr(tInt, tString)), 0);
+    ADD_FUNCTION("import", f_op_import,
+                 tFunc(tString, tInt), 0);
+    ADD_FUNCTION("delete", f_op_delete,
+                 tFunc(tString tOr(tMapping, tVoid), tInt), 0);
     
     gpgme_program = end_program();
     add_program_constant("gpgme", gpgme_program, 0);
