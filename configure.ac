@@ -471,7 +471,7 @@ if test $cflags_is_set = no; then
   AC_SYS_CPU_COMPILER_FLAG(sun4d,-msupersparc,supersparc,OPTIMIZE)
   AC_SYS_CPU_COMPILER_FLAG(sun4u,-msupersparc,ultrasparc,OPTIMIZE)
 
-  AC_SYS_COMPILER_FLAG(-mpentiumpro,pentiumpro,OPTIMIZE)
+  AC_SYS_COMPILER_FLAG(-mcpu=pentiumpro,pentiumpro,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-faltivec,faltivec,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-maltivec,maltivec,OPTIMIZE)
   AC_SYS_COMPILER_FLAG(-mpowerpc,powerpc,OPTIMIZE)
