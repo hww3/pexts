@@ -737,9 +737,9 @@ void pike_module_init()
   set_init_callback(init_mnogo_result_storage);
 
   ADD_FUNCTION("fetch_row", f_mnogo_fetch_row,
-	       tFunc(tInt, tMapping), 0);
+	       tFunc(tOr(tInt, tVoid), tOr(tMapping,tZero)), 0);
   ADD_FUNCTION("fetch_rows", f_mnogo_fetch_rows,
-	       tFunc(tOr(tInt, tVoid), tOr(tArray,tZero)), 0);
+	       tFunc(tInt, tOr(tArray,tZero)), 0);
   ADD_FUNCTION("num_rows", f_mnogo_num_rows,
 	       tFunc(tVoid, tInt), 0);
   ADD_FUNCTION("total_found", f_mnogo_total_found,
