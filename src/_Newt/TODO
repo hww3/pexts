@@ -1,17 +1,21 @@
 Not implemented
 ---------------
 
-- set error context so that when a function is wrapped from an object
-  it displays correct information (requires tracking who called us).
-
-- implement the object dictionary for component -> object lookup
-
-- implement functions that require the dictionary
-
 - implement the Pike module with all the classes that use the C glue
+
+- create Pike objects for the newt*stacked functions equivalents
+
+- create Pike objects for the BasicWindow and SimpleWindow equivs
 
 Implemented
 -----------
 
 - mostly everything except for Entries and Grids (and few functions here
   and there)
+
+- implement the object dictionary for component -> object lookup
+
+- implement functions that require the dictionary
+
+- set error context so that when a function is wrapped from an object
+  it displays correct information (requires tracking who called us).

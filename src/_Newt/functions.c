@@ -28,6 +28,7 @@
 RCSID("$Id$");
 
 #include <unistd.h>
+#include <stdio.h>
 
 #include "pexts.h"
 
@@ -2948,13 +2949,99 @@ f_entrySet(INT32 args)
     OUTFUN();
 }
 
-/* IMPLEMENT */
-/* We need a C callback which will chain up to the correct Pike function */
+static int
+c_entryFilterWrapper(newtComponent entry, void *data, int ch, int cursor)
+{
+    struct object   *caller = dict_lookup(entry);
+    struct svalue   *filter;
+    char             buf[2] = {0, 0};
+    int              ret;
+
+    INFUN();
+    
+    if (!caller) {
+        OUTFUN();
+        return ch;
+    }
+    
+    filter = (struct svalue*)THIS_OBJ(caller)->pdata;
+    if (!filter) {
+        OUTFUN();
+        return ch;
+    }
+
+    if (data)
+        push_string(data);
+    else
+        push_int(0);
+
+    /*
+     * If the keypress is a functional or navigational key, then we pass an
+     * integer - the filter must know that the value is > 256 and is NOT a
+     * single-byte character.
+     */
+    if (ch >= NEWT_KEY_EXTRA_BASE)
+        push_int(ch);
+    else {
+        buf[0] = (char)ch;
+        push_string(make_shared_string(buf));
+    }
+    
+    push_int(cursor);
+    apply_svalue(filter, 3);
+
+    switch(sp[-1].type) {
+        case T_INT:
+            ret = sp[-1].u.integer;
+            break;
+
+        case T_STRING:
+            ret = sp[-1].u.string->str[0];
+            break;
+
+        default:
+            ret = ch;
+            break;
+    }
+    
+    pop_stack();
+
+    OUTFUN();
+    
+    return ret;
+}
+
 static void
 f_entrySetFilter(INT32 args)
 {
+    static unsigned     ids[] = {CLASS_ENTRY, 0};
+    struct object      *caller = Pike_fp->next->current_object;
+    struct svalue      *filter = NULL;
+    struct pike_string *data = NULL;
+    
     INFUN();
 
+    func_prolog("entrySetFilter", ids, caller, NULL, 0);
+
+    check_all_args("entrySetFilter", args,
+                   BIT_FUNCTION, /* filter */
+                   BIT_STRING|BIT_VOID /* data */);
+
+    if (args > 1)
+        data = ARG(2).u.string;
+
+    filter = malloc(sizeof(struct svalue)); /* FIXME: this has to be freed */
+    if (!filter) 
+        FERROR("entrySetFilter", "Out of memory allocating %u bytes", sizeof(struct svalue));
+    
+    assign_svalue(filter, &ARG(1));
+    THIS_OBJ(caller)->pdata = filter;
+
+    newtEntrySetFilter(THIS_OBJ(caller)->u.component, c_entryFilterWrapper,
+                       (void*)data);
+
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
@@ -2981,8 +3068,25 @@ f_entryGetValue(INT32 args)
 static void
 f_entrySetFlags(INT32 args)
 {
+    static unsigned  ids[] = {CLASS_ENTRY, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              flags, sense;
+    
     INFUN();
 
+    func_prolog("entrySetFlags", ids, caller, NULL, 0);
+
+    check_all_args("entrySetFlags", args,
+                   BIT_INT, /* flags */
+                   BIT_INT /* sense */);
+
+    flags = ARG(1).u.integer;
+    sense = ARG(2).u.integer;
+
+    newtEntrySetFlags(THIS_OBJ(caller)->u.component, flags, sense);
+
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
@@ -3160,88 +3264,155 @@ f_formDestroy(INT32 args)
 static void
 f_createGrid(INT32 args)
 {
+    static unsigned  ids[] = {CLASS_GRID, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              cols, rows;
+    
     INFUN();
 
-    OUTFUN();
-}
+    func_prolog("createGrid", ids, caller, NULL, 1);
 
-static void
-f_gridVStacked(INT32 args)
-{
-    INFUN();
+    check_all_args("createGrid", args, BIT_INT, BIT_INT);
 
-    OUTFUN();
-}
+    cols = ARG(1).u.integer;
+    rows = ARG(2).u.integer;
 
-static void
-f_gridVCloseStacked(INT32 args)
-{
-    INFUN();
+    THIS_OBJ(caller)->u.grid = newtCreateGrid(rows, cols);
+    THIS_OBJ(caller)->created = 1;
+    THIS_OBJ(caller)->destroyed = 0;
 
-    OUTFUN();
-}
+    dict_insert(caller, THIS_OBJ(caller)->u.component);
 
-static void
-f_gridHStacked(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_gridHCloseStacked(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_gridBasicWindow(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_gridSimpleWindow(INT32 args)
-{
-    INFUN();
-
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
 static void
 f_gridSetField(INT32 args)
 {
+    static unsigned  ids[] = {CLASS_GRID, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              col, row, type = NEWT_GRID_EMPTY;
+    int              padLeft, padTop, padRight;
+    int              padBottom, anchor, flags;
+    struct object   *child;
+    
     INFUN();
 
+    func_prolog("gridSetField", ids, caller, NULL, 0);
+
+    check_all_args("gridSetField", args,
+                   BIT_INT, /* col */
+                   BIT_INT, /* row */
+                   BIT_INT, /* padLeft */
+                   BIT_INT, /* padTop */
+                   BIT_INT, /* padRight */
+                   BIT_INT, /* padBottom */
+                   BIT_INT, /* anchor */
+                   BIT_INT, /* flags */
+                   BIT_OBJECT|BIT_VOID /* val */);
+
+    if (args == 9) {
+        child = ARG(9).u.object;
+        switch(THIS_OBJ(child)->id) {
+            case CLASS_GRID:
+                type = NEWT_GRID_SUBGRID;
+                break;
+                
+            case CLASS_BUTTON:
+            case CLASS_CHECKBOX:
+            case CLASS_RADIOBUTTON:
+            case CLASS_LISTBOX:
+            case CLASS_TEXTBOX:
+            case CLASS_TEXTBOXREFLOWED:
+            case CLASS_LABEL:
+            case CLASS_SCALE:
+            case CLASS_ENTRY:
+            case CLASS_SCREEN:
+            case CLASS_RADIOGROUP:
+            case CLASS_RADIOBAR:
+            case CLASS_BUTTONBAR:
+            case CLASS_CHECKBOXTREE:
+            case CLASS_VSCROLLBAR:
+                type = NEWT_GRID_COMPONENT;
+                break;
+
+            default:
+                FERROR("gridSetField", "Trying to ad an object of invalid type to the grid");
+                break;
+        }
+    } else {
+        child = NULL;
+    }
+
+    col = ARG(1).u.integer;
+    row = ARG(2).u.integer;
+    padLeft = ARG(3).u.integer;
+    padTop = ARG(4).u.integer;
+    padRight = ARG(5).u.integer;
+    padBottom = ARG(6).u.integer;
+    anchor = ARG(7).u.integer;
+    flags = ARG(8).u.integer;
+
+    newtGridSetField(THIS_OBJ(caller)->u.grid, col, row,
+                     type, child, padLeft,
+                     padTop, padRight, padBottom,
+                     anchor, flags);
+    
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
 static void
 f_gridPlace(INT32 args)
 {
+    static unsigned  ids[] = {CLASS_GRID, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              left, top;
+    
     INFUN();
 
+    func_prolog("gridPlace", ids, caller, NULL, 0);
+
+    check_all_args("gridPlace", args,
+                   BIT_INT, /* left */
+                   BIT_INT /* top */);
+
+    left = ARG(1).u.integer;
+    top = ARG(2).u.integer;
+
+    newtGridPlace(THIS_OBJ(caller)->u.grid, left, top);
+    
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
 static void
 f_gridDestroy(INT32 args)
 {
+    static unsigned  ids[] = {CLASS_GRID, 0};
+    struct object   *caller = Pike_fp->next->current_object;
+    int              recurse = 1;
+    
     INFUN();
 
-    OUTFUN();
-}
+    func_prolog("gridDestroy", ids, caller, NULL, 0);
 
-static void
-f_gridFree(INT32 args)
-{
-    INFUN();
+    check_all_args("gridDestroy", args,
+                   BIT_INT | BIT_VOID /* left */);
 
+    if (args == 1)
+        recurse = ARG(1).u.integer;
+
+    newtGridDestroy(THIS_OBJ(caller)->u.grid, recurse);
+
+    dict_foreach(dict_foreach_cb);
+    
+    pop_n_elems(args);
+    
     OUTFUN();
 }
 
@@ -3271,70 +3442,6 @@ f_gridWrappedWindowAt(INT32 args)
 
 static void
 f_gridAddComponentsToForm(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_buttonBarv(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_buttonBar(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winMessage(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winMessagev(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winChoice(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winTernary(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winMenu(INT32 args)
-{
-    INFUN();
-
-    OUTFUN();
-}
-
-static void
-f_winEntries(INT32 args)
 {
     INFUN();
 
@@ -3467,6 +3574,10 @@ void init_functions()
     add_integer_constant("KEY_F12", NEWT_KEY_F12, 0);
     add_integer_constant("KEY_RESIZE", NEWT_KEY_RESIZE, 0);
 
+    add_integer_constant("GRID_EMPTY", NEWT_GRID_EMPTY, 0);
+    add_integer_constant("GRID_COMPONENT", NEWT_GRID_COMPONENT, 0);
+    add_integer_constant("GRID_SUBGRID", NEWT_GRID_SUBGRID, 0);
+    
 #ifdef HAVE_NEWTSETTHREED    
     ADD_FUNCTION("setThreeD", f_setThreeD,
                  tFunc(tInt, tVoid), 0);
@@ -3525,14 +3636,14 @@ void init_functions()
                  tFunc(tInt tInt tString, tVoid), 0);
     
     ADD_FUNCTION("checkbox", f_checkbox,
-                 tFunc(tInt tInt tString tOr(tString, tVoid) tOr(tString, tVoid), tVoid), 0);
+                 tFuncV(tInt tInt tString, tOr(tString, tVoid) tOr(tString, tVoid), tVoid), 0);
     ADD_FUNCTION("checkboxGetValue", f_checkboxGetValue,
                  tFunc(tVoid, tString), 0);
     ADD_FUNCTION("checkboxSetValue", f_checkboxSetValue,
                  tFunc(tString, tVoid), 0);
 
     ADD_FUNCTION("radiobutton", f_radiobutton,
-                 tFunc(tInt tInt tString tOr(tInt, tVoid) tOr(tObj, tVoid), tVoid), 0);
+                 tFuncV(tInt tInt tString, tOr(tInt, tVoid) tOr(tObj, tVoid), tVoid), 0);
     ADD_FUNCTION("radioGetCurrent", f_radioGetCurrent,
                  tFunc(tObj, tObj), 0);
     
@@ -3550,7 +3661,7 @@ void init_functions()
                  tFunc(tInt tInt, tVoid), 0);
 
     ADD_FUNCTION("listbox", f_listbox,
-                 tFunc(tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);
+                 tFuncV(tInt tInt tInt, tOr(tInt, tVoid), tVoid), 0);
     ADD_FUNCTION("listboxGetCurrent", f_listboxGetCurrent,
                  tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("listboxSetCurrent", f_listboxSetCurrent,
@@ -3621,9 +3732,9 @@ void init_functions()
 #endif
 
     ADD_FUNCTION("textboxReflowed", f_textboxReflowed,
-                 tFunc(tInt tInt tString tInt tOr(tInt, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid), tVoid), 0);
+                 tFuncV(tInt tInt tString tInt, tOr(tInt, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid), tVoid), 0);
     ADD_FUNCTION("textbox", f_textbox,
-                 tFunc(tInt tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);
+                 tFuncV(tInt tInt tInt tInt, tOr(tInt, tVoid), tVoid), 0);
     ADD_FUNCTION("textboxSetText", f_textboxSetText,
                  tFunc(tString, tVoid), 0);
     ADD_FUNCTION("textboxSetHeight", f_textboxSetHeight,
@@ -3631,7 +3742,8 @@ void init_functions()
     ADD_FUNCTION("textboxGetNumLines", f_textboxGetNumLines,
                  tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("reflowText", f_reflowText,
-                 tFunc(tString tInt tOr(tInt, tVoid) tOr(tInt, tVoid), tOr(tMap(tString, tOr(tString, tInt)), tInt)), 0);
+                 tFuncV(tString tInt, tOr(tInt, tVoid) tOr(tInt, tVoid),
+                        tOr(tMap(tString, tOr(tString, tInt)), tInt)), 0);
 
     ADD_FUNCTION("form", f_form,
                  tFunc(tOr(tObj, tInt) tString tInt, tVoid), 0);
@@ -3662,15 +3774,29 @@ void init_functions()
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("formAddHotKey", f_formAddHotKey,
                  tFunc(tInt, tVoid), 0);
+
+    ADD_FUNCTION("createGrid", f_createGrid,
+                 tFunc(tInt tInt, tVoid), 0);
+    ADD_FUNCTION("gridSetField", f_gridSetField,
+                 tFuncV(tInt tInt tInt tInt tInt tInt tInt tInt,
+                        tOr(tObj, tVoid), tVoid), 0);
+    ADD_FUNCTION("gridPlace", f_gridPlace,
+                 tFunc(tInt tInt, tVoid), 0);
+    ADD_FUNCTION("gridDestroy", f_gridDestroy,
+                 tFuncV(tVoid, tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("gridFree", f_gridDestroy,
+                 tFuncV(tVoid, tOr(tInt, tVoid), tVoid), 0);
     
     ADD_FUNCTION("entry", f_entry,
                  tFunc(tInt tInt tInt tOr(tString, tVoid) tOr(tInt, tVoid), tVoid), 0);
     ADD_FUNCTION("entrySet", f_entrySet,
                  tFunc(tString tOr(tInt, tVoid), tVoid), 0);
-    /* entrySetFilter here */
+    ADD_FUNCTION("entrySetFilter", f_entrySetFilter,
+                 tFuncV(tFunction, tString, tVoid), 0);
     ADD_FUNCTION("entryGetValue", f_entryGetValue,
                  tFunc(tVoid, tString), 0);
-    /* entrySetFlags here */
+    ADD_FUNCTION("entrySetFlags", f_entrySetFlags,
+                 tFunc(tInt tInt, tVoid), 0);
 
     ADD_FUNCTION("scale", f_scale,
                  tFunc(tInt tInt tInt tInt tOr(tInt, tVoid), tVoid), 0);

@@ -304,3 +304,92 @@ class Form
         _Newt.formAddHotKey(hkey);
     }
 };
+
+class Entry 
+{
+    inherit Component;
+
+    static private array(object|function) filters;
+    static private int filter_engaged;
+    
+    void create(int left, int top, int width, string|void initVal, int|void flags)
+    {
+        ::create(CLASS_ENTRY);
+
+        if (initVal && zero_type(flags)) {
+            _Newt.entry(left, top, width, initVal);
+        } else if (initVal && !zero_type(flags)) {
+            _Newt.entry(left, top, width, initVal, flags);
+        } else {
+            _Newt.entry(left, top, width);
+        }
+
+        filters = ({});
+        filter_engaged = 0;
+    }
+
+    string getValue()
+    {
+        return _Newt.entryGetValue();
+    }
+
+    string set(string text, int|void cursorAtEnd)
+    {
+        string ret = getValue();
+        
+        _Newt.entrySet(text, cursorAtEnd);
+
+        return ret;
+    }
+
+    void setFlags(int flags, int sense)
+    {
+        _Newt.entrySetFlags(flags, sense);
+    }
+
+    static private int|string
+    filterWrapper(string data, int|string ch, int cursor)
+    {
+        /* First one wins */
+        foreach(filters, object|function filter) {
+            if (objectp(filter) && filter->examine)
+                return filter->examine(data, ch, cursor);
+            else if (objectp(filter) && !filter->examine)
+                throw(({"Invalid filter object. Missing the 'examine' method.", backtrace()}));
+            else if (functionp(filter))
+                return filter(data, ch, cursor);
+            else
+                throw(({"Invalid filter type.", backtrace()}));
+        }
+    }
+    
+    void setFilter(function|object filter, string|void data)
+    {
+        if (zero_type(filter))
+            return;
+        
+        filters += ({filter});
+        if (filter_engaged)
+            return;
+
+        if (!zero_type(data))
+            _Newt.entrySetFilter(filterWrapper, data);
+        else
+            _Newt.entrySetFilter(filterWrapper);
+        
+        filter_engaged = 1;
+    }
+
+    void removeFilter(function|object filter)
+    {
+        if (zero_type(filter))
+            return;
+
+        if (!sizeof(filters))
+            filters -= ({filter});
+
+        if (!sizeof(filters))
+            filter_engaged = 0;
+    }
+};
+

@@ -1,5 +1,13 @@
 #!/usr/bin/pike -M./
 
+int|string myEntryFilter(string data, int|string ch, int cursor)
+{
+	if (intp(ch))
+		return ch;
+			
+	return upper_case(ch);
+}
+
 int main()
 {
     object n = Newt.Screen();
@@ -14,12 +22,17 @@ int main()
     form->add(Newt.Button(2, 7, "Compact", 1));
     form->add(Newt.Checkbox(15, 2, "CB", " ", " 123"));
     form->add(Newt.RadioButton(15, 7, "RB", 1));
-    
+	
+	Newt.Entry  textEntry = Newt.Entry(2, 12, 10, "text");
+	textEntry->setFilter(myEntryFilter);
+    form->add(textEntry);
+	
     object(Newt.Button) ret = form->run();
     
     n->finished();    
     
     write(sprintf("Finished by the '%s' button\n", ret->myText()));
-    
+    write(sprintf("text entry value: '%s'\n", textEntry->getValue()));
+	
     return 0;
 }
