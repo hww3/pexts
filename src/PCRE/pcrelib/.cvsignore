@@ -1,0 +1,8 @@
+Makefile
+config.status
+configure
+chartables.c
+config.log
+config.h
+dftables
+.cvsignore
