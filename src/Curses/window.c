@@ -58,7 +58,7 @@ static void f_##f(INT32 args) \
 { \
   int i; \
   check_all_args(#f, args, BIT_INT, 0); \
-  i = sp[-1].u.integer; \
+  i = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   push_int(f(THISWIN->win, i)); \
 }
@@ -68,8 +68,8 @@ static void f_##f(INT32 args) \
 { \
   int i,j; \
   check_all_args(#f, args, BIT_INT, BIT_INT, 0); \
-  i = sp[-2].u.integer; \
-  j = sp[-1].u.integer; \
+  i = Pike_sp[-2].u.integer; \
+  j = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   push_int(f(THISWIN->win, i, j)); \
 }
@@ -79,7 +79,7 @@ static void f_##f(INT32 args) \
 { \
   int i; \
   check_all_args(#f, args, BIT_INT, 0); \
-  i = sp[-1].u.integer; \
+  i = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   f(THISWIN->win, i); \
 }
@@ -89,7 +89,7 @@ static void f_##f(INT32 args) \
 { \
   int i; \
   check_all_args(#f, args, BIT_INT, 0); \
-  i = sp[-1].u.integer; \
+  i = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   push_int(w##f(THISWIN->win, i)); \
 }
@@ -99,7 +99,7 @@ static void f_##f(INT32 args) \
 { \
   int i; \
   check_all_args(#f, args, BIT_INT, 0); \
-  i = sp[-1].u.integer; \
+  i = Pike_sp[-1].u.integer; \
   pop_n_elems(args); \
   w##f(THISWIN->win, i); \
 }
@@ -132,10 +132,10 @@ static void f_window_create(INT32 args)
     check_all_args("create", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, 0);
     if (!curses_inited)
       Pike_error("Can't create window before Curses.init() is called\n");
-    THISWIN->win = newwin(sp[-1].u.integer, /* nlines */
-			  sp[-2].u.integer, /* ncols */
-			  sp[-3].u.integer, /* begin_y */
-			  sp[-4].u.integer); /* begin_x */
+    THISWIN->win = newwin(Pike_sp[-1].u.integer, /* nlines */
+			  Pike_sp[-2].u.integer, /* ncols */
+			  Pike_sp[-3].u.integer, /* begin_y */
+			  Pike_sp[-4].u.integer); /* begin_x */
     /* scrollok(THISWIN->win, TRUE); */
   }
   pop_n_elems(args);
@@ -199,7 +199,7 @@ W_INT_INT_FN(bkgd)
 static void f_bkgdset(INT32 args)
 {
   check_all_args("bkgdset", args, BIT_INT, 0);
-  wbkgdset(THISWIN->win, sp[-1].u.integer);
+  wbkgdset(THISWIN->win, Pike_sp[-1].u.integer);
   pop_n_elems(args);
 }
 
@@ -212,7 +212,7 @@ INT_INT_FN(leaveok)
 static void f_setscrreg(INT32 args)
 {
   check_all_args("setscrreg", args, BIT_INT, BIT_INT, 0);
-  push_int(wsetscrreg(THISWIN->win, sp[-2].u.integer, sp[-1].u.integer));
+  push_int(wsetscrreg(THISWIN->win, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer));
   pop_n_elems(args);
 }
 
@@ -228,7 +228,7 @@ static void f_move(INT32 args)
 {
   check_all_args("move", args, BIT_INT, BIT_INT,0 );
   /* THREADS_ALLOW(); */
-  wmove(THISWIN->win, sp[-2].u.integer, sp[-1].u.integer);
+  wmove(THISWIN->win, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   /* THREADS_DISALLOW(); */
 }
 
@@ -237,7 +237,7 @@ static void f_addstr(INT32 args)
   int r;
   check_all_args("addstr", args, BIT_STRING, 0);
   /* THREADS_ALLOW(); */
-  r = waddstr(THISWIN->win, sp[-1].u.string->str);
+  r = waddstr(THISWIN->win, Pike_sp[-1].u.string->str);
   /* THREADS_DISALLOW(); */
   pop_n_elems(args);
   push_int(r);
@@ -248,8 +248,8 @@ static void f_mvaddstr(INT32 args)
   int r;
   check_all_args("mvaddstr", args, BIT_INT, BIT_INT, BIT_STRING, 0);
   /* THREADS_ALLOW(); */
-  r = mvwaddstr(THISWIN->win, sp[-3].u.integer, sp[-2].u.integer,
-		sp[-1].u.string->str);
+  r = mvwaddstr(THISWIN->win, Pike_sp[-3].u.integer, Pike_sp[-2].u.integer,
+		Pike_sp[-1].u.string->str);
   /* THREADS_DISALLOW(); */
   pop_n_elems(args);
   push_int(r);
@@ -262,8 +262,8 @@ static void f_mvaddch(INT32 args)
   int r;
   check_all_args("mvaddch", args, BIT_INT, BIT_INT, BIT_INT, 0);
   /* THREADS_ALLOW(); */
-  r = mvwaddch(THISWIN->win, sp[-3].u.integer, sp[-2].u.integer,
-	       sp[-1].u.integer);
+  r = mvwaddch(THISWIN->win, Pike_sp[-3].u.integer, Pike_sp[-2].u.integer,
+	       Pike_sp[-1].u.integer);
   /* THREADS_DISALLOW(); */
   pop_n_elems(args);
   push_int(r);
@@ -274,8 +274,8 @@ static void f_mvinsch(INT32 args)
 {
   int r;
   check_all_args("mvinsch", args, BIT_INT, BIT_INT, BIT_INT, 0);
-  r = mvwinsch(THISWIN->win, sp[-3].u.integer, sp[-2].u.integer,
-	       sp[-1].u.integer);
+  r = mvwinsch(THISWIN->win, Pike_sp[-3].u.integer, Pike_sp[-2].u.integer,
+	       Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -292,7 +292,7 @@ static void f_window_reverse(INT32 args)
 {
   int r;
   check_all_args("reverse", args, BIT_INT, 0);
-  if (sp[-1].u.integer)
+  if (Pike_sp[-1].u.integer)
     r = wattrset(THISWIN->win, A_REVERSE);
   else
     r = wattrset(THISWIN->win, 0);
@@ -304,7 +304,7 @@ static void f_bold(INT32 args)
 {
   int r;
   check_all_args("bold", args, BIT_INT, 0);
-  if (sp[-1].u.integer)
+  if (Pike_sp[-1].u.integer)
     r = wattrset(THISWIN->win, A_BOLD);
   else
     r = wattrset(THISWIN->win, 0);
@@ -320,9 +320,9 @@ static void f_touchln(INT32 args)
 {
   int i, j, k;
   check_all_args("touchln", args, BIT_INT, BIT_INT, BIT_INT, 0);
-  i = sp[-3].u.integer;
-  j = sp[-2].u.integer;
-  k = sp[-1].u.integer;
+  i = Pike_sp[-3].u.integer;
+  j = Pike_sp[-2].u.integer;
+  k = Pike_sp[-1].u.integer;
   pop_n_elems(args);
   push_int(wtouchln(THISWIN->win, i, j, k));
 }
@@ -346,7 +346,7 @@ static void f_redrawln(INT32 args)
 {
   int r;
   check_all_args("redrawln", args, BIT_INT, BIT_INT, 0);
-  r = wredrawln(THISWIN->win, sp[-2].u.integer, sp[-1].u.integer);
+  r = wredrawln(THISWIN->win, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -371,13 +371,13 @@ static void f_border(INT32 args)
   for (i=0;i<8;i++)
     if (i<args)
     {
-      if (sp[-args+i].type != T_INT)
+      if (Pike_sp[-args+i].type != T_INT)
       {
 	char s[100];
 	sprintf(s, "Bad argumend %d in border(), expected int\n", i);
 	Pike_error(s);
       }
-      a[i] = sp[-args+i].u.integer;
+      a[i] = Pike_sp[-args+i].u.integer;
     }
     else
       a[i] = 0;
@@ -396,13 +396,13 @@ static void f_box(INT32 args)
   for (i=0;i<2;i++)
     if (i<args)
     {
-      if (sp[-args+i].type != T_INT)
+      if (Pike_sp[-args+i].type != T_INT)
       {
 	char s[100];
 	sprintf(s, "Bad argumend %d in box(), expected int\n", i);
 	Pike_error(s);
       }
-      a[i] = sp[-args+i].u.integer;
+      a[i] = Pike_sp[-args+i].u.integer;
     }
     else
       a[i] = 0;
@@ -416,7 +416,7 @@ static void f_hline(INT32 args)
 {
   int r;
   check_all_args("hline", args, BIT_INT, BIT_INT, 0);
-  r = whline(THISWIN->win, sp[-2].u.integer, sp[-1].u.integer);
+  r = whline(THISWIN->win, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -425,8 +425,8 @@ static void f_mvhline(INT32 args)
 {
   int r;
   check_all_args("mvhline", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, 0);
-  r = mvwhline(THISWIN->win, sp[-4].u.integer, sp[-3].u.integer,
-                             sp[-2].u.integer, sp[-1].u.integer);
+  r = mvwhline(THISWIN->win, Pike_sp[-4].u.integer, Pike_sp[-3].u.integer,
+                             Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -435,7 +435,7 @@ static void f_vline(INT32 args)
 {
   int r;
   check_all_args("vline", args, BIT_INT, BIT_INT, 0);
-  r = wvline(THISWIN->win, sp[-2].u.integer, sp[-1].u.integer);
+  r = wvline(THISWIN->win, Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
@@ -444,8 +444,8 @@ static void f_mvvline(INT32 args)
 {
   int r;
   check_all_args("mvvline", args, BIT_INT, BIT_INT, BIT_INT, BIT_INT, 0);
-  r = mvwvline(THISWIN->win, sp[-4].u.integer, sp[-3].u.integer,
-                             sp[-2].u.integer, sp[-1].u.integer);
+  r = mvwvline(THISWIN->win, Pike_sp[-4].u.integer, Pike_sp[-3].u.integer,
+                             Pike_sp[-2].u.integer, Pike_sp[-1].u.integer);
   pop_n_elems(args);
   push_int(r);
 }
