@@ -1,0 +1,64 @@
+
+    Multicast UDP Socket Module
+    ===========================
+
+This is an implementation of extra functionality needed to
+listen to Multicast groups with an UDP socket in Pike. This
+is encapsulated as a module calles "Stdio.MultiCastUDP", that
+inherits the standard "Stdio.UDP".
+
+This version works with pike 7.0 and pike 7.2
+
+INSTALATION
+===========
+
+There is some magin in the makefile that should allow to
+just type "make" and then, as root, type "make install".
+
+It it doesn't work, you should verify that the paths in
+the file "pike_paths.d" are correct (look at PIKE_CINCLUDES
+and PIKE_MODULES).
+
+USAGE
+=====
+
+Ths API of Stdio.UDP is extended with the following methods:
+
+void join(string group_ip)
+
+    Joins the multicast group specified by it's IP.
+
+void leave(string group_ip)
+
+    Leaves the multicast group specified by it's IP.
+
+void setLoopback(int flag)
+
+    If flag!=0, then the socket listen to it's own packets.
+
+void setTTL(int ttl)
+
+    Set's the Time To Live of packets to the specified value.
+
+void setInterface(string if_ip)
+
+    Set's the outgoing interface for the packets to the local
+    interface that has "if_ip" as it's IP. This is needed if
+    you don't have a Multicast default route in your routing
+    table, or if you want to override it's value. If you don't
+    have a default Multicast route (i.e., 224.0.0.0/8) and
+    don't call tis function, the socket will raise an error on
+    sending.
+
+EXAMPLES
+========
+
+The file "McastTxRx.pike" is an example of the Multicast Socket
+in use. It can send/receive packets to a multicast group.
+
+CREDITS
+=======
+
+This is writen by Daniel Serpell, daniel@atmlab.utfsm.cl
+
+
