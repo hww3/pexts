@@ -68,6 +68,11 @@ void pike_module_init(void)
     add_integer_constant("LDAP_SCOPE_BASE", LDAP_SCOPE_BASE, 0);
     add_integer_constant("LDAP_SCOPE_ONELEVEL", LDAP_SCOPE_ONELEVEL, 0);
     add_integer_constant("LDAP_SCOPE_SUBTREE", LDAP_SCOPE_SUBTREE, 0);
+
+    /* modification ops */
+    add_integer_constant("LDAP_MOD_ADD", LDAP_MOD_ADD, 0);
+    add_integer_constant("LDAP_MOD_DELETE", LDAP_MOD_DELETE, 0);
+    add_integer_constant("LDAP_MOD_REPLACE", LDAP_MOD_REPLACE, 0);
     
     _ol_ldap_program_init();
 }
