@@ -1,7 +1,7 @@
 AC_INIT(mhash.c)
 AC_CONFIG_HEADER(mhash_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([Mhash])
 
 AH_BOTTOM([
 #if defined(HAVE_MHASH_H) && defined(HAVE_LIBMHASH)
@@ -17,11 +17,9 @@ void pike_module_exit(void);
 AC_CHECK_HEADERS( mhash.h )
 AC_CHECK_LIB(mhash, mhash)
 
-
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
-
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

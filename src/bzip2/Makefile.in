@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=bzip2
+OBJS= bz2main.o
+SOURCES=bz2main.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=bz2_config.h bz2_config.h.in bzip2.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

@@ -1,6 +1,6 @@
 AC_INIT(bdb.c)
 AC_CONFIG_HEADER(bdb_config.h)
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([BerkeleyDB])
 
 OLD_LIBS=$LIBS
 OLD_LDFLAGS=$LDFLAGS
@@ -62,10 +62,10 @@ if test "$caudium_cv_bdb_new_enough" = "yes"; then
   AC_DEFINE(HAVE_BDB, 1, [Define if BDB exists and is new enough])
 fi
 AC_MSG_RESULT($caudium_cv_bdb_new_enough)
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

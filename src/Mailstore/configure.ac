@@ -1,7 +1,7 @@
 AC_INIT(mailstore_main.c)
 AC_CONFIG_HEADER(mailstore_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([Mailstore])
 
 AH_BOTTOM([
 void pike_module_init(void);
@@ -20,11 +20,10 @@ AC_SUBST(PCRE_CFLAGS)
 
 AC_CONFIG_SUBDIRS(libmutt)
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
-
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
 dnl vi: set ts=3:
-	

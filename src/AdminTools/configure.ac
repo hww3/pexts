@@ -1,7 +1,7 @@
 AC_INIT(atmain.c)
 AC_CONFIG_HEADER(at_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([AdminTools])
 
 AH_TOP([#include "../../config.h"])
 AH_BOTTOM([
@@ -189,7 +189,8 @@ else
     AC_MSG_RESULT(not found)
 fi
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4

@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=AdminTools
+OBJS= atmain.o at_common.o at_shadow.o at_directory.o at_quota.o at_system.o at_pam.o
+SOURCES=atmain.c at_common.c at_shadow.c at_directory.c at_quota.c at_system.c at_pam.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=at_config.h at_config.h.in AdminTools.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

@@ -108,23 +108,22 @@ static unsigned int   __debug_indent;
 #define attributeDeclSAX 0x07
 #define elementDeclSAX 0x08
 #define unparsedEntityDeclSAX 0x09
-#define setDocumentLocatorSAX 0x0A
-#define startDocumentSAX 0x0B
-#define endDocumentSAX 0x0C
-#define startElementSAX 0x0D
-#define endElementSAX 0x0E
-#define referenceSAX 0x0F
-#define charactersSAX 0x10
-#define ignorableWhitespaceSAX   0x11
-#define processingInstructionSAX 0x12
-#define commentSAX 0x13
-#define warningSAX 0x14
-#define errorSAX 0x15
-#define fatalErrorSAX 0x16
-#define getParameterEntitySAX 0x17
-#define cdataBlockSAX 0x18
-#define externalSubsetSAX 0x19
-#define CB_API_SIZE 0x1A
+#define startDocumentSAX 0x0A
+#define endDocumentSAX 0x0B
+#define startElementSAX 0x0C
+#define endElementSAX 0x0D
+#define referenceSAX 0x0E
+#define charactersSAX 0x0F
+#define ignorableWhitespaceSAX   0x10
+#define processingInstructionSAX 0x11
+#define commentSAX 0x12
+#define warningSAX 0x13
+#define errorSAX 0x14
+#define fatalErrorSAX 0x15
+#define getParameterEntitySAX 0x16
+#define cdataBlockSAX 0x17
+#define externalSubsetSAX 0x18
+#define CB_API_SIZE 0x19
 
 typedef enum {
   PARSE_PUSH_PARSER = 0x01,
@@ -189,14 +188,12 @@ static pikeCallbackAPI  callback_api[] =
   CB_API(isStandaloneSAX),
   CB_API(hasInternalSubsetSAX),
   CB_API(hasExternalSubsetSAX),
-  CB_API(resolveEntitySAX),
   CB_API(getEntitySAX),
   CB_API(entityDeclSAX),
   CB_API(notationDeclSAX),
   CB_API(attributeDeclSAX),
   CB_API(elementDeclSAX),
   CB_API(unparsedEntityDeclSAX),
-  CB_API(setDocumentLocatorSAX),
   CB_API(startDocumentSAX),
   CB_API(endDocumentSAX),
   CB_API(startElementSAX),
@@ -261,13 +258,15 @@ static void pextsInternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   safe_push_text(externalID);
   safe_push_text(systemID);
   push_svalue(&THIS->user_data);
   
-  CB_CALL(endElementSAX, 3);
+  CB_CALL(endElementSAX, 5);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -283,9 +282,11 @@ static int pextsIsStandalone(void *ctx)
     return 1;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   push_svalue(&THIS->user_data);
-  CB_CALL(isStandaloneSAX, 0);
+  CB_CALL(isStandaloneSAX, 2);
   stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
@@ -302,9 +303,11 @@ static int pextsHasInternalSubset(void *ctx)
     return 0;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   push_svalue(&THIS->user_data);
-  CB_CALL(hasInternalSubsetSAX, 0);
+  CB_CALL(hasInternalSubsetSAX, 2);
   stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
@@ -321,9 +324,11 @@ static int pextsHasExternalSubset(void *ctx)
     return 0;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   push_svalue(&THIS->user_data);
-  CB_CALL(hasExternalSubsetSAX, 0);
+  CB_CALL(hasExternalSubsetSAX, 2);
   stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
@@ -338,6 +343,8 @@ static xmlEntityPtr pextsGetEntity(void *ctx, const xmlChar *name)
     DBG_FUNC_LEAVE();
     return NULL;
   }
+
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
   
   DBG_FUNC_LEAVE();
   return NULL;
@@ -352,6 +359,8 @@ static void pextsEntityDecl(void *ctx, const xmlChar *name, int type, const xmlC
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   push_int(type);
@@ -360,7 +369,7 @@ static void pextsEntityDecl(void *ctx, const xmlChar *name, int type, const xmlC
   safe_push_text(content);
   push_svalue(&THIS->user_data);
 
-  CB_CALL(entityDeclSAX, 5);
+  CB_CALL(entityDeclSAX, 7);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -374,13 +383,15 @@ static void pextsNotationDecl(void *ctx, const xmlChar *name, const xmlChar *pub
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   safe_push_text(publicId);
   safe_push_text(systemId);
   push_svalue(&THIS->user_data);
   
-  CB_CALL(notationDeclSAX, 3);
+  CB_CALL(notationDeclSAX, 5);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -397,6 +408,8 @@ static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fu
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(elem);
   safe_push_text(fullname);
@@ -420,7 +433,7 @@ static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fu
   } else
     push_int(0);
 
-  CB_CALL(attributeDeclSAX, 6);
+  CB_CALL(attributeDeclSAX, 8);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -474,6 +487,8 @@ static void pextsElementDecl(void *ctx, const xmlChar *name, int type, xmlElemen
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   push_int(type);
@@ -484,7 +499,7 @@ static void pextsElementDecl(void *ctx, const xmlChar *name, int type, xmlElemen
     push_int(0);
   push_svalue(&THIS->user_data);
   
-  CB_CALL(elementDeclSAX, 3);
+  CB_CALL(elementDeclSAX, 5);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -499,6 +514,8 @@ static void pextsUnparsedEntityDecl(void *ctx, const xmlChar *name, const xmlCha
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   safe_push_text(publicId);
@@ -506,7 +523,7 @@ static void pextsUnparsedEntityDecl(void *ctx, const xmlChar *name, const xmlCha
   safe_push_text(notationName);
   push_svalue(&THIS->user_data);
   
-  CB_CALL(unparsedEntityDeclSAX, 4);
+  CB_CALL(unparsedEntityDeclSAX, 6);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -520,9 +537,11 @@ static void pextsStartDocument(void *ctx)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   push_svalue(&THIS->user_data);
-  CB_CALL(startDocumentSAX, 0);
+  CB_CALL(startDocumentSAX, 2);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -536,9 +555,11 @@ static void pextsEndDocument(void *ctx)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   push_svalue(&THIS->user_data);
-  CB_CALL(endDocumentSAX, 0);
+  CB_CALL(endDocumentSAX, 2);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -555,6 +576,8 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   if (atts) {
@@ -571,7 +594,7 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
   }
   push_svalue(&THIS->user_data);
   
-  CB_CALL(startElementSAX, 2);
+  CB_CALL(startElementSAX, 4);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -585,10 +608,12 @@ static void pextsEndElement(void *ctx, const xmlChar *name)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   push_svalue(&THIS->user_data);
-  CB_CALL(endElementSAX, 1);
+  CB_CALL(endElementSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -602,10 +627,12 @@ static void pextsReference(void *ctx, const xmlChar *name)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   push_svalue(&THIS->user_data);
-  CB_CALL(referenceSAX, 1);
+  CB_CALL(referenceSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -619,13 +646,15 @@ static void pextsCharacters(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   if (ch && len)
     push_text(make_shared_binary_string((const char*)ch, len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
-  CB_CALL(charactersSAX, 1);
+  CB_CALL(charactersSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -639,13 +668,15 @@ static void pextsIgnorableWhitespace(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   if (ch && len)
     push_text(make_shared_binary_string((const char*)ch, len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
-  CB_CALL(ignorableWhitespaceSAX, 1);
+  CB_CALL(ignorableWhitespaceSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -659,11 +690,13 @@ static void pextsProcessingInstruction(void *ctx, const xmlChar *target, const x
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(target);
   safe_push_text(data);
   push_svalue(&THIS->user_data);
-  CB_CALL(processingInstructionSAX, 2);
+  CB_CALL(processingInstructionSAX, 4);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -677,10 +710,12 @@ static void pextsComment(void *ctx, const xmlChar *value)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(value);
   push_svalue(&THIS->user_data);
-  CB_CALL(commentSAX, 1);
+  CB_CALL(commentSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -697,6 +732,8 @@ static void pextsWarning(void *ctx, const char *msg, ...)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
@@ -708,7 +745,7 @@ static void pextsWarning(void *ctx, const char *msg, ...)
     free(vmsg);
   }
   push_svalue(&THIS->user_data);
-  CB_CALL(warningSAX, 1);
+  CB_CALL(warningSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -725,6 +762,8 @@ static void pextsError(void *ctx, const char *msg, ...)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
@@ -736,7 +775,7 @@ static void pextsError(void *ctx, const char *msg, ...)
     free(vmsg);
   }
   push_svalue(&THIS->user_data);
-  CB_CALL(errorSAX, 1);
+  CB_CALL(errorSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -753,6 +792,8 @@ static void pextsFatalError(void *ctx, const char *msg, ...)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   /* I'm being lazy here :> */
   vmsg = NULL;
@@ -764,7 +805,7 @@ static void pextsFatalError(void *ctx, const char *msg, ...)
     free(vmsg);
   }
   push_svalue(&THIS->user_data);
-  CB_CALL(fatalErrorSAX, 1);
+  CB_CALL(fatalErrorSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -779,6 +820,8 @@ static xmlEntityPtr pextsGetParameterEntity(void *ctx, const xmlChar *name)
     return NULL;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   DBG_FUNC_LEAVE();
   return NULL;
 }
@@ -791,13 +834,15 @@ static void pextsCdataBlock(void *ctx, const xmlChar *value, int len)
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   if (value)
     push_text(make_shared_binary_string((const char*)value, len));
   else
     push_int(0);
   push_svalue(&THIS->user_data);
-  CB_CALL(cdataBlockSAX, 1);
+  CB_CALL(cdataBlockSAX, 3);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -811,12 +856,14 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
     return;
   }
 
+  THIS->ctxt = (xmlParserCtxtPtr)ctx;
+  
   push_object(this_object());
   safe_push_text(name);
   safe_push_text(externalId);
   safe_push_text(systemId);
   push_svalue(&THIS->user_data);
-  CB_CALL(externalSubsetSAX, 3);
+  CB_CALL(externalSubsetSAX, 5);
   pop_stack();
   
   DBG_FUNC_LEAVE();
@@ -831,7 +878,6 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
  *   isStandaloneSAX
  *   hasInternalSubsetSAX
  *   hasExternalSubsetSAX
- *   resolveEntitySAX
  *   getEntitySAX
  *   entityDeclSAX
  *   notationDeclSAX
@@ -855,7 +901,7 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
  *   cdataBlockSAX
  *   externalSubsetSAX
  */
-static int is_callback_ok(struct object *callbacks)
+static int is_callback_ok(struct object *callbacks, char **missing_method)
 {
   int                 ioff, i;
   struct identifier  *ident;
@@ -864,6 +910,10 @@ static int is_callback_ok(struct object *callbacks)
     return 0;
 
   i = 0;
+
+  if (missing_method)
+    *missing_method = NULL;
+  
   /*
    * walk the array of required methods, check whether each of them exists
    * in the passed object and is a method, then record its offset in our
@@ -871,22 +921,52 @@ static int is_callback_ok(struct object *callbacks)
    */
   while (i < CB_API_SIZE) {
     ioff = find_identifier(callback_api[i].name, callbacks->prog);
-    if (ioff < 0 && callback_api[i].req)
+    if (ioff < 0 && callback_api[i].req) {
+      if (missing_method)
+        *missing_method = callback_api[i].name;
       return 0;
-    else if (ioff < 0) {
+    } else if (ioff < 0) {
       THIS->callbackOffsets[i] = -1;
       i++;
       continue;
     }
     
     ident = ID_FROM_INT(callbacks->prog, ioff);
-    if (!IDENTIFIER_IS_FUNCTION(ident->identifier_flags))
+    if (!IDENTIFIER_IS_FUNCTION(ident->identifier_flags)) {
+      if (missing_method)
+        *missing_method = callback_api[i].name;
       return 0;
+    }
+    
     THIS->callbackOffsets[i] = ioff;
     i++;
   }
   
   return 1;
+}
+
+/*! @decl int getLineNumber()
+ */
+static void f_getLineNumber(INT32 args)
+{
+  pop_n_elems(args);
+  
+  if (!THIS->ctxt)
+    push_int(-1);
+  else
+    push_int(getLineNumber(THIS->ctxt));
+}
+
+/*! @decl int getColumnNumber()
+ */
+static void f_getColumnNumber(INT32 args)
+{
+  pop_n_elems(args);
+  
+  if (!THIS->ctxt)
+    push_int(-1);
+  else
+    push_int(getColumnNumber(THIS->ctxt));
 }
 
 /*! @decl void create(string|object input, object callbacks, mapping|void  entities, mixed|void user_data, int|void input_is_data)
@@ -899,6 +979,7 @@ static void f_create(INT32 args)
   int                 input_is_data = 0;
   struct pike_string *input_data = NULL;
   struct svalue      *user_data = NULL;
+  char               *missing_method = NULL;
   
   switch(args) {
       case 5:
@@ -938,14 +1019,17 @@ static void f_create(INT32 args)
         Pike_error("Incorrect number of arguments: expected between 2 and 4\n");
   }
 
+  
   /* check whether file_obj is Stdio.File or derived */
   if (file_obj && find_identifier("read", file_obj->prog) < 0)
     Pike_error("Passed file object is not Stdio.File or derived from it\n");
   
   /* check whether the callbacks object contains all the required methods
    * */
-  if (!is_callback_ok(callbacks))
-    Pike_error("Passed callbacks object is not valid.\n");
+  if (!is_callback_ok(callbacks, &missing_method)) 
+    Pike_error("Passed callbacks object is not valid. The %s method is missing.\n",
+               missing_method);
+
   
   /* choose the parsing method */
   if (file_obj)
@@ -974,7 +1058,14 @@ static void f_create(INT32 args)
   }
 
   THIS->callbacks = callbacks;
-  assign_svalue_no_free(&THIS->user_data, user_data);
+
+  if (user_data)
+    assign_svalue_no_free(&THIS->user_data, user_data);
+  else {
+    THIS->user_data.type = PIKE_T_INT;
+    THIS->user_data.u.integer = 0;
+    THIS->user_data.subtype = 1;
+  }
 }
 
 static void f_parse(INT32 args)
@@ -1046,6 +1137,8 @@ int _init_xml_sax(void)
   ADD_FUNCTION("create", f_create,
                tFunc(tOr(tString, tObj) tObj tOr(tMapping, tVoid) tOr(tMixed, tVoid) tOr(tInt, tVoid), tVoid), 0);
   ADD_FUNCTION("parse", f_parse, tFunc(tVoid, tInt), 0);
+  ADD_FUNCTION("getLineNumber", f_getLineNumber, tFunc(tVoid, tInt), 0);
+  ADD_FUNCTION("getColumnNumber", f_getColumnNumber, tFunc(tVoid, tInt), 0);
   
   sax_program = end_program();
   add_program_constant("SAX", sax_program, 0);

@@ -1,7 +1,7 @@
 AC_INIT(curses.c)
 AC_CONFIG_HEADER(curses_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([Curses])
 
 AH_BOTTOM([
 #if defined(HAVE_CURSES_H) && defined(HAVE_LIBCURSES)
@@ -33,10 +33,10 @@ AC_CHECK_HEADERS( curses.h )
 AC_CHECK_LIB(curses, initscr)
 
 AC_HAVE_HEADERS(curses.h ncurses.h ncurses/curses.h ncurses/ncurses.h)
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
 
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

@@ -4,7 +4,7 @@ AC_INIT(openssl.c)
 AC_CONFIG_HEADER(config.h)
 
 dnl AC_MODULE_INIT()
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([OpenSSL])
 
 AC_ARG_WITH(openssl,  [  --with-openssl       enable the openssl-module],[],[with_openssl=yes])
 
@@ -61,4 +61,5 @@ if test x$with_openssl = xyes; then
   fi
 fi
 
-AC_OUTPUT(Makefile.pre,[${MAKE:-make} -f Makefile.pre depend] )
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)

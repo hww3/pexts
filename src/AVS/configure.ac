@@ -1,6 +1,7 @@
 AC_INIT(index.c)
 AC_CONFIG_HEADER(avs_config.h)
-CAUDIUM_MODULE_INIT()
+
+CAUDIUM_MODULE_INIT([AVS])
 
 AC_ARG_WITH(avs,  [  --with-avs=path       Enable support for the Altavista search engine],[
   AC_MSG_CHECKING(for AVS)
@@ -43,9 +44,9 @@ AC_SUBST(SOURCES)
 AC_SUBST(MODULE_LDFLAGS)
 AC_SUBST(MODULE_LIBS)
 AC_SUBST(MODULE_CFLAGS)
+AC_SUBST(makefile_rules)
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
-
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4

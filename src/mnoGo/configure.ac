@@ -1,7 +1,7 @@
 AC_INIT(mnogo.c)
 AC_CONFIG_HEADER(mnogo_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([mnoGo])
 
 AH_BOTTOM([
 void pike_module_init(void);
@@ -51,8 +51,9 @@ AC_ARG_WITH(mnoGo,[  --with-mnoGo[=DIR]      Include mnoGoSearch support.  DIR i
 	fi
 ], [echo "*** mnoGoSearch support not enabled!"])
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
+
 dnl ## Local Variables:
 dnl ## tab-width: 2
 dnl ## End:
-	

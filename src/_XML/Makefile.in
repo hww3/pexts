@@ -1,0 +1,15 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=_XML
+OBJS= xml_main.o xml_sax.o
+SOURCES=xml_main.c xml_sax.c
+MODULE_LIBS=@LIBS@ @XML_LIBS@
+MODULE_CFLAGS=@XML_CFLAGS@
+EXTRA_CLEAN=xml_config.h xml_config.h.in _XML.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

@@ -1,7 +1,7 @@
 AC_INIT(pdf.c)
 AC_CONFIG_HEADER(pdf_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([PDF])
 
 AH_BOTTOM([
 #if defined(HAVE_PDFLIB_H) && defined(HAVE_LIBPDF)
@@ -76,11 +76,9 @@ void pike_module_exit(void);
 AC_CHECK_HEADERS( pdflib.h )
 AC_CHECK_LIB(pdf, PDF_new)
 
-
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
-
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

@@ -1,0 +1,9 @@
+# $Id$
+AC_INIT(configure.ac)
+
+CAUDIUM_CONFIGURE_PART([Main source directory])
+CAUDIUM_LOW_MODULE_INIT()
+
+@enabled_modules_pre@
+
+AC_OUTPUT(Makefile Makefile.rules)

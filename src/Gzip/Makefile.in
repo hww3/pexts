@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=Gzip
+OBJS= gzip_main.o
+SOURCES=gzip_main.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=gzip_config.h gzip_config.h.in Gzip.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

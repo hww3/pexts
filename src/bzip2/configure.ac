@@ -1,7 +1,7 @@
 AC_INIT(bz2main.c)
 AC_CONFIG_HEADER(bz2_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([bzip2])
 
 AH_BOTTOM([
 #undef HAVE_OLD_LIBBZ2
@@ -18,9 +18,9 @@ AC_CHECK_LIB(bz2, BZ2_bzCompressInit,,[
 ])
 AC_CHECK_HEADERS(bzlib.h)
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

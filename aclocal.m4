@@ -1,3 +1,8 @@
+AC_DEFUN([CAUDIUM_CONFIGURE_PART],[
+  AC_MSG_RESULT()
+  AC_MSG_RESULT([${T_MD}$1${T_ME}])
+])
+
 define([CAUDIUM_LOW_MODULE_INIT],
 [
 # $Id$
@@ -31,17 +36,23 @@ AC_DEFINE(POSIX_SOURCE)
 ])
 
 
-define([CAUDIUM_MODULE_INIT],
+AC_DEFUN([CAUDIUM_MODULE_INIT],
 [
+  if test -z "$1"; then
+    MODNAME="Unspecified"
+  else
+    MODNAME="$1"
+  fi
+  CAUDIUM_CONFIGURE_PART([$MODNAME])
   CAUDIUM_LOW_MODULE_INIT()
 
   AC_MSG_CHECKING([for the Pike Extension Package base directory])
 
-  module_makefile=../module_makefile
+  makefile_rules=../Makefile.rules
 
   counter=.
 
-  while test ! -f "$module_makefile"
+  while test ! -f "$makefile_rules"
   do
     counter=.$counter
     if test $counter = .......... ; then
@@ -50,9 +61,8 @@ define([CAUDIUM_MODULE_INIT],
     else
       :
     fi
-    module_makefile=../$module_makefile
+    makefile_rules=../$makefile_rules
   done
-  AC_SUBST_FILE(module_makefile)
   AC_MSG_RESULT(found)
 ])
 

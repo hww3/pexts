@@ -71,6 +71,32 @@ RCSID("$Id$");
 #include <libxml/entities.h>
 #include "xml_sax.h"
 
+/*! @decl int substituteEntitiesDefault(int def)
+ */
+static void f_substituteEntitiesDefault(INT32 args)
+{
+  int   i;
+
+  get_all_args("substituteEntitiesDefault", args, "%d", &i);
+  i = i ? 1 : 0;
+
+  pop_n_elems(args);
+  push_int(xmlSubstituteEntitiesDefault(i));
+}
+
+/* @decl int keepBlanksDefault(int def)
+ */
+static void f_keepBlanksDefault(INT32 args)
+{
+  int   i;
+
+  get_all_args("keepBlanksDefault", args, "%d", &i);
+  i = i ? 1 : 0;
+
+  pop_n_elems(args);
+  push_int(xmlKeepBlanksDefault(i));
+}
+
 void pike_module_init(void)
 {
 #ifdef PEXTS_VERSION
@@ -86,6 +112,12 @@ void pike_module_init(void)
   if (!_init_xml_sax())
     Pike_error("Could not initialize the SAX class");
 
+  /* global functions */
+  ADD_FUNCTION("substituteEntitiesDefault", f_substituteEntitiesDefault,
+               tFunc(tInt, tInt), 0);
+  ADD_FUNCTION("keepBlanksDefault", f_keepBlanksDefault,
+               tFunc(tInt, tInt), 0);
+  
   /* some contstants */
   add_integer_constant("XML_INTERNAL_GENERAL_ENTITY", XML_INTERNAL_GENERAL_ENTITY, 0);
   add_integer_constant("XML_EXTERNAL_GENERAL_PARSED_ENTITY", XML_EXTERNAL_GENERAL_PARSED_ENTITY, 0);

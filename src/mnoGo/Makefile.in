@@ -1,0 +1,15 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=mnoGo
+OBJS= mnogo.o
+SOURCES=mnogo.c
+MODULE_LIBS=@LIBS@
+MODULE_CFLAGS=@CFLAGS@
+EXTRA_CLEAN=mnogo_config.h mnogo_config.h.in mnoGo.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

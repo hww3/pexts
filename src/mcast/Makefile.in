@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME= mcast
+OBJS= mcast.o
+SOURCES= mcast.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=config.log config.status mcast_config.h mcast_config.h.in mcast.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

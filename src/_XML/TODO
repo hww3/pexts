@@ -1,0 +1,10 @@
+.: $Id$ :.
+
+SAX:
+
+- implement the resolveEntity() API (function to set the resolver 
+  and the C wrapper for the Pike callback)
+- implement the setDocumentLocator() API
+- document the APIs in the autodoc comments
+- implement xmlSAXParseEntity. Requires using a separate SAX handler.
+- implement xmlSAXParseDTD. Requires using a separate SAX handler.

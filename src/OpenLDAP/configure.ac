@@ -1,7 +1,7 @@
 AC_INIT(ol_main.c)
 AC_CONFIG_HEADER(ol_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([OpenLDAP])
 
 AC_CHECK_HEADERS(unistd.h lber.h ldap.h)
 AC_CHECK_LIB(ldap, ldap_init)
@@ -32,9 +32,9 @@ else
   AC_MSG_RESULT(no)
 fi
 
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

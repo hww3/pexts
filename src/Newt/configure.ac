@@ -1,7 +1,7 @@
 AC_INIT(newt.c)
 AC_CONFIG_HEADER(newt_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([Newt (old)])
 
 AH_BOTTOM([
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
@@ -39,11 +39,9 @@ void pike_module_exit(void);
 AC_CHECK_HEADERS( newt.h )
 AC_CHECK_LIB(newt, newtInit)
 
-
-AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
-
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

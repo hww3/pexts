@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=PDF
+OBJS= pdf.o
+SOURCES=pdf.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=pdf_config.h pdf_config.h.in PDF.so
+
+include @makefile_rules@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+

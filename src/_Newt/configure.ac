@@ -1,7 +1,7 @@
 AC_INIT(newt_global.h)
 AC_CONFIG_HEADER(newt_config.h)
 
-CAUDIUM_MODULE_INIT()
+CAUDIUM_MODULE_INIT([Newt (new)])
 
 AH_BOTTOM([
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
@@ -21,10 +21,9 @@ fi
 
 AC_SUBST(PIKE)
 
-AC_OUTPUT(Makefile.pre test, [${MAKE:-make} -f Makefile.pre depend; chmod 755 test])
-
+AC_SUBST(makefile_rules)
+AC_OUTPUT(Makefile)
 
 dnl ## Local Variables:
 dnl ## tab-width: 4
 dnl ## End:
-	

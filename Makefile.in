@@ -39,11 +39,12 @@ install_only:
 	@(cd src;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" DESTDIR="$(DESTDIR)" INSTALL="$(INSTALL)" install)
 	@echo "Pike Extension modules installed."
 
-spotless:  clean
+cvsclean spotless:  clean
 	@(cd src/;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
 	@(cd src/PCRE/pcrelib;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
 	rm -f Makefile
-	rm -f config.h.in
+	rm -f config.h.in configure.ac src/configure.ac
+	rm -f .module_dirs
 	find . '(' -name '#*#' -o -name '*~' -o -name '.*~' -o -name '*.bak'\
         -o -name '.pine-debug*' -o -name '.*.bak' -o -name core -o -name \
 	config.cache -o -name config.status -o -name config.log -o -name \
@@ -54,16 +55,3 @@ spotless:  clean
 	CONFIG_FILES=Makefile CONFIG_HEADERS="" ./config.status
 	@echo "Run make again"
 	@exit 1
-
-bump_version.stamp:
-	@touch bump_version.stamp
-
-bump_version: bump_version.stamp
-	@if test -f $(SRCDIR)/server/base_server/caudium.pike.new; then \
-	  echo Deleting old $(SRCDIR)/server/base_server/caudium.pike.new...; \
-	  rm $(SRCDIR)/server/base_server/caudium.pike.new || exit 1; \
-	else : ; fi
-
-$(SRCDIR)/ChangeLog.gz:
-	cd $(SRCDIR); pike tools/make_changelog.pike | gzip -9 > ChangeLog.gz
-
