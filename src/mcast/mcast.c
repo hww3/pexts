@@ -31,6 +31,7 @@
 #include "threads.h"
 #include "dynamic_buffer.h"
 
+#include "mcast_config.h"
 
 /* System includes */
 #include <sys/socket.h>

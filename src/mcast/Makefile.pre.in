@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=McastUDP
+OBJS= mcast.o
+SOURCES=mcast.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=mcast_config.h mcast_config.h.in McastUDP.so
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+
