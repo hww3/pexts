@@ -39,7 +39,9 @@ f_create(INT32 args)
     THIS->msg = (LDAPMessage*)THIS_PARENT->data;
     THIS->cur = ldap_first_entry(THIS->conn, THIS->msg);
     THIS->num_entries = ldap_count_entries(THIS->conn, THIS->msg);
-    
+
+    printf("Creating result...:\n"
+           "num_entries: %u\n", THIS->num_entries);
     pop_n_elems(args);
 }
 
@@ -73,10 +75,24 @@ static void
 add_attr_to_mapping(struct mapping *m, char *attr, struct berval **bvals)
 {
     struct svalue   val, key;
-
-    key.type = T_STRING;
-    val.type = T_ARRAY;
+    int             len, i;
     
+    key.type = T_STRING;
+    key.u.string = make_shared_string(attr);
+    
+    val.type = T_ARRAY;
+    if (!bvals) {
+        val.u.array = 0;
+        mapping_insert(m, &key, &val);
+        return;
+    }
+    
+    len = ldap_count_values_len(bvals);
+    for (i = 0; i < len; i++)
+        push_string(make_shared_binary_string(bvals[i]->bv_val, bvals[i]->bv_len));
+
+    val.u.array = aggregate_array(len);
+    mapping_insert(m, &key, &val);
 }
 
 static void
@@ -105,20 +121,22 @@ f_fetch(INT32 args)
         if (!ret)
             ret = allocate_mapping(1);
         bervals = ldap_get_values_len(THIS->conn, THIS->cur, attr);
-        if (!bervals && THIS->ld_errno != LDAP_SUCCESS)
+/*        if (!bervals && THIS->ld_errno != LDAP_SUCCESS)
             Pike_error("OpenLDAP.Client.Result->fetch(): %s",
                        ldap_err2string(THIS->ld_errno));
+*/
         add_attr_to_mapping(ret, attr, bervals);
         if (bervals)
             ldap_value_free_len(bervals);
         cnt++;
-        attr = ldap_next_attribute(THIS->conn, THIS->cur, &ber);
+        attr = ldap_next_attribute(THIS->conn, THIS->cur, ber);
     }
 
-    if (THIS->ld_errno != LDAP_SUCCESS)
+/*    if (THIS->ld_errno != LDAP_SUCCESS)
         Pike_error("OpenLDAP.Client.Result->fetch(): %s",
                    ldap_err2string(THIS->ld_errno));
-
+*/
+    
     if (!cnt) {
         free_mapping(ret);
         push_int(0);
@@ -161,6 +179,8 @@ _ol_result_program_init(void)
                  tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("get_dn", f_ldap_get_dn,
                  tFunc(tVoid, tString), 0);
+    ADD_FUNCTION("fetch", f_fetch,
+                 tFunc(tInt, tMap(tString, tArr(tString))), 0);
     
     result_program = end_program();
     add_program_constant("Result", result_program, 0);

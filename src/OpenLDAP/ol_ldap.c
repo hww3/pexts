@@ -38,8 +38,7 @@ RCSID("$Id$");
 
 #define THIS ((OLSTORAGE*)get_storage(fp->current_object, ldap_program))
 
-static struct program       *ldap_program;
-static struct program       *result_program;
+struct program       *ldap_program;
 
 static struct pike_string   *base_str;
 static struct pike_string   *scope_str;
@@ -72,20 +71,35 @@ f_create(INT32 args)
 }
 
 static void
-f_ldap_errno(INT32 args)
-{
-    pop_n_elems(args);
-    push_int(THIS->ld_errno);
-}
-
-static void
 f_ldap_bind(INT32 args)
 {
     char    *who = "", *cred = "";
-    int      auth = LDAP_AUTH_SIMPLE, ret;
+    int      auth  = LDAP_AUTH_SIMPLE, ret;
 
-    get_all_args("OpenLDAP.Client->bind()", args, "%s%s%i",
-                   &who, &cred, &auth);
+    switch (args) {
+        case 3:
+            if (ARG(3).type != T_INT)
+                Pike_error("OpenLDAP.Client->bind(): argument 3 must be an integer\n");
+            auth = ARG(3).u.integer;
+            /* fall through */
+
+        case 2:
+            if (ARG(2).type != T_STRING || ARG(2).u.string->size_shift > 0)
+                Pike_error("OpenLDAP.Client->bind(): argument 2 must be an 8-bit string\n");
+            cred = ARG(2).u.string->str;
+            /* fall through */
+            
+        case 1:
+            if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+                Pike_error("OpenLDAP.Client->bind(): argument 1 must be an 8-bit string\n");
+            who = ARG(1).u.string->str;
+            break;
+            
+        default:
+            if (args)
+                Pike_error("OpenLDAP.Client->bind(): expects at most 3 arguments\n");
+            break;
+    }    
 
     ret = ldap_bind_s(THIS->conn, who, cred, auth);
     THIS->bound = ret ? 0 : 1;
@@ -284,7 +298,7 @@ f_set_base_dn(INT32 args)
     pop_n_elems(args);
 
     if (!olddn)
-        push_string(make_shared_string(""));
+        push_string(empty_str);
     else
         push_string(olddn);
 }
@@ -292,16 +306,12 @@ f_set_base_dn(INT32 args)
 static void
 f_set_scope(INT32 args)
 {
-    int    scope = -1;
+    int    scope;
 
-    get_all_args("OpenLDAP.Client->set_scope()", args, "%i", &THIS->scope);
+    get_all_args("OpenLDAP.Client->set_scope()", args, "%i", &scope);
     pop_n_elems(args);
 
-    THIS->scope ^= scope;
-    scope ^= THIS->scope;
-    THIS->scope ^= scope;
-
-    push_int(scope);
+    THIS->scope = scope;
 }
 
 static char**
@@ -437,7 +447,7 @@ f_ldap_search(INT32 args)
             }
 
             case T_STRING:
-                /* the old style case */
+                /* the old style case */                
                 base = THIS->basedn;
                 scope = THIS->scope;
                 filter = ARG(1).u.string->str;
@@ -499,18 +509,18 @@ f_ldap_search(INT32 args)
                       filter,
                       attrs,
                       attrsonly,
-                      &res);
-        
+                      &res);    
+    
+    if (ret)
+        Pike_error("OpenLDAP.Client->search(): %s\n",
+                   ldap_err2string(ret));
+
     pop_n_elems(args);
-    if (ret) {
-        push_int(ret);
-        return;
-    }
-
+    
     THIS->data = res;
-    obj = clone_program(result_program, 2);
+    obj = clone_object(result_program, 0);
     push_object(obj);
-
+    
     if (attrs)
         free(attrs);
 }
@@ -576,8 +586,6 @@ _ol_ldap_program_init(void)
     
     ADD_FUNCTION("create", f_create,
                  tFunc(tString, tVoid), 0);
-    ADD_FUNCTION("errno", f_ldap_errno,
-                 tFunc(tVoid, tInt), 0);
     ADD_FUNCTION("bind", f_ldap_bind,
                  tFunc(tOr(tString, tVoid) tOr(tString, tVoid) tOr(tInt, tVoid),
                        tInt), 0);
@@ -601,7 +609,7 @@ _ol_ldap_program_init(void)
     ADD_FUNCTION("set_base_dn", f_set_base_dn,
                  tFunc(tString, tString), 0);
     ADD_FUNCTION("set_scope", f_set_scope,
-                 tFunc(tInt, tInt), 0);
+                 tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("search", f_ldap_search,
                  tFunc(tOr(tMapping,
                            tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
