@@ -1,0 +1,10 @@
+$Id$
+
+Short term goals
+ - implement the standard operations (search, modify, add, remove) [WIP]
+ - implement the display templates [PENDING]
+ - implement the user friendly interfaces [PENDING]
+
+Long term goals:
+
+ - using the asynchronous interface [PENDING]
