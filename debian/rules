@@ -35,13 +35,13 @@ endif
 
 export CFLAGS PVER
 
-configure: configure-stamp-72 configure-stamp-74
+configure: apply-patches configure-stamp-72 configure-stamp-74
 
-configure-stamp-72: apply-patches
+configure-stamp-72:
 	$(MAKE) -fdebian/rules PVER=7.2 do-configure
 	touch $@
 
-configure-stamp-7.4: apply-patches
+configure-stamp-74:
 	$(MAKE) -fdebian/rules PVER=7.4 do-configure
 	touch $@
 
@@ -105,7 +105,7 @@ do-build:
 
 	touch build-stamp
 
-inter-clean: unapply-patches
+inter-clean:
 	-$(MAKE) spotless
 	-$(MAKE) -C src/PCRE/pcrelib/ clean
 	-rm -f src/PCRE/pcrelib/dftables
@@ -114,21 +114,20 @@ inter-clean: unapply-patches
 	-rm -f smartlink statuslock
 	dh_clean
 
-clean: inter-clean
+clean: unapply-patches inter-clean
 	dh_testdir
-	dh_testroot
 	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
 	rm -f configure config.h.in config.log configure.ac
+	rm -rf debian/pike7.2 debian/pike7.4
 
 inter-install:
 	dh_testdir
-	dh_testroot
 	dh_clean -k
 	dh_installdirs -A
-	install -d -m 755 $(CURDIR)/debian/pike$(PVER)/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules
+	install -d -m 755 $(CURDIR)/debian/pike$(PVER)/usr/lib/pike/$(PIKE_VERSION)/lib/modules
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/pike$(PVER)/
-	install -d -m 755 $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
-	cp -pr pmod/Newt.pmod/ $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike$(PVER)/$(PIKE_VERSION)/modules/
+	install -d -m 755 $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/
+	cp -pr pmod/Newt.pmod/ $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/
 
 install: DH_OPTIONS=
 install: build
@@ -136,8 +135,8 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs -A
-	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.2/
-	dh_movefiles --sourcedir=$(CURDIR)/debian/pike7.4/
+	dh_movefiles --sourcedir=debian/pike7.2/
+	dh_movefiles --sourcedir=debian/pike7.4/
 
 # Build architecture-independent files here.
 # Pass -i to all debhelper commands in this target to reduce clutter.
