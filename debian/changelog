@@ -8,8 +8,9 @@ pexts (0.1.1-1) unstable; urgency=low
   * Removed the buggy OpenLDAP module
   * The PCRE module now links with pcre dynamically instead of using the
     included version of the library.
+  * Fixed the pcre description (Closes: Bug#156740)
 
- -- Marek Habersack <grendel@debian.org>  Thu, 26 Dec 2002 04:08:21 +0100
+ -- Marek Habersack <grendel@debian.org>  Thu, 25 May 2003 00:22:21 +0200
 
 pexts (0.0.20021010-3) unstable; urgency=low
 
