@@ -1,0 +1,13 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=Curses
+OBJS=curses.o window.o screen.o
+SOURCES=curses.c window.c screen.c
+MODULE_LIBS=@LIBS@
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+
