@@ -30,7 +30,8 @@ $(MODNAME).$(SO):  $(OBJS)
 	  echo $(LD) $(LDFLAGS) -o $(MODNAME).$(SO) $(OBJS) $(MODULE_ARCHIVES) $(MODULE_LDFLAGS) $(MODULE_LIBS) $(LIBGCC) $(CLIBRARY_LINK) $(LIBGCC) >&2 ;\
 	fi
 
-Makefile.pre: $(SRCDIR)/Makefile.pre.in $(SRCDIR)/configure config.status
+# Makefile.pre: $(SRCDIR)/Makefile.pre.in $(SRCDIR)/configure config.status
+Makefile.pre: Makefile.pre.in configure config.status
 	@echo "configure or Makefile.in changed."
 	@if test -f config.status; then \
            echo -n "Rebuilding Makefile myself using: ";\
