@@ -142,3 +142,10 @@ GPGME:
   Principal Author: Marek Habersack <grendel@caudium.net>
   License: LGPL
   TODO: finish it :)
+
+Mailstore:
+  Pike glue for libmutt library
+  Requires: libiconv
+  Principal Author: ?
+  License: ???
+  TODO: ?
