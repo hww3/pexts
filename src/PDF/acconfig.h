@@ -43,7 +43,6 @@ typedef struct
 /* Pike 0.6 */
 #define ADD_STORAGE(x) add_storage(sizeof(x))
 #endif
-#endif
 size_t writeproc( PDF *p, void *data, size_t size );
 void f_pdf_create(INT32 args);
 void f_set_info(INT32 args);
@@ -58,7 +57,8 @@ void f_continue_text(INT32 args);
 void f_set_text_pos(INT32 args);
 void f_generate(INT32 args);
 void f_stringwidth(INT32);
-// Graphics Functions
+
+/* Graphics Functions */
 void f_setdash(INT32);
 void f_setlinewidth(INT32);
 void f_moveto(INT32);
@@ -86,7 +86,9 @@ void f_set_parameter(INT32);
 
 void f_add_bookmark(INT32);
 
-// pike module functions
+#endif /* HAVE_PDFLIB */
+
+/* pike module functions */
 void pike_module_init(void);
 void pike_module_exit(void);
 #endif

@@ -52,7 +52,7 @@ struct formobj {
 
 int store_component( newtComponent elem, char *, char *);
 #endif
-// pike module functions
+/* pike module functions */
 void pike_module_init(void);
 void pike_module_exit(void);
 #endif

@@ -275,9 +275,9 @@ static void f_winmenu(INT32 args)
     if ( items->size < 1 || buttons->size < 1 )
       error("too few items in items or buttons array.\n");
       
-//    check_all_args("winmenu", args, BIT_STRING,
-//                             BIT_STRING, BIT_INT, BIT_INT, BIT_INT, BIT_INT,
-//                             BIT_ARRAY,BIT_ARRAY, 0 );
+    /*    check_all_args("winmenu", args, BIT_STRING, */
+    /*                             BIT_STRING, BIT_INT, BIT_INT, BIT_INT, BIT_INT, */
+    /*                             BIT_ARRAY,BIT_ARRAY, 0 ); */
 
     maxListHeight  = sp[-3].u.integer;
     flexUp         = sp[-4].u.integer;
@@ -299,7 +299,7 @@ static void f_winmenu(INT32 args)
         newtListboxAddEntry(listbox, items->item[i].u.string->str, (void *) i);
     }
     
-//    newtListboxSetCurrent(listbox, 
+    /*    newtListboxSetCurrent(listbox,  */
 
     for ( i = 0; i< buttons->size; i++) {
 	Buttons[i] = newtButton( -1, -1, buttons->item[i].u.string->str );
@@ -569,15 +569,15 @@ int store_component( newtComponent elem, char *nev, char *value )
   return (1);
 }
 #endif /* HAVE_NEWT */
-//----------------------------- - - --- - -  - -
+/*----------------------------- - - --- - -  - - */
 
 void pike_module_init(void)
 {
 #ifdef HAVE_NEWT
   start_new_program();
-  //ADD_FUNCTION("create", f_init, "function(void:void)", ID_PUBLIC );
+  /*//ADD_FUNCTION("create", f_init, "function(void:void)", ID_PUBLIC ); */
   ADD_FUNCTION("create", f_init, tFunc(tVoid,tVoid), ID_PUBLIC);
-//  add_integer_constant("ERR", ERR, 0);
+  /*  add_integer_constant("ERR", ERR, 0); */
 
   ADD_FUNCTION("cls",f_cls,tFunc(tNone,tVoid),0);
   ADD_FUNCTION("refresh",f_refresh,tFunc(tNone,tVoid),0);
@@ -585,9 +585,9 @@ void pike_module_init(void)
   ADD_FUNCTION("WaitForKey",f_waitforkey,tFunc(tVoid,tVoid),0);
   ADD_FUNCTION("ClearKeyBuffer",f_clearkeybuffer,tFunc(tVoid,tVoid),0);
 
-//  ADD_FUNCTION("open_window",f_open_window,"function(:void)",0);
-//  ADD_FUNCTION("open_centered_window",f_open_centered_window,"function(:void)",0);
-//  ADD_FUNCTION("pop_window",f_pop_window,"function(:void)",0);
+  /*  ADD_FUNCTION("open_window",f_open_window,"function(:void)",0); */
+  /*  ADD_FUNCTION("open_centered_window",f_open_centered_window,"function(:void)",0); */
+  /*  ADD_FUNCTION("pop_window",f_pop_window,"function(:void)",0); */
   ADD_FUNCTION("draw_root_text",f_draw_root_text,tFunc(tNone,tVoid),0);
   ADD_FUNCTION("screensize",f_get_screensize,tFunc(tVoid,tArray),0);
 

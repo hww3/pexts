@@ -66,8 +66,8 @@ size_t writeproc( PDF *p, void *data, size_t size ) {
 	return size;
 }
 
-// Set document information fields
-// Keys: 'Subject', 'Title', Creator', 'Author', 'Keywords'
+/* Set document information fields */
+/* Keys: 'Subject', 'Title', Creator', 'Author', 'Keywords' */
 void f_set_info(INT32 args) {
 	char *key,*value;
 
@@ -77,8 +77,8 @@ void f_set_info(INT32 args) {
 	pop_n_elems( args );
 }
 
-// start a new page in the PDF file
-// width/height are in `pt'
+/* start a new page in the PDF file */
+/* width/height are in `pt' */
 void f_begin_page(INT32 args) {
 	float width, height;
 	get_all_args("begin_page",args,"%f%f",&width,&height);
@@ -194,7 +194,7 @@ void f_stringwidth(INT32 args) {
 	push_float(width);
 }
 
-// Graphical Functions
+/* Graphical Functions */
 void f_setdash(INT32 args) {
 	float b,w;
 	get_all_args("setdash",args,"%f%f",&b,&w);
@@ -308,7 +308,7 @@ void f_setrgbcolor(INT32 args) {
 	pop_n_elems(args);
 }
 
-// Parameter handling
+/* Parameter handling */
 void f_get_value(INT32 args) {
 	char *key;
 	float modifier,value;
@@ -344,8 +344,8 @@ void f_get_parameter(INT32 args) {
 	else 
 			get_all_args("get_parameter",args,"%s%f", &key, &modifier );
 
-	// due to the PDFlib manual
-	// ...clients must neither touch nor free the returned string...
+	/* due to the PDFlib manual */
+	/* ...clients must neither touch nor free the returned string... */
 	value=(char *) PDF_get_parameter(THIS->pdf, key, modifier);
 	value=strdup(value);
 	pop_n_elems(args);
@@ -360,7 +360,7 @@ void f_set_parameter(INT32 args) {
 	pop_n_elems(args);
 }
 
-// Bookmarks
+/* Bookmarks */
 void f_add_bookmark(INT32 args) {
 	char *text;
 	int parent, open,id;
@@ -421,7 +421,7 @@ void pike_module_init(void)
 		"function(float,float:void)",0);
   add_function( "stringwidth", f_stringwidth,
 		"function(string,int,float|int,float|void:void)",0);
-// Graphical funcs
+  /* Graphical funcs */
   add_function( "setdash", f_setdash,
 		"function(float,float:void)",0);
   add_function( "setlinewidth", f_setlinewidth,
@@ -463,7 +463,7 @@ void pike_module_init(void)
 		"function(string,float|void:string)",0);
   add_function( "set_parameter", f_set_parameter,
 		"function(string,string:void)",0);
-// Bookmark function
+  /* Bookmark function */
   add_function( "add_bookmark", f_add_bookmark,
 		"function(string,int,int:int)",0);
 
