@@ -254,6 +254,10 @@ f_gzip_getdata(INT32 args)
         memcpy(tmp, buf, len);
     }
 
+    if (from && gzclose(in) != Z_OK)
+        Pike_error("Error closing the input file '%s'\n",
+                   from ? from : "stdin");
+    
     pop_n_elems(args);
     
     if (!tmpbuf)
