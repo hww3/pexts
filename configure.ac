@@ -246,7 +246,7 @@ for a in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pike \
   if test -x ${a}; then
     PIKE="${a}"
     if $PIKE -e 'float v; int rel;sscanf(version(), "Pike v%f release %d", v, rel);v += rel/10000.0; if(v < 7.0078) exit(1); exit(0);'; then
-		PIKE_MODULE_DIR=`$PIKE --show-paths 2>&1| grep lib|grep modules|head -1 | sed -e 's/.*: //'`
+		PIKE_MODULE_DIR=`$PIKE --show-paths 2>&1| grep lib|grep modules|head -1 | sed -e 's/.*: //;s/\(^[ \t]*\)\(.*\)/\2/'`
 		PIKE_INCLUDE_DIRS="-I`echo "$PIKE_MODULE_DIR" | sed -e 's,lib/pike/modules,include/pike,' -e 's,lib/modules,include/pike,'`"
 
 		if test -z "$PIKE_INCLUDE_DIRS" -o -z "$PIKE_MODULE_DIR"; then
