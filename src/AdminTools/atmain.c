@@ -206,7 +206,7 @@ f_getspent(INT32 args)
 #else
         char           *buf;
 #endif
-        struct spwd    sp, *spent;
+        struct spwd    spbuf, *spent;
 
 #ifndef __GNUC__
         buf = (char*)LALLOC(THIS->shadow.sp_buf_max * sizeof(char));
@@ -219,7 +219,7 @@ f_getspent(INT32 args)
 	 * and the end of DB using this function...
 	 * /grendel 22-09-2000
 	 */
-        if (getspent_r(&sp, buf, THIS->shadow.sp_buf_max, &spent) != 0)
+        if (getspent_r(&spbuf, buf, THIS->shadow.sp_buf_max, &spent) != 0)
             return;
         push_spent(spent);
 
