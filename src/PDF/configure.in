@@ -1,0 +1,17 @@
+AC_INIT(pdf.c)
+AC_CONFIG_HEADER(pdf_config.h)
+
+PEXTS_MODULE_INIT()
+
+
+AC_CHECK_HEADERS( pdflib.h )
+AC_CHECK_LIB(pdf, PDF_new)
+
+
+AC_OUTPUT(Makefile.pre, [make -f Makefile.pre depend])
+
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	
