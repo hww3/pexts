@@ -9,5 +9,12 @@
                name, nargs, nexpec)
 #endif
 
-#define FDF_MAGIC 0x6D464446
+typedef struct 
+{
+    int      val;
+    char    *name;
+    char    *desc;
+    int      isError;
+} constant_desc;
+
 #endif
