@@ -28,27 +28,3 @@ diff -U3 --new-file -r pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure
  
  AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
  
-diff -U3 --new-file -r pexts.orig/src/PCRE/Makefile.pre.in pexts/src/PCRE/Makefile.pre.in
---- pexts.orig/src/PCRE/Makefile.pre.in	2001-11-28 18:19:05.000000000 +0100
-+++ pexts/src/PCRE/Makefile.pre.in	2002-12-26 21:39:05.000000000 +0100
-@@ -1,17 +1,15 @@
- VPATH=@srcdir@:@srcdir@/../..:../..
- MODNAME=PCRE
--OBJS= pcre.o pcrelib/libpcre.a
-+OBJS= pcre.o
- SOURCES=pcre.c
--MODULE_LIBS=@LIBS@
-+MODULE_LIBS=@LIBS@ @PCRE_LIBS@
-+MODULE_CFLAGS=@PCRE_CFLAGS@
- EXTRA_CLEAN=pcre_config.h pcre_config.h.in PCRE.so
- 
- @module_makefile@
- 
- extrainstall:
- 
--pcrelib/libpcre.a: pcrelib/config.h pcrelib/dftables.c pcrelib/get.c pcrelib/internal.h pcrelib/maketables.c pcrelib/pcre.c pcrelib/pcre.h pcrelib/pcretest.c pcrelib/study.c
--	(cd pcrelib ; ${MAKE} )
--
- # DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
- 
- 
