@@ -61,7 +61,7 @@
 #define _GNU_SOURCE
 #endif
 
-#define SAX_DEBUG 1
+//#define SAX_DEBUG 1
 
 #include "global.h"
 RCSID("$Id$");
@@ -584,8 +584,10 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
     npairs = 0;
     tmp = atts;
     while (tmp && *tmp) {
-      safe_push_text(*tmp++);
-      safe_push_text(*tmp++);
+      safe_push_text(*tmp);
+      tmp++;
+      safe_push_text(*tmp);
+      tmp++;
       npairs += 2;
     }
     f_aggregate_mapping(npairs);
