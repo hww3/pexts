@@ -68,14 +68,14 @@
 //!
 //! @param systemID
 //!  The SYSTEM ID (e.g. filename or URL)
-void internalSubsetSAX(string name, string externalID, string systemID)
+void internalSubsetSAX(object parser, string name, string externalID, string systemID, void|mixed userData)
 {}
 
 //! Is this document tagged standalone or not.
 //!
 //! @returns
 //!   0 -- the document is not standalone, 1 -- the document is standalone
-int isStandaloneSAX()
+int isStandaloneSAX(object parser, void|mixed userData)
 {
   return 0;
 }
@@ -84,7 +84,7 @@ int isStandaloneSAX()
 //!
 //! @returns
 //!  0 -- internal subset is absent, 1 -- internal subset is present.
-int hasInternalSubsetSAX()
+int hasInternalSubsetSAX(object parser, void|mixed userData)
 {
   return 0;
 }
@@ -93,12 +93,12 @@ int hasInternalSubsetSAX()
 //!
 //! @returns
 //!  0 -- external subset is absent, 1 -- external subset is present.
-int hasExternalSubsetSAX()
+int hasExternalSubsetSAX(object parser, void|mixed userData)
 {
   return 0;
 }
 
-string getEntitySAX(string name)
+string getEntitySAX(object parser, string name, void|mixed userData)
 {
   return 0;
 }
@@ -119,7 +119,8 @@ string getEntitySAX(string name)
 //!
 //! @param content
 //!  The entity value (unprocessed)
-void entityDeclSAX(string name, int type, string publicId, string systemId, string content)
+void entityDeclSAX(object parser, string name, int type, string publicId,
+                   string systemId, string content, void|mixed userData)
 {}
 
 //! A notation declaration has been parsed.
@@ -132,7 +133,7 @@ void entityDeclSAX(string name, int type, string publicId, string systemId, stri
 //!
 //! @param systemId
 //!  The system ID of the entity
-void notationDeclSAX(string name, string publicId, string systemId)
+void notationDeclSAX(object parser, string name, string publicId, string systemId, void|mixed userData)
 {}
 
 //! An attribute definition has been parsed
@@ -154,7 +155,8 @@ void notationDeclSAX(string name, string publicId, string systemId)
 //!
 //! @param enumvals
 //!  An array containing the enumerated value set for the attribute
-void attributeDeclSAX(string elem, string fullname, int type, int def, string defaultValue, array(string) enumvals)
+void attributeDeclSAX(object parser, string elem, string fullname, int type, int def,
+                      string defaultValue, array(string) enumvals, void|mixed userData)
 {}
 
 //! An element definition has been parsed
@@ -167,7 +169,8 @@ void attributeDeclSAX(string elem, string fullname, int type, int def, string de
 //!
 //! @param content
 //!  The element value tree represented as a mapping.
-void elementDeclSAX(string name, int type, mapping(string:string|int) content)
+void elementDeclSAX(object parser, string name, int type, mapping(string:string|int) content,
+                    void|mixed userData)
 {}
 
 //! An unparsed entity declaration was parsed
@@ -183,15 +186,16 @@ void elementDeclSAX(string name, int type, mapping(string:string|int) content)
 //!
 //! @param notationName
 //!  The name of the notation
-void unparsedEntityDeclSAX(string name, string publicId, string systemId, string notationName)
+void unparsedEntityDeclSAX(object parser, string name, string publicId, string systemId, string notationName,
+                           void|mixed userData)
 {}
 
 //! The start of the document was parsed
-void startDocumentSAX()
+void startDocumentSAX(object parser, void|mixed userData)
 {}
 
 //! The end of the document was parsed
-void endDocumentSAX()
+void endDocumentSAX(object parser, void|mixed userData)
 {}
 
 //! An opening tag has been parsed
@@ -201,35 +205,35 @@ void endDocumentSAX()
 //!
 //! @param ettrs
 //!  A mapping with all the attributes parsed in the tag
-void startElementSAX(string name, mapping(string:string) attrs)
+void startElementSAX(object parser, string name, mapping(string:string) attrs, void|mixed userData)
 {}
 
 //! A closing tag has been parsed
 //!
 //! @param name
 //!  The name of the tag.
-void endElementSAX(string name)
+void endElementSAX(object parser, string name, void|mixed userData)
 {}
 
 //! An entity reference has been parsed.
 //!
 //! @param name
 //!  The entity name
-void referenceSAX(string name)
+void referenceSAX(object parser, string name, void|mixed userData)
 {}
 
 //! The parser returned some arbitrary characters.
 //!
 //! @param chars
 //!  The parsed characters.
-void charactersSAX(string chars)
+void charactersSAX(object parser, string chars, void|mixed userData)
 {}
 
 //! Some ignorable white space characters were parsed
 //!
 //! @param chars
 //!  The parsed characters
-void ignorableWhitespaceSAX(string chars)
+void ignorableWhitespaceSAX(object parser, string chars, void|mixed userData)
 {}
 
 //! A processing instruction has been parsed
@@ -239,45 +243,45 @@ void ignorableWhitespaceSAX(string chars)
 //!
 //! @param data
 //!  The PI data
-void processingInstructionSAX(string target, string data)
+void processingInstructionSAX(object parser, string target, string data, void|mixed userData)
 {}
 
 //! A comment has been parsed
 //!
 //! @param value
 //!  The contents of the comment block
-void commentSAX(string value)
+void commentSAX(object parser, string value, void|mixed userData)
 {}
 
 //! Parser warning callback.
 //!
 //! @param msg
 //!  The warning text
-void warningSAX(string msg)
+void warningSAX(object parser, string msg, void|mixed userData)
 {}
 
 //! Parser error callback.
 //!
 //! @param msg
 //!  The warning text
-void errorSAX(string msg)
+void errorSAX(object parser, string msg, void|mixed userData)
 {}
 
 //! Parser fatal error callback.
 //!
 //! @param msg
 //!  The warning text
-void fatalErrorSAX(string msg)
+void fatalErrorSAX(object parser, string msg, void|mixed userData)
 {}
 
-void getParameterEntitySAX()
+void getParameterEntitySAX(object parser, void|mixed userData)
 {}
 
 //! A PCDATA block has been parsed
 //!
 //! @param value
 //!  The contents of the block
-void cdataBlockSAX(string value)
+void cdataBlockSAX(object parser, string value, void|mixed userData)
 {}
 
 //! An external subset declaration has been parsed
@@ -290,5 +294,6 @@ void cdataBlockSAX(string value)
 //!
 //! @param systemId
 //!  The system ID (e.g. a filename or URL)
-void externalSubsetSAX(string name, string externalId, string systemId)
+void externalSubsetSAX(object parser, string name, string externalId, string systemId,
+                       void|mixed userData)
 {}
