@@ -1,4 +1,4 @@
-/* src/muttconfig.h.in.  Generated from configure.in by autoheader.  */
+/* src/muttconfig.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Defined when file size is to be used to discover changes to mailbox. */
 #undef BUFFY_SIZE
