@@ -28,7 +28,7 @@
 #if defined(HAVE_PCRE_H) && defined(HAVE_LIBPCRE)
 # define HAVE_PCRE
 #include <pcre.h>
-#define THIS ((PCRE_Regexp *)fp->current_object->storage)
+#define THIS ((PCRE_Regexp *)fp->current_storage)
 
 typedef struct
 {

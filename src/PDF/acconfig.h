@@ -29,7 +29,7 @@
 #define HAVE_PDFLIB
 #include <pdflib.h>
 
-#define THIS ((PDF_storage *)Pike_fp->current_object->storage)
+#define THIS ((PDF_storage *)Pike_fp->current_storage)
 
 typedef struct
 {
