@@ -118,6 +118,7 @@ f_temp_create(INT32 args)
     pop_n_elems(args);
 }
 
+static void 
 f_temp_name(INT32 args)
 {
     pop_n_elems(args);
@@ -125,6 +126,7 @@ f_temp_name(INT32 args)
     push_string(THIS_MKSTEMP->fname);
 }
 
+static void
 f_temp_fd(INT32 args)
 {
     pop_n_elems(args);
@@ -132,11 +134,12 @@ f_temp_fd(INT32 args)
     push_int(THIS_MKSTEMP->fd);
 }
 
+static void
 f_temp_truncate(INT32 args)
 {
     int   ret;
     
-    pop_n_elems(arg);
+    pop_n_elems(args);
     ret = ftruncate(THIS_MKSTEMP->fd, 0);
 
     push_int(ret);

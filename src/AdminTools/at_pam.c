@@ -150,7 +150,9 @@ f_chpass(INT32 args)
 static int
 pike_glue_conv(int num_msg, const struct pam_message **msg,
                struct pam_response **resp, void *data)
-{}
+{
+    return PAM_SUCCESS;
+}
 
 static void
 f_pam_start(INT32 args)
