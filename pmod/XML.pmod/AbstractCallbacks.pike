@@ -170,53 +170,125 @@ void attributeDeclSAX(string elem, string fullname, int type, int def, string de
 void elementDeclSAX(string name, int type, mapping(string:string|int) content)
 {}
 
-void unparsedEntityDeclSAX()
+//! An unparsed entity declaration was parsed
+//!
+//! @param name
+//!  The name of the entity
+//!
+//! @param publicId
+//!  The public ID of the entity
+//!
+//! @param systemId
+//!  The system ID of the entity
+//!
+//! @param notationName
+//!  The name of the notation
+void unparsedEntityDeclSAX(string name, string publicId, string systemId, string notationName)
 {}
 
-void setDocumentLocatorSAX()
-{}
-
+//! The start of the document was parsed
 void startDocumentSAX()
 {}
 
+//! The end of the document was parsed
 void endDocumentSAX()
 {}
 
+//! An opening tag has been parsed
+//!
+//! @param name
+//!  The tag name
+//!
+//! @param ettrs
+//!  A mapping with all the attributes parsed in the tag
 void startElementSAX(string name, mapping(string:string) attrs)
 {}
 
+//! A closing tag has been parsed
+//!
+//! @param name
+//!  The name of the tag.
 void endElementSAX(string name)
 {}
 
-void referenceSAX()
+//! An entity reference has been parsed.
+//!
+//! @param name
+//!  The entity name
+void referenceSAX(string name)
 {}
 
-void charactersSAX()
+//! The parser returned some arbitrary characters.
+//!
+//! @param chars
+//!  The parsed characters.
+void charactersSAX(string chars)
 {}
 
-void ignorableWhitespaceSAX()
+//! Some ignorable white space characters were parsed
+//!
+//! @param chars
+//!  The parsed characters
+void ignorableWhitespaceSAX(string chars)
 {}
 
-void processingInstructionSAX()
+//! A processing instruction has been parsed
+//!
+//! @param target
+//!  The target name
+//!
+//! @param data
+//!  The PI data
+void processingInstructionSAX(string target, string data)
 {}
 
-void commentSAX()
+//! A comment has been parsed
+//!
+//! @param value
+//!  The contents of the comment block
+void commentSAX(string value)
 {}
 
-void warningSAX()
+//! Parser warning callback.
+//!
+//! @param msg
+//!  The warning text
+void warningSAX(string msg)
 {}
 
-void errorSAX()
+//! Parser error callback.
+//!
+//! @param msg
+//!  The warning text
+void errorSAX(string msg)
 {}
 
-void fatalErrorSAX()
+//! Parser fatal error callback.
+//!
+//! @param msg
+//!  The warning text
+void fatalErrorSAX(string msg)
 {}
 
 void getParameterEntitySAX()
 {}
 
-void cdataBlockSAX()
+//! A PCDATA block has been parsed
+//!
+//! @param value
+//!  The contents of the block
+void cdataBlockSAX(string value)
 {}
 
-void externalSubsetSAX()
+//! An external subset declaration has been parsed
+//!
+//! @param name
+//!  The root element name
+//!
+//! @param externalId
+//!  The external ID
+//!
+//! @param systemId
+//!  The system ID (e.g. a filename or URL)
+void externalSubsetSAX(string name, string externalId, string systemId)
 {}

@@ -72,6 +72,8 @@ RCSID("$Id$");
 
 #ifdef HAVE_XML2
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #include <libxml/tree.h>
 #include <libxml/SAX.h>
@@ -79,7 +81,6 @@ RCSID("$Id$");
 #include <libxml/parserInternals.h>
 
 #ifdef SAX_DEBUG
-#include <stdio.h>
 
 static unsigned int   __debug_indent;
 
@@ -95,7 +96,7 @@ static unsigned int   __debug_indent;
 #define CB_API(_name_) {#_name_, 1}
 #define CB_CALL(_offset_, _args_) apply_low(THIS->callbacks, THIS->callbackOffsets[(_offset_)], (_args_))
 
-#define safe_push_text(_txt_) if ((_txt_)) push_text((_txt_)) else push_int(0)
+#define safe_push_text(_txt_) if ((_txt_)) push_text((_txt_)); else push_int(0)
 
 #define internalSubsetSAX 0x00
 #define isStandaloneSAX 0x01
@@ -224,7 +225,7 @@ static xmlSAXHandler   pextsSAX = {
   .attributeDecl = pextsAttributeDecl,
   .elementDecl = pextsElementDecl,
   .unparsedEntityDecl = pextsUnparsedEntityDecl,
-  .setDocumentLocator = pextsSetDocumentLocator,
+  .setDocumentLocator = NULL, /* we don't use it here */
   .startDocument = pextsStartDocument,
   .endDocument = pextsEndDocument,
   .startElement = pextsStartElement,
@@ -280,7 +281,7 @@ static int pextsIsStandalone(void *ctx)
   }
 
   CB_CALL(isStandaloneSAX, 0);
-  stack_pop_to(sv);
+  stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
   return sv.u.integer;
@@ -297,7 +298,7 @@ static int pextsHasInternalSubset(void *ctx)
   }
 
   CB_CALL(hasInternalSubsetSAX, 0);
-  stack_pop_to(sv);
+  stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
   return sv.u.integer;
@@ -314,7 +315,7 @@ static int pextsHasExternalSubset(void *ctx)
   }
 
   CB_CALL(hasExternalSubsetSAX, 0);
-  stack_pop_to(sv);
+  stack_pop_to(&sv);
   
   DBG_FUNC_LEAVE();
   return sv.u.integer;
@@ -390,7 +391,7 @@ static void pextsAttributeDecl(void *ctx, const xmlChar *elem, const xmlChar *fu
   safe_push_text(defaultValue);
 
   if (tree) {
-    xmlEnumeratorPtr   tmp = tree;
+    xmlEnumerationPtr   tmp = tree;
     struct array      *arr;
     
     nenum = 0;
@@ -437,7 +438,7 @@ inline static struct mapping *tree2mapping(xmlElementContentPtr content)
   mapping_string_insert(ret, econtent_c1, &sv);
 
   if (content->c2) {
-    sv.type = T_MAPPING
+    sv.type = T_MAPPING;
     sv.u.mapping = tree2mapping(content->c2);
   } else {
     sv.type = T_INT;
@@ -481,17 +482,14 @@ static void pextsUnparsedEntityDecl(void *ctx, const xmlChar *name, const xmlCha
     return;
   }
 
-  DBG_FUNC_LEAVE();
-}
+  safe_push_text(name);
+  safe_push_text(publicId);
+  safe_push_text(systemId);
+  safe_push_text(notationName);
 
-static void pextsSetDocumentLocator(void *ctx, xmlSAXLocatorPtr loc)
-{
-  DBG_FUNC_ENTER();
-  if (CB_ABSENT(setDocumentLocatorSAX)) {
-    DBG_FUNC_LEAVE();
-    return;
-  }
-
+  CB_CALL(unparsedEntityDeclSAX, 4);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -503,6 +501,9 @@ static void pextsStartDocument(void *ctx)
     return;
   }
 
+  CB_CALL(startDocumentSAX, 0);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -514,6 +515,9 @@ static void pextsEndDocument(void *ctx)
     return;
   }
 
+  CB_CALL(endDocumentSAX, 0);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -528,13 +532,13 @@ static void pextsStartElement(void *ctx, const xmlChar *name, const xmlChar **at
     return;
   }
   
-  push_text(name);
+  safe_push_text(name);
   if (atts) {
     npairs = 0;
     tmp = atts;
     while (tmp && *tmp) {
-      push_text(*tmp++);
-      push_text(*tmp++);
+      safe_push_text(*tmp++);
+      safe_push_text(*tmp++);
       npairs += 2;
     }
     f_aggregate_mapping(npairs);
@@ -556,7 +560,7 @@ static void pextsEndElement(void *ctx, const xmlChar *name)
     return;
   }
 
-  push_text(name);
+  safe_push_text(name);
   CB_CALL(endElementSAX, 1);
   pop_stack();
   
@@ -571,6 +575,10 @@ static void pextsReference(void *ctx, const xmlChar *name)
     return;
   }
 
+  safe_push_text(name);
+  CB_CALL(referenceSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -582,6 +590,13 @@ static void pextsCharacters(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  if (ch && len)
+    push_text(make_shared_binary_string((const char*)ch, len));
+  else
+    push_int(0);
+  CB_CALL(charactersSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -593,6 +608,13 @@ static void pextsIgnorableWhitespace(void *ctx, const xmlChar *ch, int len)
     return;
   }
 
+  if (ch && len)
+    push_text(make_shared_binary_string((const char*)ch, len));
+  else
+    push_int(0);
+  CB_CALL(ignorableWhitespaceSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -604,6 +626,11 @@ static void pextsProcessingInstruction(void *ctx, const xmlChar *target, const x
     return;
   }
 
+  safe_push_text(target);
+  safe_push_text(data);
+  CB_CALL(processingInstructionSAX, 2);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
@@ -615,42 +642,92 @@ static void pextsComment(void *ctx, const xmlChar *value)
     return;
   }
 
+  safe_push_text(value);
+  CB_CALL(commentSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
 static void pextsWarning(void *ctx, const char *msg, ...)
 {
+  char    *vmsg;
+  va_list  ap;
+  
   DBG_FUNC_ENTER();
   if (CB_ABSENT(warningSAX)) {
     DBG_FUNC_LEAVE();
     return;
   }
 
+  /* I'm being lazy here :> */
+  vmsg = NULL;
+  va_start(ap, msg);
+  if (vasprintf(&vmsg, msg, ap) < -1)
+    push_int(0);
+  else {
+    push_text(vmsg);
+    free(vmsg);
+  }
+  CB_CALL(warningSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
 static void pextsError(void *ctx, const char *msg, ...)
 {
+  char    *vmsg;
+  va_list  ap;
+  
   DBG_FUNC_ENTER();
   if (CB_ABSENT(errorSAX)) {
     DBG_FUNC_LEAVE();
     return;
   }
 
+  /* I'm being lazy here :> */
+  vmsg = NULL;
+  va_start(ap, msg);
+  if (vasprintf(&vmsg, msg, ap) < -1)
+    push_int(0);
+  else {
+    push_text(vmsg);
+    free(vmsg);
+  }
+  CB_CALL(errorSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
 static void pextsFatalError(void *ctx, const char *msg, ...)
 {
+  char    *vmsg;
+  va_list  ap;
+  
   DBG_FUNC_ENTER();
   if (CB_ABSENT(fatalErrorSAX)) {
     DBG_FUNC_LEAVE();
     return;
   }
 
+  /* I'm being lazy here :> */
+  vmsg = NULL;
+  va_start(ap, msg);
+  if (vasprintf(&vmsg, msg, ap) < -1)
+    push_int(0);
+  else {
+    push_text(vmsg);
+    free(vmsg);
+  }
+  CB_CALL(fatalErrorSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
+/* TODO: this one needs more thought... */
 static xmlEntityPtr pextsGetParameterEntity(void *ctx, const xmlChar *name)
 {
   DBG_FUNC_ENTER();
@@ -671,10 +748,17 @@ static void pextsCdataBlock(void *ctx, const xmlChar *value, int len)
     return;
   }
 
+  if (value)
+    push_text(make_shared_binary_string((const char*)value, len));
+  else
+    push_int(0);
+  CB_CALL(cdataBlockSAX, 1);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
-static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalID, const xmlChar *systemID)
+static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *externalId, const xmlChar *systemId)
 {
   DBG_FUNC_ENTER();
   if (CB_ABSENT(externalSubsetSAX)) {
@@ -682,6 +766,12 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
     return;
   }
 
+  safe_push_text(name);
+  safe_push_text(externalId);
+  safe_push_text(systemId);
+  CB_CALL(externalSubsetSAX, 3);
+  pop_stack();
+  
   DBG_FUNC_LEAVE();
 }
 
