@@ -1,18 +1,18 @@
 # Generated automatically from Makefile.in by configure.
 # Generated automatically from Makefile.in by configure.
-SRCDIR=/home/neotron/src/pexts
-VPATH=/home/neotron/src/pexts
+SRCDIR=/usr/src/Grendel/cvs/Caudium/pexts
+VPATH=/usr/src/Grendel/cvs/Caudium/pexts
 prefix=/usr/local
 DESTDIR=
 
 
 
 INSTALL=/usr/bin/install -c
-CC=/home/neotron/src/pexts/tools/smartlink gcc
-CPPFLAGS= -I/usr/local/include -I/usr/local/include -I/usr/X11/include -I/usr/X11R6/include
-LDFLAGS= -R/usr/local/lib -L/usr/local/lib -R/usr/X11/lib -L/usr/X11/lib -R/usr/X11R6/lib -L/usr/X11R6/lib
-PIKE=/usr/local/pike/7.1.6/bin/pike
-PIKE_VERISON=7.1.6
+CC=/usr/src/Grendel/cvs/Caudium/pexts/tools/smartlink gcc
+CPPFLAGS= -I/usr/local/include -I/usr/local/include -I/usr/X11R6/include
+LDFLAGS= -R/usr/local/lib -L/usr/local/lib -R/usr/X11R6/lib -L/usr/X11R6/lib
+PIKE=/usr/bin/pike7-cvs
+PIKE_VERISON=7.0.221
 # Used to avoid make compatibility problems.
 BIN_TRUE=":"
 #extern tools

@@ -9,4 +9,7 @@
 #define ADD_STORAGE(x) add_storage(sizeof(x))
 #endif
 
+/* Define if you have a failsafe strerror */
+#undef HAVE_STRERROR
+
 #endif

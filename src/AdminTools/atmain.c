@@ -43,9 +43,16 @@ RCSID("$Id$");
 #include <stdlib.h>
 #include <stdio.h>
 #include <pwd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
 
 #ifdef HAVE_SHADOW_H
 #include <shadow.h>
+#endif
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
 #endif
 
 /*
@@ -103,14 +110,24 @@ struct SHADOWPWDB
     long     sp_buf_max;
 };
 
+struct DIRDATA
+{
+    DIR                *dir;
+    struct pike_string *dirname;
+    struct svalue      select_cb;
+    struct svalue      compare_cb;
+};
+
 struct INSTANCE
 {
     struct SHADOWPWDB    shadow;
+    struct DIRDATA       dir;
 };
 
 DEFINE_IMUTEX(at_shadow_mutex);
 
 struct program   *shadow_program;
+struct program   *dir_program;
 
 #define THIS ((struct INSTANCE*) fp->current_storage)
 
@@ -127,6 +144,8 @@ struct program   *shadow_program;
 #define LALLOC(_s_) malloc((_s_))
 #define LFREE(_s_) if ((_s_)) free(_s_)
 #endif
+
+#define ARG(_n_) sp[-(_n_)]
 
 static void
 push_spent(struct spwd *spent)
@@ -297,9 +316,8 @@ f_getallspents(INT32 args)
 #endif
 }
 
-
 static void
-f_create(INT32 args)
+f_shadow_create(INT32 args)
 {
     pop_n_elems(args);
     THIS->shadow.sp_buf_max = sysconf(_SC_GETPW_R_SIZE_MAX);
@@ -307,14 +325,162 @@ f_create(INT32 args)
         THIS->shadow.sp_buf_max = 2048;
 }
 
+/*
+ * opendir() and friends support
+ *
+ * Note that opendir/readdir is used by get_dir as well, we just provide 
+ * a more fine-grained interface here with some more bells and whistles.
+ */
+static void
+f_opendir(INT32 args)
+{
+#ifdef HAVE_OPENDIR
+    get_all_args("AdminTools.Dir->opendir", args, "%S", &THIS->dir.dirname);
+    if (args != 1)
+	error("AdminTools.Dir->opendir(): Invalid number of arguments. Expected 1.\n");
+    
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+	error("AdminTools.Dir->opendir(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+
+    /*
+     * Do I have to make a copy of the string that's on the
+     * stack to preserve it for later use?? Guess not...
+     * /grendel 26-09-2000
+     */	
+    THIS->dir.dirname = ARG(1).u.string;
+    pop_n_elems(args);
+
+    if (THIS->dir.dir)
+	error("AdminTools.Dir->opendir(): previous directory not closed.\n");
+
+    THIS->dir.dir = opendir(THIS->dir.dirname->str);
+    if (!THIS->dir.dir) {
+	char  *err;
+	
+#ifdef HAVE_STRERROR
+	err = strerror(errno);
+#else
+	switch(errno) {
+	    case EACCESS: 
+		err = "access denied";
+		break;
+		
+	    case EMFILE: 
+		err = "Too many file descriptors in use by process";
+		break;
+		
+	    case ENFILE:
+		err = "Too many files are currently open in the system";
+		break;
+		
+	    case ENOENT:
+		err = "Directory doesn't exist";
+		break;
+		
+	    case ENOMEM:
+		err = "Out of memory";
+		break;
+		
+	    case ENOTDIR:
+		err = "Trying to open a non-directory";
+		break;
+		
+	    default:
+		err = "Unknown error";
+	}
+#endif
+	/*
+	 * Shouldn't we leave interpreting errno to the calling
+	 * program rather than use error() here?
+	 * /grendel 26-09-2000
+	 */
+	error("AdminTools.Dir->opendir(): %s\n", err);
+    }
+    
+#else
+    error("AdminTools.Dir->opendir(): function not supported\n");
+#endif
+}
+
+static void
+f_closedir(INT32 args)
+{
+#ifdef HAVE_CLOSEDIR
+    pop_n_elems(args);
+    if (!THIS->dir.dir) {
+	push_int(-1);
+	return;
+    }
+    push_int(closedir(THIS->dir.dir));
+#else
+    error("AdminTools.Dir->closedir(): function not supported\n");
+#endif
+}
+
+#if defined(HAVE_READDIR) || defined(HAVE_READDIR_R)
+static struct dirent*
+my_readdir(DIR *dir)
+{
+#if defined(_REENTRANT) && defined(HAVE_READDIR_R)    
+#else
+#endif
+}
+#endif
+
+static void
+f_readdir(INT32 args)
+{
+#if defined(HAVE_READDIR_R) || defined(HAVE_READDIR)
+    struct dirent   *dent;
+    
+    if (!THIS->dir.dir) {
+	push_int(0);
+	return;
+    }
+    
+    dent = my_readdir(THIS->dir.dir);
+#else
+    error("AdminTools.Dir->readdir(): function not supported\n");
+#endif
+}
+
+static void
+f_rewinddir(INT32 args)
+{}
+
+static void
+f_seekdir(INT32 args)
+{}
+
+static void
+f_telldir(INT32 args)
+{}
+
+static void
+f_scandir(INT32 args)
+{}
+
+static void
+f_dir_create(INT32 args)
+{
+    pop_n_elems(args);
+    THIS->dir.dir = NULL;
+    THIS->dir.select_cb.type = T_INT;
+    THIS->dir.select_cb.u.integer = 0;
+    THIS->dir.compare_cb.type = T_INT;
+    THIS->dir.compare_cb.u.integer = 0;
+    THIS->dir.dirname = NULL;
+}
+
 void pike_module_init(void)
 {
     init_interleave_mutex(&at_shadow_mutex);
 
+    /* Shadow stuff */
     start_new_program();
     ADD_STORAGE(struct INSTANCE);
 
-    add_function("create", f_create, "function(void:void)", 0);
+    add_function("create", f_shadow_create, "function(void:void)", 0);
     
     add_function("setspent", f_setspent, "function(void:void)", 0);
 
@@ -328,9 +494,22 @@ void pike_module_init(void)
     
     shadow_program = end_program();
     add_program_constant("Shadow", shadow_program, 0);
+    
+    /* Dir stuff */
+    start_new_program();
+    ADD_STORAGE(struct INSTANCE);
+    
+    add_function("create", f_dir_create, "function(void:void)", 0);
+    add_function("opendir", f_opendir, "function(string:void)", 0);
+    add_function("closedir", f_closedir, "function(void:int)", 0);
+    add_function("readdir", f_readdir, "function(void:array)", 0);
+
+    dir_program = end_program();
+    add_program_constant("Directory", dir_program, 0);
 }
 
 void pike_module_exit(void)
 {
   free_program(shadow_program);
+  free_program(dir_program);
 }
