@@ -989,13 +989,12 @@ f_ldap_modify(INT32 args)
     
     get_all_args("OpenLDAP.Client->modify()", args, "%S%a", &dn, &arr);
 
-    mods = (LDAPMod**)malloc((arr->size + 1) * sizeof(LDAPMod*));
+    mods = (LDAPMod**)calloc((arr->size + 1), sizeof(LDAPMod*));
     if (!mods)
         Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
-    memset(mods, 0, arr->size + 1);
 
     for (i = 0; i < arr->size; i++) {
-        mods[i] = (LDAPMod*)malloc(sizeof(LDAPMod));
+        mods[i] = (LDAPMod*)calloc(1, sizeof(LDAPMod));
         if (!mods[i])
             Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
 
@@ -1104,12 +1103,10 @@ f_ldap_add(INT32 args)
         mods[i]->mod_bvalues = make_berval_array(val);
     }
 
-    printf("trying to add...\n");
     ret = ldap_add_s(THIS->conn, dn->str, mods);
     if (ret != LDAP_SUCCESS)
         Pike_error("OpenLDAP.Client->add(): %s\n",
                    ldap_err2string(ret));
-    printf("trying to free...\n");
     
     ldap_mods_free(mods, 1);
     
