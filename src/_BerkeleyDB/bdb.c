@@ -20,16 +20,9 @@
 
 #include "global.h"
 RCSID("$Id$");
-#include "stralloc.h"
-#include "mapping.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "error.h"
 
-#include "threads.h"
-
+#include "pexts.h"
 #include "bdb.h"
-
 
 /* Initialize and start module */
 

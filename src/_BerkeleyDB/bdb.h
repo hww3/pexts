@@ -25,7 +25,7 @@
 #include <db.h>
 
 #define BDB ((BDB_Storage *)fp->current_object->storage)
-#define BDBERR( msg) error("%s\n", msg)
+#define BDBERR( msg) Pike_error("%s\n", msg)
 #define CHECKBDB() DB *db; DB_TXN *txnid; if(!(BDB->state)) BDBERR("Database not initialized."); else if((BDB->state) == -1) BDBERR("Database is closed."); db = BDB->db; txnid = BDB->txnid;
 typedef struct
 {

@@ -647,9 +647,11 @@ case $caudium_cv_sys_os in
   ;;
 esac
 
+
 #
 # Some variables we want to export to the other configure scripts.
 #
+CPPFLAGS="-I$srcdir/src/  $CPPFLAGS"
 CFLAGS="$CFLAGS $CCSHARED $WARN $OPTIMIZE"
 export CC CFLAGS CPPFLAGS LDFLAGS LDSHARED SO CLIBRARY_LINK
 

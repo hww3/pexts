@@ -25,16 +25,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-/*
- * Pike includes
- */
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 
 #include "at_config.h"
 

@@ -25,19 +25,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-/*
- * Pike includes
- */
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
-#include "pike_types.h"
-#include "interpret.h"
-
+#include "pexts.h"
 #include "bz2_config.h"
 
 #ifdef HAVE_UNISTD_H
@@ -71,11 +59,11 @@ f_inflate_create(INT32 args)
 {
     if (args == 1) {
 	if (ARG(0).type != T_INT)
-	    error("bzip2.inflate->create(): argument must be of type INT\n");
+	    Pike_error("bzip2.inflate->create(): argument must be of type INT\n");
 	    
 	THIS->blkSize = ARG(0).u.integer != 0;
     } else if (args > 1) {
-	error("bzip2.inflate->create(): expected 1 argument of type INT.\n");
+	Pike_error("bzip2.inflate->create(): expected 1 argument of type INT.\n");
     } else
 	THIS->blkSize = 0;
 	
@@ -93,13 +81,13 @@ f_inflate_inflate(INT32 args)
     
     if (args == 1) {
 	if (ARG(0).type != T_STRING || ARG(0).u.string->size_shift > 0)
-	    error("bzip2.inflate->inflate(): argument 1 must be an 8-bit string\n");
+	    Pike_error("bzip2.inflate->inflate(): argument 1 must be an 8-bit string\n");
 	if (!ARG(0).u.string->str || !strlen(ARG(0).u.string->str))
-	    error("bzip2.inflate->inflate(): cannot decompress an empty string!\n");
+	    Pike_error("bzip2.inflate->inflate(): cannot decompress an empty string!\n");
 
 	src = ARG(0).u.string;
     } else if (args != 1) {
-	error("bzip2.inflate->inflate(): expected exactly one argument of type STRING.\n");
+	Pike_error("bzip2.inflate->inflate(): expected exactly one argument of type STRING.\n");
     }
 
     /*
@@ -113,7 +101,7 @@ f_inflate_inflate(INT32 args)
 destalloc:
      dest = (char*)calloc(dlen, sizeof(char));
      if (!dest)
-	error("bzip2.inflate->inflate(): out of memory (needed %u bytes)\n",
+	Pike_error("bzip2.inflate->inflate(): out of memory (needed %u bytes)\n",
 	      dlen);
 	      
 #ifdef HAVE_OLD_LIBBZ2
@@ -127,11 +115,11 @@ destalloc:
     switch(retval) {
 #ifdef BZ_CONFIG_ERROR
 	case BZ_CONFIG_ERROR:
-	    error("bzip2.inflate->inflate(): your copy of libbz2 is seriously damaged!\n");
+	    Pike_error("bzip2.inflate->inflate(): your copy of libbz2 is seriously damaged!\n");
 	    break; /* never reached */
 #endif
 	case BZ_MEM_ERROR:
-	    error("bzip2.inflate->inflate(): out of memory decompressing block.\n");
+	    Pike_error("bzip2.inflate->inflate(): out of memory decompressing block.\n");
 	    break; /* never reached */
 	    
 	case BZ_OUTBUFF_FULL:
@@ -142,22 +130,22 @@ destalloc:
 	    break; /* never reached */	
 	    
 	case BZ_DATA_ERROR:
-	    error("bzip2.inflate->inflate(): data integrity error in compressed data\n");
+	    Pike_error("bzip2.inflate->inflate(): data integrity error in compressed data\n");
 	    break;
 	    
 	case BZ_DATA_ERROR_MAGIC:
-	    error("bzip2.inflate->inflate(): wrong compressed data magic number\n");
+	    Pike_error("bzip2.inflate->inflate(): wrong compressed data magic number\n");
 	    break;
 	    
 	case BZ_UNEXPECTED_EOF:
-	    error("bzip2.inflate->inflate(): data ends unexpectedly\n");
+	    Pike_error("bzip2.inflate->inflate(): data ends unexpectedly\n");
 	    break;
 	    
 	case BZ_OK:
 	    break;
 	    
 	default:
-	    error("bzip2.inflate->inflate(): unknown error code %d\n", retval);
+	    Pike_error("bzip2.inflate->inflate(): unknown error code %d\n", retval);
 	    break; /* never reached */
     }
     
@@ -175,7 +163,7 @@ init_inflate(struct object *o)
 {
     THIS->stream = (bz_stream*)malloc(sizeof(bz_stream));
     if (!THIS->stream)
-	error("Cannot allocate memory for compression structures\n");
+	Pike_error("Cannot allocate memory for compression structures\n");
     memset(THIS->stream, 0, sizeof(bz_stream));
     THIS->blkSize = 0;
 }
@@ -193,14 +181,14 @@ f_deflate_create(INT32 args)
 {
     if (args == 1) {
 	if (ARG(0).type != T_INT)
-	    error("bzip2.deflate->create(): argument must be of type INT\n");
+	    Pike_error("bzip2.deflate->create(): argument must be of type INT\n");
 	    
 	if ((ARG(0).u.integer < 0) && (ARG(0).u.integer > 9))
-	    error("bzip2.deflate->create(): argument 1 must be between 0 and 9\n");
+	    Pike_error("bzip2.deflate->create(): argument 1 must be between 0 and 9\n");
 	    
 	THIS->blkSize = ARG(0).u.integer;
     } else if (args > 1) {
-	error("bzip2.deflate->create(): expected 1 argument of type INT.\n");
+	Pike_error("bzip2.deflate->create(): expected 1 argument of type INT.\n");
     } else
 	THIS->blkSize = 9;
     pop_n_elems(args);
@@ -226,23 +214,23 @@ f_deflate_deflate(INT32 args)
     switch(args) {
      case 2:
       if(ARG(1).type != T_INT) {
-	  error("bzip2.deflate->deflate(): argument 2 not an integer.\n");
+	  Pike_error("bzip2.deflate->deflate(): argument 2 not an integer.\n");
       }
       verbosity = ARG(1).u.integer;
       if( verbosity > 4 || verbosity < 0 ) {
-	error("bzip2.deflate->deflate(): verbosity should be between 0 and 4.\n");
+	Pike_error("bzip2.deflate->deflate(): verbosity should be between 0 and 4.\n");
       }
       /* FALLTHROUGH */
 
      case 1:
       if (ARG(0).type != T_STRING)
-	  error("bzip2.deflate->deflate(): argument 1 must be a string.\n");
+	  Pike_error("bzip2.deflate->deflate(): argument 1 must be a string.\n");
       if (!ARG(0).u.string->str || !ARG(0).u.string->len)
-	  error("bzip2.deflate->deflate(): cannot compress an empty string!\n");
+	  Pike_error("bzip2.deflate->deflate(): cannot compress an empty string!\n");
       src = ARG(0).u.string;
       break;
      default:
-      error("bzip2.deflate->deflate(): expected  1 to 2 arguments.\n");
+      Pike_error("bzip2.deflate->deflate(): expected  1 to 2 arguments.\n");
     }
     
     /*
@@ -257,7 +245,7 @@ f_deflate_deflate(INT32 args)
 destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
     dest = (char*)calloc(dlen, sizeof(char));
     if (!dest)
-	error("bzip2.deflate->deflate(): out of memory (needed %u bytes)\n",
+	Pike_error("bzip2.deflate->deflate(): out of memory (needed %u bytes)\n",
 	      dlen);
 	
 #ifdef HAVE_OLD_LIBBZ2
@@ -272,11 +260,11 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
     switch(retval) {
 #ifdef BZ_CONFIG_ERROR
      case BZ_CONFIG_ERROR:
-      error("bzip2.deflate->deflate(): your copy of libbz2 is seriously damaged!\n");
+      Pike_error("bzip2.deflate->deflate(): your copy of libbz2 is seriously damaged!\n");
       break; /* never reached */
 #endif	    
      case BZ_MEM_ERROR:
-      error("bzip2.deflate->deflate(): out of memory compressing block.\n");
+      Pike_error("bzip2.deflate->deflate(): out of memory compressing block.\n");
       break; /* never reached */
 	    
      case BZ_OUTBUFF_FULL:
@@ -290,11 +278,11 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
       break;
 
      case BZ_PARAM_ERROR:
-      error("bzip2.deflate->deflate(): Invalid parameters.\n");
+      Pike_error("bzip2.deflate->deflate(): Invalid parameters.\n");
       break;
       
      default:
-      error("bzip2.deflate->deflate(): unknown error code %d\n", retval);
+      Pike_error("bzip2.deflate->deflate(): unknown error code %d\n", retval);
       break; /* never reached */
     }
     
@@ -324,7 +312,7 @@ init_deflate(struct object *o)
 {
     THIS->stream = (bz_stream*)malloc(sizeof(bz_stream));
     if (!THIS->stream)
-	error("Cannot allocate memory for compression structures\n");
+	Pike_error("Cannot allocate memory for compression structures\n");
     memset(THIS->stream, 0, sizeof(bz_stream));
     THIS->blkSize = 0;
 }

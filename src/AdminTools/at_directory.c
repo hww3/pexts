@@ -25,16 +25,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-/*
- * Pike includes
- */
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 
 #include "at_config.h"
 
@@ -369,7 +360,7 @@ f_dir_index(INT32 args)
                 pop_n_elems(args);
                 push_text(THIS->dent->d_name);
             } else {
-                error("AdminTools.%s[]: unknown index '%s'\n", _object_name, ARG(1).u.string->str);
+                Pike_error("AdminTools.%s[]: unknown index '%s'\n", _object_name, ARG(1).u.string->str);
                 pop_n_elems(args);
             }
             break;
@@ -387,7 +378,7 @@ init_directory(struct object *o)
     THIS_LOW->object_name = _object_name;
     THIS_LOW->object_data = malloc(sizeof(struct dir_struct));
     if (!THIS_LOW->object_data)
-	error("Out of memory in AdminTools.Directory init!\n");
+	Pike_error("Out of memory in AdminTools.Directory init!\n");
 	
     THIS->dir = NULL;
     THIS->path = NULL;

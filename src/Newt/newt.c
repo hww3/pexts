@@ -23,17 +23,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "stralloc.h"
-#include "pike_types.h"
-#include "pike_macros.h"
-#include "object.h"
-#include "constants.h"
-#include "interpret.h"
-#include "svalue.h"
-#include "mapping.h"
-#include "builtin_functions.h"
-#include "error.h"
-#include "module_support.h"
+#include "pexts.h"
 
 /*   struct formobj *foo = (struct formobj *)get_storage(obj,Form_program);
  *   ..
@@ -57,7 +47,7 @@ int newt_inited = 0;
 static void f_init(INT32 args)
 {
    if (args != 0)
-     error("Too many arguments to init()\n");
+     Pike_error("Too many arguments to init()\n");
    pop_n_elems(args);
    newt_inited = 1;
    newtInit();
@@ -68,7 +58,7 @@ static void f_init(INT32 args)
 static void f_cls(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   pop_n_elems(args);
   newtCls();
 }
@@ -76,7 +66,7 @@ static void f_cls(INT32 args)
 static void f_refresh(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   pop_n_elems(args);
   newtRefresh();
 }
@@ -84,7 +74,7 @@ static void f_refresh(INT32 args)
 static void f_finished(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   pop_n_elems(args);
   newtFinished();
   newt_inited = 0;
@@ -93,7 +83,7 @@ static void f_finished(INT32 args)
 static void f_pop_window(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   pop_n_elems(args);
   newtPopWindow();
 }
@@ -103,27 +93,27 @@ static void f_open_window(INT32 args)
   int x,y,xd,yd;
 
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to open_window\n");
+    Pike_error("Too few arguments to open_window\n");
 
   if (args == 2)
   {
     struct array *a;
     if (sp[-2].type != T_ARRAY)
-      error("Bad argument 1 to gotorc\n");
+      Pike_error("Bad argument 1 to gotorc\n");
     a = sp[-2].u.array;
     if (a->size != 4)
-      error("An array argument to open_window must be of size 4\n");
+      Pike_error("An array argument to open_window must be of size 4\n");
     if (a->item[0].type != T_INT)
-      error("Element 0 of argument is not an integer\n");
+      Pike_error("Element 0 of argument is not an integer\n");
     if (a->item[1].type != T_INT)
-      error("Element 1 of argument is not an integer\n");
+      Pike_error("Element 1 of argument is not an integer\n");
     if (a->item[2].type != T_INT)
-      error("Element 2 of argument is not an integer\n");
+      Pike_error("Element 2 of argument is not an integer\n");
     if (a->item[3].type != T_INT)
-      error("Element 3 of argument is not an integer\n");
+      Pike_error("Element 3 of argument is not an integer\n");
     y = a->item[0].u.integer;
     x = a->item[1].u.integer;
     yd= a->item[2].u.integer;
@@ -148,23 +138,23 @@ static void f_open_centered_window(INT32 args)
   int xd,yd;
 
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to open_window\n");
+    Pike_error("Too few arguments to open_window\n");
 
   if (args == 2)
   {
     struct array *a;
     if (sp[-2].type != T_ARRAY)
-      error("Bad argument 1 to open_centered_window\n");
+      Pike_error("Bad argument 1 to open_centered_window\n");
     a = sp[-2].u.array;
     if (a->size != 2)
-      error("An array argument to open_centered_window must be of size 2\n");
+      Pike_error("An array argument to open_centered_window must be of size 2\n");
     if (a->item[0].type != T_INT)
-      error("Element 0 of argument is not an integer\n");
+      Pike_error("Element 0 of argument is not an integer\n");
     if (a->item[1].type != T_INT)
-      error("Element 1 of argument is not an integer\n");
+      Pike_error("Element 1 of argument is not an integer\n");
     yd= a->item[0].u.integer;
     xd= a->item[1].u.integer;
     
@@ -185,10 +175,10 @@ static void f_draw_root_text(INT32 args)
   int x,y,o;
 
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to draw_root_text\n");
+    Pike_error("Too few arguments to draw_root_text\n");
 
   check_all_args("draw_root_text", args, BIT_INT, BIT_INT, BIT_STRING, 0);
   y  = sp[-3].u.integer;
@@ -201,10 +191,10 @@ static void f_draw_root_text(INT32 args)
 static void f_winmessage(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to winmessage\n");
+    Pike_error("Too few arguments to winmessage\n");
 
   check_all_args("winmessage", args, BIT_STRING, BIT_STRING, BIT_STRING, 0);
   newtWinMessage( sp[-3].u.string->str, 
@@ -217,10 +207,10 @@ static void f_winchoice(INT32 args)
 {
   int s;
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to winmessage\n");
+    Pike_error("Too few arguments to winmessage\n");
 
   check_all_args("winchoice", args, BIT_STRING, BIT_STRING, BIT_STRING, BIT_STRING, 0);
   s=newtWinChoice( sp[-4].u.string->str, 
@@ -247,10 +237,10 @@ static void f_winmenu(INT32 args)
   
 
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   if (args == 0)
-    error("Too few arguments to menuwindow\n");
+    Pike_error("Too few arguments to menuwindow\n");
 
 
    /*
@@ -264,16 +254,16 @@ static void f_winmenu(INT32 args)
     */
 
     if( args < 8 )
-      error("too few arguments to winmenu()\n"); 
+      Pike_error("too few arguments to winmenu()\n"); 
 
     
     if (sp[-1].type != T_ARRAY || sp[-2].type != T_ARRAY )
-      error("Bad argument to winmenu (items or buttons must be arrays)\n");
+      Pike_error("Bad argument to winmenu (items or buttons must be arrays)\n");
           
     items   = sp[-2].u.array;
     buttons = sp[-1].u.array;
     if ( items->size < 1 || buttons->size < 1 )
-      error("too few items in items or buttons array.\n");
+      Pike_error("too few items in items or buttons array.\n");
       
     /*    check_all_args("winmenu", args, BIT_STRING, */
     /*                             BIT_STRING, BIT_INT, BIT_INT, BIT_INT, BIT_INT, */
@@ -334,7 +324,7 @@ static void f_winmenu(INT32 args)
 static void f_push_help(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   check_all_args("push_help",args, BIT_STRING, 0);
   newtPushHelpLine( sp[-1].u.string->str );
@@ -344,7 +334,7 @@ static void f_push_help(INT32 args)
 static void f_pop_help(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   pop_n_elems(args);
   newtPopHelpLine();
 }
@@ -354,7 +344,7 @@ static void f_get_screensize(INT32 args)
   int x,y;
   
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
   
   newtGetScreenSize( &y, &x );
   pop_n_elems( args );
@@ -367,7 +357,7 @@ static void f_get_screensize(INT32 args)
 static void f_waitforkey(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   newtWaitForKey();
   pop_n_elems(args);
@@ -376,7 +366,7 @@ static void f_waitforkey(INT32 args)
 static void f_clearkeybuffer(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   newtClearKeyBuffer();
   pop_n_elems(args);
@@ -385,7 +375,7 @@ static void f_clearkeybuffer(INT32 args)
 static void f_bell(INT32 args)
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   newtBell();
   pop_n_elems(args);
@@ -394,7 +384,7 @@ static void f_bell(INT32 args)
 static void f_init_form( INT32 args )
 {
   if ( ! newt_inited )
-    error("newt: Use init first!\n");
+    Pike_error("newt: Use init first!\n");
 
   THIS->obj = newtForm( NULL, NULL, 0 );
   THIS->first = NULL;
@@ -415,7 +405,7 @@ static void f_label(INT32 args ) {
 
   elem=newtLabel(x,y,labeltext);
   if( !store_component(elem,nev,NULL) ) {
-     error("Label: not enough memory\n");
+     Pike_error("Label: not enough memory\n");
   }
   newtFormAddComponent(THIS->obj, elem);
   pop_n_elems(args);
@@ -431,7 +421,7 @@ static void f_button(INT32 args ) {
 
   elem=newtButton(x,y,labeltext);
   if( !store_component(elem,nev,NULL) ) {
-     error("Button: not enough memory\n");
+     Pike_error("Button: not enough memory\n");
   }
   newtFormAddComponent(THIS->obj, elem);
   pop_n_elems(args);
@@ -447,7 +437,7 @@ static void f_compactbutton(INT32 args ) {
 
   elem=newtCompactButton(x,y,labeltext);
   if( !store_component(elem,nev,NULL) ) {
-     error("CompactButton: not enough memory\n");
+     Pike_error("CompactButton: not enough memory\n");
   }
   newtFormAddComponent(THIS->obj, elem);
   pop_n_elems(args);
@@ -463,7 +453,7 @@ static void f_entry(INT32 args ) {
 
   elem=newtEntry(x,y,"",width, &value,0);
   if( !store_component(elem,nev,value) ) {
-     error("Entry: not enough memory\n");
+     Pike_error("Entry: not enough memory\n");
   }
   newtFormAddComponent(THIS->obj, elem);
   pop_n_elems(args);
@@ -482,7 +472,7 @@ static void f_menu(INT32 args )
    if( args < 3 && sp[-1].type != T_ARRAY 
          && sp[-2].type != T_INT 
 	 && sp[-3].type != T_INT ) {
-       error("too few or bad argument to Menu\n");
+       Pike_error("too few or bad argument to Menu\n");
    }
 
    a = sp[-1].u.array;

@@ -18,39 +18,31 @@
  *
  */
 
-/* Glue for the MHash library, for various hashing routines. See
- * http://mhash.sourceforge.net/ for more information about mhash.
+/* This file should be included by ALL source code. It includes various
+ * stuff to maintain source code compatibility between Pike versions.
+ *
+ * $Id$
  */
+ 
+/* Standard Pike include files. */
+#include "array.h"
+#include "builtin_functions.h"
+#include "constants.h"
+#include "interpret.h"
+#include "mapping.h"
+#include "module_support.h"
+#include "object.h"
+#include "pike_macros.h"
+#include "pike_types.h"
+#include "program.h"
+#include "stralloc.h"
+#include "svalue.h"
+#include "threads.h"
+#include "version.h"
 
-#include "global.h"
-RCSID("$Id$");
-
-#include "pexts.h"
-#include "mhash_config.h"
-
-#ifdef HAVE_MHASH
-
-/* Init the module */
-void pike_module_init(void)
-{  
-  mhash_init_mhash_program();
-  mhash_init_hmac_program();
-  mhash_init_globals();
-}
-
-
-/* Restore and exit module */
-void pike_module_exit( void )
-{
-}
-
-#else /* HAVE_MHASH */
-void pike_module_exit( void ) { }
-void pike_module_init( void ) { }
-#endif /* HAVE_MHASH */
-
-/*
- * Local variables:
- * c-basic-offset: 2
- * End:
- */
+#if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION == 1 && PIKE_BUILD_VERSION >= 12) || PIKE_MAJOR_VERSION > 7 || (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION > 1)
+#include "pike_error.h"
+#else
+#include "error.h"
+#define Pike_error error
+#endif

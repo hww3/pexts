@@ -30,13 +30,7 @@ RCSID("$Id$");
 /*
  * Pike includes
  */
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 
 #include "at_common.h"
 
@@ -63,7 +57,7 @@ void FERROR(char *fn, char *format, ...)
     vsnprintf(myformat + strlen(myformat), sizeof(myformat) - strlen(myformat) - 1,
               format, args);
     strcat(myformat, "\n");
-    error(myformat);
+    Pike_error(myformat);
     va_end(args);
 }
 
@@ -86,7 +80,7 @@ void OPERROR(char *fn, char *format, ...)
     vsnprintf(myformat + strlen(myformat), sizeof(myformat) - strlen(myformat) - 1,
               format, args);
     strcat(myformat, "\n");
-    error(myformat);
+    Pike_error(myformat);
     va_end(args);
 }
 

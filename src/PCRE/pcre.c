@@ -22,14 +22,7 @@
 
 #include "global.h"
 RCSID("$Id$");
-
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 #include "pcre_config.h"
 
 #ifdef HAVE_PCRE 
@@ -98,7 +91,7 @@ void f_pcre_create(INT32 args)
     case T_STRING:
       opts = parse_options(sp[-1].u.string->str, &do_study);
       if(opts < 0)
-	error("PCRE.Regexp->create(): Unknown option modifier '%c'.\n", -opts);
+	Pike_error("PCRE.Regexp->create(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
       if(sp[-1].u.integer == 0) {
@@ -106,21 +99,21 @@ void f_pcre_create(INT32 args)
       }
       /* Fallthrough */
     default:
-      error("Bad argument 2 to PCRE.Regexp->create() - expected string.\n");
+      Pike_error("Bad argument 2 to PCRE.Regexp->create() - expected string.\n");
       break;
     }
     /* Fall through */
   case 1:
     if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
-      error("PCRE.Regexp->create(): Invalid argument 1. Expected 8-bit string.\n");
+      Pike_error("PCRE.Regexp->create(): Invalid argument 1. Expected 8-bit string.\n");
     }
     regexp = sp[-args].u.string;
     if((INT32)strlen(regexp->str) != regexp->len)
-      error("PCRE.Regexp->create(): Regexp pattern contains null characters. Use \\0 instead.\n");
+      Pike_error("PCRE.Regexp->create(): Regexp pattern contains null characters. Use \\0 instead.\n");
     
     break;
   default:
-    error("PCRE.Regexp->create(): Invalid number of arguments. Expected 1 or 2.\n");
+    Pike_error("PCRE.Regexp->create(): Invalid number of arguments. Expected 1 or 2.\n");
   }
 
 #if HAVE_SETLOCALE
@@ -131,7 +124,7 @@ void f_pcre_create(INT32 args)
   /* Compile the pattern and handle errors */
   re = pcre_compile(regexp->str, opts, &errmsg, &erroffset, table);
   if(re == NULL) {
-    error("Failed to compile regexp: %s at offset %d\n", errmsg, erroffset);
+    Pike_error("Failed to compile regexp: %s at offset %d\n", errmsg, erroffset);
   }
 
   /* If study option was specified, study the pattern and
@@ -139,7 +132,7 @@ void f_pcre_create(INT32 args)
   if (do_study) {
     extra = pcre_study(re, 0, &errmsg);
     if (errmsg != NULL) {
-      error("Error while studying pattern: %s", errmsg);
+      Pike_error("Error while studying pattern: %s", errmsg);
     }
   }
   THIS->regexp = re;
@@ -165,7 +158,7 @@ void f_pcre_match(INT32 args)
     case T_STRING:
       opts = parse_options(sp[-1].u.string->str, NULL);
       if(opts < 0)
-	error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", -opts);
+	Pike_error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
       if(sp[-1].u.integer == 0) {
@@ -173,18 +166,18 @@ void f_pcre_match(INT32 args)
       }
       /* Fallthrough */
     default:
-      error("Bad argument 2 to PCRE.Regexp->match() - expected string.\n");
+      Pike_error("Bad argument 2 to PCRE.Regexp->match() - expected string.\n");
       break;
     }
     /* Fall through */
   case 1:
     if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
-      error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
+      Pike_error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
     data = sp[-args].u.string;
     break;
   default:
-    error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");
+    Pike_error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");
   }
   re = THIS->regexp;
   extra = THIS->extra;
@@ -195,11 +188,11 @@ void f_pcre_match(INT32 args)
   pop_n_elems(args);
   switch(is_match) {
   case PCRE_ERROR_NOMATCH:   push_int(0);  break;
-  case PCRE_ERROR_NULL:      error("Invalid argumens passed to pcre_exec.\n");
-  case PCRE_ERROR_BADOPTION: error("Invalid options sent to pcre_exec.\n");
-  case PCRE_ERROR_BADMAGIC:  error("Invalid magic number.\n");
-  case PCRE_ERROR_UNKNOWN_NODE: error("Unknown node encountered. PCRE bug or memory error.\n");
-  case PCRE_ERROR_NOMEMORY:  error("Out of memory during execution.\n");
+  case PCRE_ERROR_NULL:      Pike_error("Invalid argumens passed to pcre_exec.\n");
+  case PCRE_ERROR_BADOPTION: Pike_error("Invalid options sent to pcre_exec.\n");
+  case PCRE_ERROR_BADMAGIC:  Pike_error("Invalid magic number.\n");
+  case PCRE_ERROR_UNKNOWN_NODE: Pike_error("Unknown node encountered. PCRE bug or memory error.\n");
+  case PCRE_ERROR_NOMEMORY:  Pike_error("Out of memory during execution.\n");
   default:
     push_int(1); /* A match! */
     break; 
@@ -224,7 +217,7 @@ void f_pcre_split(INT32 args)
     case T_STRING:
       opts = parse_options(sp[-1].u.string->str, NULL);
       if(opts < 0)
-	error("PCRE.Regexp->split(): Unknown option modifier '%c'.\n", -opts);
+	Pike_error("PCRE.Regexp->split(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
       if(sp[-1].u.integer == 0) {
@@ -232,18 +225,18 @@ void f_pcre_split(INT32 args)
       }
       /* Fallthrough */
     default:
-      error("Bad argument 2 to PCRE.Regexp->split() - expected string.\n");
+      Pike_error("Bad argument 2 to PCRE.Regexp->split() - expected string.\n");
       break;
     }
     /* Fallthrough */
   case 1:
     if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
-      error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
+      Pike_error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
     data = sp[-args].u.string;
     break;
   default:
-    error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");    
+    Pike_error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");    
   }
   re = THIS->regexp;
   extra = THIS->extra;
@@ -253,18 +246,18 @@ void f_pcre_split(INT32 args)
   ovecsize = (ovecsize + 1) * 3;
   ovector = (int *)malloc(ovecsize * sizeof(int));
   if(ovector == NULL)
-    error("PCRE.Regexp->split(): Out of memory.\n");
+    Pike_error("PCRE.Regexp->split(): Out of memory.\n");
 
   /* Do the pattern matching */
   ret = pcre_exec(re, extra, data->str, data->len, 0,
 		       opts, ovector, ovecsize);
   switch(ret) {
    case PCRE_ERROR_NOMATCH:   pop_n_elems(args); push_int(0);  break;
-   case PCRE_ERROR_NULL:      error("Invalid argumens passed to pcre_exec.\n");
-   case PCRE_ERROR_BADOPTION: error("Invalid options sent to pcre_exec.\n");
-   case PCRE_ERROR_BADMAGIC:  error("Invalid magic number.\n");
-   case PCRE_ERROR_UNKNOWN_NODE: error("Unknown node encountered. PCRE bug or memory error.\n");
-   case PCRE_ERROR_NOMEMORY:  error("Out of memory during execution.\n");
+   case PCRE_ERROR_NULL:      Pike_error("Invalid argumens passed to pcre_exec.\n");
+   case PCRE_ERROR_BADOPTION: Pike_error("Invalid options sent to pcre_exec.\n");
+   case PCRE_ERROR_BADMAGIC:  Pike_error("Invalid magic number.\n");
+   case PCRE_ERROR_UNKNOWN_NODE: Pike_error("Unknown node encountered. PCRE bug or memory error.\n");
+   case PCRE_ERROR_NOMEMORY:  Pike_error("Out of memory during execution.\n");
    default:
     pop_n_elems(args);
     switch(ret) {
@@ -322,14 +315,15 @@ void pike_module_init(void)
   add_integer_constant("version", 2, 0);
 }
 
+#else
+void pike_module_init(void) {
+}
+#endif /* HAVE_PCRE */
 
 /* Restore and exit module */
 void pike_module_exit( void )
 {
 }
-
-
-#endif /* HAVE_PCRE */
 
 /*
  * Local variables:

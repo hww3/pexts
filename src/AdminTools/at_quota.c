@@ -31,18 +31,7 @@ RCSID("$Id$");
  **
  **| cvs_version: $Id$
  */
- 
-/*
- * Pike includes
- */
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "mapping.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 
 #include "at_config.h"
 
@@ -607,7 +596,7 @@ init_quota(struct object *o)
     THIS_LOW->object_name = _object_name;
     THIS_LOW->object_data = malloc(sizeof(struct quota_struct));
     if (!THIS_LOW->object_data)
-        error("Out of memory in AdminTools.Shadow init!\n");
+        Pike_error("Out of memory in AdminTools.Shadow init!\n");
 
     memset(&THIS->dq, 0, sizeof(THIS->dq));
     memset(&THIS->stats, 0, sizeof(THIS->stats));

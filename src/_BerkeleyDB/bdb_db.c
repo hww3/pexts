@@ -22,12 +22,8 @@
 
 #include "global.h"
 RCSID("$Id$");
-#include "stralloc.h"
-#include "mapping.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "error.h"
 
+#include "pexts.h"
 #include "threads.h"
 
 #include "bdb.h"
@@ -124,9 +120,9 @@ void f_bdb_put(INT32 args)
 	       "%S%S%d", &key, &data, &flags);
 
   if(key->size_shift)
-    error("Invalid argument 1, expected 8-bit string.\n");
+    Pike_error("Invalid argument 1, expected 8-bit string.\n");
   if(data->size_shift)
-    error("Invalid argument 2, expected 8-bit string.\n");
+    Pike_error("Invalid argument 2, expected 8-bit string.\n");
   MEMSET(&db_key, 0, sizeof(db_key));
   db_key.data = key->str;
   db_key.size = key->len;
@@ -163,7 +159,7 @@ void f_bdb_get(INT32 args) {
   CHECKBDB();
   get_all_args("BerkeleyDB.DB->get", args, "%S", &key);
   if(key->size_shift)
-    error("Invalid argument 1, expected 8-bit string.\n");
+    Pike_error("Invalid argument 1, expected 8-bit string.\n");
   MEMSET(&db_key, 0, sizeof(db_key));
   db_key.data = key->str;
   db_key.size = key->len;
@@ -202,7 +198,7 @@ void f_bdb_del(INT32 args) {
   CHECKBDB();
   get_all_args("BerkeleyDB.DB->del", args, "%S", &key);
   if(key->size_shift)
-    error("Invalid argument 1, expected 8-bit string.\n");
+    Pike_error("Invalid argument 1, expected 8-bit string.\n");
   MEMSET(&db_key, 0, sizeof(db_key));
   db_key.data = key->str;
   db_key.size = key->len;

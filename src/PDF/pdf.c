@@ -24,13 +24,7 @@
 #include "global.h"
 RCSID("$Id$");
 
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "program.h"
-#include "error.h"
-#include "threads.h"
-#include "array.h"
+#include "pexts.h"
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -52,7 +46,7 @@ void f_pdf_create(INT32 args)
 		get_all_args("create",args,"%s",&filename);
 		THIS->filename=strdup( filename );
 		if( PDF_open_file(THIS->pdf,THIS->filename) == -1 ) {
-			error("PDF.pdf->create: Can't open file: %s.\n",filename);
+			Pike_error("PDF.pdf->create: Can't open file: %s.\n",filename);
 		}
 	}
 	pop_n_elems(args);
@@ -105,7 +99,7 @@ void f_generate(INT32 args) {
 	if( !THIS->filename && THIS->storage ) {
 		push_string(make_shared_binary_string(THIS->storage,THIS->size));
 	} else {
-		error("PDF.pdf.generate: File method used.\n");
+		Pike_error("PDF.pdf.generate: File method used.\n");
 	} 
 	pop_n_elems(args);
 }
