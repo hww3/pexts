@@ -16,8 +16,12 @@
 export DH_OPTIONS
 
 PIKE=/usr/bin/pike$(PVER)
+PIKE72=/usr/bin/pike7.2
+PIKE74=/usr/bin/pike7.4
 PIKE_CHANGELOG=/usr/share/doc/pike$(PVER)/changelog.Debian.gz
 PIKE_VERSION=$(shell $(PIKE) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
+PIKE_VERSION72=$(shell $(PIKE72) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
+PIKE_VERSION74=$(shell $(PIKE74) -e 'string v; int rel;sscanf(version(), "Pike v%s release %d", v, rel); write(v+"."+rel);')
 CVS_SNAPSHOT=$(shell if test -x configure; then echo no; else echo yes; fi)
 PIKE_DEBIAN_VER=$(shell gunzip -c $(PIKE_CHANGELOG) | head -1 | sed -e 's/\(.*(\)\(.*\)\().*\)/\2/')
 
@@ -35,20 +39,22 @@ endif
 
 export CFLAGS PVER
 
-configure: apply-patches configure-stamp-72 configure-stamp-74
+configure: configure-stamp-72 configure-stamp-74
 
 configure-stamp-72:
-	$(MAKE) -fdebian/rules PVER=7.2 do-configure
+	$(MAKE) -fdebian/rules PVER=7.2 do-configure-common
 	touch $@
 
 configure-stamp-74:
-	$(MAKE) -fdebian/rules PVER=7.4 do-configure
+	$(MAKE) -fdebian/rules PVER=7.4 do-configure-common
 	touch $@
 
 apply-patches:
-	for f in $(CURDIR)/debian/patches/*.diff; do \
-	    patch -p1 -f --no-backup-if-mismatch -d $(CURDIR) < $$f ; \
-	done
+	if [ ! -f patched-stamp ]; then \
+	  for f in $(CURDIR)/debian/patches/*.diff; do \
+	      patch -p1 -f --no-backup-if-mismatch -d $(CURDIR) < $$f ; \
+	  done ; \
+	fi
 	touch patched-stamp
 
 unapply-patches:
@@ -59,7 +65,7 @@ unapply-patches:
 	    rm -f patched-stamp ; \
 	fi
 
-do-configure:
+do-configure-common:
 	dh_testdir	
 	# Add here commands to configure the package.
 	if test "$(CVS_SNAPSHOT)" = "yes"; then \
@@ -82,9 +88,10 @@ do-configure:
 		     --without-FNV \
 		     --without-ferite \
 		     --without-AVS \
-		     --with-GeoIP
+		     --with-GeoIP \
+		     --with-bzip2
 
-build: build-stamp-72 build-stamp-74
+build: apply-patches build-stamp-72 build-stamp-74
 
 build-stamp-72: configure-stamp-72
 	$(MAKE) -fdebian/rules PVER=7.2 do-build
@@ -107,7 +114,6 @@ do-build:
 
 inter-clean:
 	-$(MAKE) spotless
-	-$(MAKE) -C src/PCRE/pcrelib/ clean
 	-rm -f src/PCRE/pcrelib/dftables
 	-rm -f `find -name ".cvsignore" -type f -print`
 	-rm -rf `find -name "CVS" -type d -print`
@@ -116,16 +122,16 @@ inter-clean:
 
 clean: unapply-patches inter-clean
 	dh_testdir
-	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patch-stamp
+	rm -f build-stamp-72 configure-stamp-72 build-stamp-74 configure-stamp-74 patched-stamp
 	rm -f configure config.h.in config.log configure.ac
-	rm -rf debian/pike7.2 debian/pike7.4
+	rm -rf debian/pike7.2 debian/pike7.4 debian/pike
 
 inter-install:
 	dh_testdir
 	dh_clean -k
 	dh_installdirs -A
-	install -d -m 755 $(CURDIR)/debian/pike$(PVER)/usr/lib/pike/$(PIKE_VERSION)/lib/modules
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/pike$(PVER)/
+	install -d -m 755 $(CURDIR)/debian/pike/usr/lib/pike/$(PIKE_VERSION)/lib/modules
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/pike/
 	install -d -m 755 $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/
 	cp -pr pmod/Newt.pmod/ $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/
 
@@ -135,8 +141,7 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs -A
-	dh_movefiles --sourcedir=debian/pike7.2/
-	dh_movefiles --sourcedir=debian/pike7.4/
+	dh_movefiles --sourcedir=debian/pike/
 
 # Build architecture-independent files here.
 # Pass -i to all debhelper commands in this target to reduce clutter.
@@ -197,7 +202,7 @@ binary-arch: build install
 #	dh_makeshlibs
 #	dh_perl
 	dh_shlibdeps
-	dh_gencontrol -u"-Vpikever=$(PIKE_VERSION)"
+	dh_gencontrol -u"-Vpikever72=$(PIKE_VERSION72) -Vpikever74=$(PIKE_VERSION74)"
 	dh_md5sums
 	dh_builddeb
 

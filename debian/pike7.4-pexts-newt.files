@@ -1,2 +1,2 @@
-usr/lib/pike7.4/*/modules/_Newt.so
-usr/lib/pike7.4/*/modules/Newt.pmod/*
+usr/lib/pike/7.4*/lib/modules/_Newt.so
+usr/lib/pike/7.4*/lib/modules/Newt.pmod/*

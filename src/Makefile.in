@@ -51,5 +51,3 @@ clean:
 	for a in $(MODULES) ; do \
 	  ( cd $$a && ${MAKE} $(MAKE_FLAGS) MODNAME=$$a clean ) ; \
 	done
-
-

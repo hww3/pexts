@@ -51,7 +51,7 @@ depend: force
 	@$(CC) -MM $(CFLAGS) $(SRCDIR)/*.c >> Makefile
 
 clean:
-	rm -f *.o *~ $(MODNAME).$(SO) 
+	-rm -f *.o *~ $(MODNAME).$(SO) 
 
 mod_clean:
 ifneq "$(EXTRA_CLEAN_DIRS)" ""
@@ -67,5 +67,5 @@ distclean: clean
 	rm -f config.* $(SRCDIR)/Makefile Makefile.pre
 
 spotless: distclean mod_clean
-	rm -f $(SRCDIR)/configure  
+	-rm -f $(SRCDIR)/configure  
 

@@ -1,6 +1,25 @@
-diff -U3 -r --new-file pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure.ac
+diff -U3 -r -N pexts.orig/Makefile.in pexts.new/Makefile.in
+--- pexts.orig/Makefile.in	2003-03-31 02:52:37.000000000 +0200
++++ pexts.new/Makefile.in	2003-05-26 02:37:28.000000000 +0200
+@@ -30,7 +30,6 @@
+ clean:
+ 	rm -f config.h
+ 	@(cd src;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" clean)
+-	@(cd src/PCRE/pcrelib;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" clean)
+ 
+ install: all install_only 
+ 	-@$(BIN_TRUE)
+@@ -41,7 +40,6 @@
+ 
+ cvsclean spotless:  clean
+ 	@(cd src/;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
+-	@(cd src/PCRE/pcrelib;$(MAKE) "prefix=$(prefix)" "CC=$(CC)" "LDFLAGS=$(LDFLAGS)" spotless)
+ 	rm -f Makefile
+ 	rm -f config.h.in configure.ac src/configure.ac
+ 	rm -f .module_dirs
+diff -U3 -r -N pexts.orig/src/PCRE/configure.ac pexts.new/src/PCRE/configure.ac
 --- pexts.orig/src/PCRE/configure.ac	2003-03-31 02:33:35.000000000 +0200
-+++ pexts/src/PCRE/configure.ac	2003-05-25 03:43:32.000000000 +0200
++++ pexts.new/src/PCRE/configure.ac	2003-05-26 02:37:15.000000000 +0200
 @@ -4,7 +4,7 @@
  CAUDIUM_MODULE_INIT([PCRE])
  
@@ -28,9 +47,9 @@ diff -U3 -r --new-file pexts.orig/src/PCRE/configure.ac pexts/src/PCRE/configure
  
  AC_SUBST(makefile_rules)
  AC_OUTPUT(Makefile)
-diff -U3 -r --new-file pexts.orig/src/PCRE/Makefile.in pexts/src/PCRE/Makefile.in
+diff -U3 -r -N pexts.orig/src/PCRE/Makefile.in pexts.new/src/PCRE/Makefile.in
 --- pexts.orig/src/PCRE/Makefile.in	2003-03-31 02:14:43.000000000 +0200
-+++ pexts/src/PCRE/Makefile.in	2003-05-25 03:42:27.000000000 +0200
++++ pexts.new/src/PCRE/Makefile.in	2003-05-26 02:37:15.000000000 +0200
 @@ -1,17 +1,15 @@
  VPATH=@srcdir@:@srcdir@/../..:../..
  MODNAME=PCRE

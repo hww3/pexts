@@ -7,7 +7,7 @@ Build-Depends: debhelper (>> 4.0.0), pike7.2, pike7.4-core, pike7.4-dev, libnewt
 
 Package: pike7.2-pexts-admintools
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike AdminTools module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -17,7 +17,7 @@ Description: Pike AdminTools module
 
 Package: pike7.4-pexts-admintools
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike AdminTools module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -27,7 +27,7 @@ Description: Pike AdminTools module
 
 Package: pike7.2-pexts-curses
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike (N)Curses module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -37,7 +37,7 @@ Description: Pike (N)Curses module
 
 Package: pike7.4-pexts-curses
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike (N)Curses module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -47,7 +47,7 @@ Description: Pike (N)Curses module
 
 Package: pike7.2-pexts-mhash
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike Mhash module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -57,7 +57,7 @@ Description: Pike Mhash module
 
 Package: pike7.4-pexts-mhash
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike Mhash module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -67,7 +67,7 @@ Description: Pike Mhash module
 
 Package: pike7.2-pexts-newt
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike Newt module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -77,7 +77,7 @@ Description: Pike Newt module
 
 Package: pike7.4-pexts-newt
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike Newt module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -87,7 +87,7 @@ Description: Pike Newt module
 
 Package: pike7.2-pexts-pcre
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike PCRE module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -97,7 +97,7 @@ Description: Pike PCRE module
 
 Package: pike7.4-pexts-pcre
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike PCRE module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -107,7 +107,7 @@ Description: Pike PCRE module
 
 Package: pike7.2-pexts-bzip2
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike bzip2 module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -117,7 +117,7 @@ Description: Pike bzip2 module
 
 Package: pike7.4-pexts-bzip2
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike bzip2 module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -127,7 +127,7 @@ Description: Pike bzip2 module
 
 Package: pike7.2-pexts-geoip
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever}-1) | pike7.2 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
 Description: Pike GeoIP module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
@@ -137,10 +137,30 @@ Description: Pike GeoIP module
 
 Package: pike7.4-pexts-geoip
 Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever}-1) | pike7.4 (<= ${pikever}-99)
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
 Description: Pike GeoIP module
  Pexts is a collection of Pike extension modules designed
  to fill the gaps that are in the standard Pike distribution.
  .
  This module implements a glue for the GeoIP IP to country
  code lookup library.
+
+Package: pike7.2-pexts-mcrypt
+Architecture: any
+Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
+Description: Pike mcrypt module
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the mcrypt library of strong
+ hashes.
+
+Package: pike7.4-pexts-mcrypt
+Architecture: any
+Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
+Description: Pike mcrypt module
+ Pexts is a collection of Pike extension modules designed
+ to fill the gaps that are in the standard Pike distribution.
+ .
+ This module implements a glue for the mcrypt library of strong
+ hashes.
