@@ -259,28 +259,33 @@ void f_pcre_split(INT32 args)
   ret = pcre_exec(re, extra, data->str, data->len, 0,
 		       opts, ovector, ovecsize);
   switch(ret) {
-  case PCRE_ERROR_NOMATCH:   pop_n_elems(args); push_int(0);  break;
-  case PCRE_ERROR_NULL:      error("Invalid argumens passed to pcre_exec.\n");
-  case PCRE_ERROR_BADOPTION: error("Invalid options sent to pcre_exec.\n");
-  case PCRE_ERROR_BADMAGIC:  error("Invalid magic number.\n");
-  case PCRE_ERROR_UNKNOWN_NODE: error("Unknown node encountered. PCRE bug or memory error.\n");
-  case PCRE_ERROR_NOMEMORY:  error("Out of memory during execution.\n");
-  default:
-    e = ret * 2;
-    for (i = 0; i < e ; i += 2) {
-      push_string(make_shared_binary_string(data->str + ovector[i],
-					    (int)(ovector[i+1] - ovector[i])));
-      
-    }
-    arr = aggregate_array(ret);
+   case PCRE_ERROR_NOMATCH:   pop_n_elems(args); push_int(0);  break;
+   case PCRE_ERROR_NULL:      error("Invalid argumens passed to pcre_exec.\n");
+   case PCRE_ERROR_BADOPTION: error("Invalid options sent to pcre_exec.\n");
+   case PCRE_ERROR_BADMAGIC:  error("Invalid magic number.\n");
+   case PCRE_ERROR_UNKNOWN_NODE: error("Unknown node encountered. PCRE bug or memory error.\n");
+   case PCRE_ERROR_NOMEMORY:  error("Out of memory during execution.\n");
+   default:
     pop_n_elems(args);
+    switch(ret) {
+     case 1: /* No submatches, be Pike Regexp compatible */
+      push_int(0);
+      arr = aggregate_array(1);
+      break;
+     default: 
+      e = ret * 2;
+      for (i = 2; i < e ; i += 2) {
+	push_string(make_shared_binary_string(data->str + ovector[i],
+					      (int)(ovector[i+1] - ovector[i])));
+      }
+      arr = aggregate_array(ret-1);
+    }
     push_array(arr);
     break;
   }
   free(ovector);
 }
 
-static struct program *pcre_regexp_program;
 static void free_regexp(struct object *o)
 {
   if(THIS->pattern) {
@@ -305,23 +310,22 @@ void pike_module_init(void)
 {
   start_new_program();
   ADD_STORAGE( PCRE_Regexp  );
-  add_function( "create", f_pcre_create,
-		"function(string,string|void:void)", 0 ); 
-  add_function("match", f_pcre_match,
-	       "function(string,string|void:int)", 0 ); 
-  add_function("split", f_pcre_split,
-	       "function(string,string|void:array(string))", 0 ); 
+  ADD_FUNCTION( "create", f_pcre_create,
+		tFunc(tStr tOr(tStr,tVoid), tVoid), 0);
+  ADD_FUNCTION("match", f_pcre_match,
+	       tFunc(tStr tOr(tStr,tVoid), tInt), 0);
+  ADD_FUNCTION("split", f_pcre_split,
+	       tFunc(tStr tOr(tStr,tVoid), tArr(tStr)), 0);
   set_init_callback(init_regexp);
   set_exit_callback(free_regexp);
-  pcre_regexp_program = end_program();
-  add_program_constant("Regexp", pcre_regexp_program, 0);
+  end_class("Regexp", 0);
+  add_integer_constant("version", 2);
 }
 
 
 /* Restore and exit module */
 void pike_module_exit( void )
 {
-  free_program(pcre_regexp_program);
 }
 
 
