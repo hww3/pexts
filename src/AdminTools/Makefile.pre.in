@@ -1,7 +1,7 @@
 VPATH=@srcdir@:@srcdir@/../..:../..
 MODNAME=AdminTools
-OBJS= atmain.o at_shadow.o at_directory.o at_quota.o
-SOURCES=atmain.c at_shadow.c at_directory.c at_quota.c
+OBJS= atmain.o at_common.o at_shadow.o at_directory.o at_quota.o
+SOURCES=atmain.c at_common.c at_shadow.c at_directory.c at_quota.c
 MODULE_LIBS=@LIBS@
 
 @module_makefile@

@@ -75,7 +75,8 @@ static struct pike_string *s_off;
 static struct pike_string *s_reclen;
 static struct pike_string *s_name;
 
-#define THIS ((struct dir_struct*)get_storage(fp->current_object, dir_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, dir_program))
+#define THIS ((struct dir_struct*)THIS_LOW->object_data)
 
 /*
  * opendir() and friends support
@@ -175,7 +176,7 @@ do_readdir(DIR *dir)
 {
 #if defined(_REENTRANT) && defined(HAVE_READDIR_R)
     if (readdir_r(dir, &THIS->dent2.d, &THIS->dent) != 0)
-        FERROR("error reading directory", "read");
+        FERROR("read", "error reading directory");
 #else
     THIS->dent = readdir(dir);
 #endif
@@ -193,14 +194,14 @@ static void
 f_opendir(INT32 args)
 {
     if (THIS->dir)
-        FERROR("directory already opened. Close it first", "open");
+        FERROR("open", "directory already opened. Close it first");
 
     if (args > 1)
-        FERROR("too many arguments. Expected 0 or 1", "open");
+        FERROR("open", "too many arguments. Expected 0 or 1");
     
     if (args == 1) {
         if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-            FERROR("wrong type of argument 1; expected 8-bit string", "open");
+            FERROR("open", "wrong type of argument 1; expected 8-bit string");
         THIS->path = make_shared_string(ARG(1).u.string->str);
     } else
         THIS->path = make_shared_string("./");
@@ -208,7 +209,7 @@ f_opendir(INT32 args)
     add_ref(THIS->path);
     THIS->dir = do_opendir(THIS->path->str);
     if (!THIS->dir)
-        FERROR("error opening directory", "open");
+        FERROR("open", "error opening directory");
 
 #ifdef HAVE_TELLDIR
     THIS->offset = telldir(THIS->dir);
@@ -271,17 +272,17 @@ f_seekdir(INT32 args)
     off_t     soff = 0;
     
     if (!THIS->dir) {
-        FERROR("Directory not opened", "seekdir");
+        FERROR("seek", "Directory not opened");
         pop_n_elems(args);
         return;
     }
     
     if (args == 1) {
         if (ARG(1).type != T_INT)
-            FERROR("Wrong argument type for argument 1 - expected int", "seek");
+            FERROR("seek", "Wrong argument type for argument 1 - expected int");
         soff = ARG(1).u.integer;
     } else
-        FERROR("Wrong number of arguments. Expected 1 (int)", "seek");
+        FERROR("seek", "Wrong number of arguments. Expected 1 (int)");
     
     pop_n_elems(args);
     seekdir(THIS->dir, soff);
@@ -298,7 +299,7 @@ f_telldir(INT32 args)
 {
     pop_n_elems(args);
     if (!THIS->dir) {
-        FERROR("Directory not opened", "telldir");
+        FERROR("tell", "Directory not opened");
         push_int(-1);
         return;
     }
@@ -319,20 +320,20 @@ f_dir_create(INT32 args)
 {
     /* Some health checks */
 #if !defined(HAVE_OPENDIR) || !defined(HAVE_CLOSEDIR) || !defined(HAVE_READDIR)
-    FERROR("OS directory interfaces not fully functional. Cannot work.", "create");
+    FERROR( "create", "OS directory interfaces not fully functional. Cannot work.");
 #endif
     if (args == 1) {
         if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-            FERROR("Wrong argument type for argument 1. Expected 8-bit string", "create");
+            FERROR("create", "Wrong argument type for argument 1. Expected 8-bit string");
 
         THIS->path = make_shared_string(ARG(1).u.string->str);
         add_ref(THIS->path);
 
         THIS->dir = do_opendir(THIS->path->str);
         if (!THIS->dir)
-            FERROR("Error opening directory", "create");
+            FERROR("create", "Error opening directory");
     } else if (args > 1) {
-        FERROR("too many arguments", "create");
+        FERROR("create", "too many arguments");
     } else
     THIS->dir = NULL;
     
@@ -345,10 +346,10 @@ f_dir_index(INT32 args)
     long int        pos;
 
     if (!THIS->dir)
-        OPERROR("directory not opened yet", "[]");
+        OPERROR("[]", "directory not opened yet");
     
     if (args != 1)
-        OPERROR("wrong number of arguments. Expected 1", "[]");
+        OPERROR("[]", "wrong number of arguments. Expected 1");
 
     switch (ARG(1).type) {
         case T_STRING:
@@ -374,7 +375,7 @@ f_dir_index(INT32 args)
             break;
         
         default:
-            OPERROR("wrong type of argument 1. Expected string", "[]");
+            OPERROR("[]", "wrong type of argument 1. Expected string");
             pop_n_elems(args);
             break;
     }
@@ -383,6 +384,11 @@ f_dir_index(INT32 args)
 static void
 init_directory(struct object *o)
 {
+    THIS_LOW->object_name = _object_name;
+    THIS_LOW->object_data = malloc(sizeof(struct dir_struct));
+    if (!THIS_LOW->object_data)
+	error("Out of memory in AdminTools.Directory init!\n");
+	
     THIS->dir = NULL;
     THIS->path = NULL;
     THIS->dent = NULL;
@@ -399,6 +405,9 @@ exit_directory(struct object *o)
     if (THIS->dir)
         closedir(THIS->dir);
     
+    if (THIS_LOW->object_data)
+	free(THIS_LOW->object_data);
+
     free_string(s_ino);
     free_string(s_off);
     free_string(s_reclen);
@@ -409,7 +418,7 @@ struct program*
 _at_directory_init(void)
 {
     start_new_program();
-    ADD_STORAGE(struct dir_struct);
+    ADD_STORAGE(ATSTORAGE);
 
     set_init_callback(init_directory);
     set_exit_callback(exit_directory);

@@ -50,6 +50,9 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
+#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, shadow_program))
+#define THIS ((struct shadow_struct*)THIS_LOW->object_data)
+
 struct shadow_struct
 {
     int      db_opened;
@@ -60,7 +63,7 @@ static char *_object_name = "Shadow";
 
 static struct program *shadow_program;
 
-#define THIS ((struct shadow_struct*)get_storage(fp->current_object, shadow_program))
+
 
 static void
 push_spent(struct spwd *spent)
@@ -123,7 +126,7 @@ f_endspent(INT32 args)
 {
     pop_n_elems(args);
     if (!THIS->db_opened) {
-        FERROR("database not opened", "endspent");
+        FERROR("endspent", "database not opened");
         return;
     }
     endspent();
@@ -183,10 +186,10 @@ f_getspnam(INT32 args)
 
     get_all_args("AdminTools.Shadow->getspnam", args, "%S", &name);
     if (args != 1)
-        FERROR("Invalid number of arguments. Expected 1", "getspnam");
+        FERROR("getspnam", "Invalid number of arguments. Expected 1");
     
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-        FERROR("Wrong argument type for argument 1. Expected 8-bit string", "getspnam");
+        FERROR("getspnam", "Wrong argument type for argument 1. Expected 8-bit string");
 
     name = ARG(1).u.string->str;
     
@@ -281,22 +284,39 @@ f_shadow_create(INT32 args)
       THIS->sp_buf_max = 2048;
 }
 
+static void
+init_shadow(struct object *o)
+{
+    THIS_LOW->object_name = _object_name;
+    THIS_LOW->object_data = malloc(sizeof(struct shadow_struct));
+    if (!THIS_LOW->object_data)
+	error("Out of memory in AdminTools.Shadow init!\n");
+	
+    THIS->db_opened = 0;
+    THIS->sp_buf_max = 0;
+}
+
+static void
+exit_shadow(struct object *o)
+{
+    if (THIS_LOW->object_data)
+	free(THIS_LOW->object_data);
+}
+
 struct program*
 _at_shadow_init()
 {
     start_new_program();
-    ADD_STORAGE(struct shadow_struct);
+    ADD_STORAGE(ATSTORAGE);
 
-    add_function("create", f_shadow_create, "function(void:void)", 0);
+    set_init_callback(init_shadow);
+    set_exit_callback(exit_shadow);
     
+    add_function("create", f_shadow_create, "function(void:void)", 0);    
     add_function("setspent", f_setspent, "function(void:void)", 0);
-
     add_function("endspent", f_endspent, "function(void:void)", 0);
-		 
     add_function("getspent", f_getspent, "function(void:array)", 0);
-		 
     add_function("getspnam", f_getspnam, "function(string:array)", 0);
-    
     add_function("getallspents", f_getallspents,
                  "function(void:array(array))", 0);
     

@@ -40,9 +40,6 @@
 
 #define ARG(_n_) sp[-(_n_)]
 
-#define FERROR(_msg_, _fn_) error("AdminTools.%s->%s(): %s.\n", _object_name, _fn_, _msg_)
-#define OPERROR(_msg_, _fn_) error("AdminTools.%s%s: %s.\n", _object_name, _fn_, _msg_)
-
 #if defined(__GNUC__)
 #define LOCAL_BUF(_n_, _s_) char _n_[_s_]
 #define LOCAL_FREE(_n_)
@@ -62,6 +59,32 @@
 #elif !defined(NAME_MAX)
 #define NAME_MAX 1024
 #endif
+
+#if defined(HAVE_FUNCTION_ATTRIBUTES)
+#undef ATTRIBUTE
+#define ATTRIBUTE(_x_) __attribute__ (_x_)
+#else
+#undef ATTRIBUTE
+#define ATTRIBUTE(x)
+#endif
+
+/*
+ * Common storage structure for the entire module.
+ * Every object should allocate their own structures
+ * dynamically and store the pointer here.
+ */
+typedef struct
+{
+    char      *object_name;
+    void      *object_data;
+} ATSTORAGE;
+
+/*
+ * Common functions
+ */
+void init_common(char *);
+void OPERROR(char *on, char *format, ...) ATTRIBUTE((noreturn,format (printf, 2, 3)));
+void FERROR(char *on, char *format, ...) ATTRIBUTE((noreturn,format (printf, 2, 3)));
 
 struct program* _at_shadow_init(void);
 struct program* _at_directory_init(void);

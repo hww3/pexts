@@ -44,6 +44,7 @@ RCSID("$Id$");
 #include <unistd.h>
 #endif
 
+#include <stdio.h>
 #include <string.h>
 #include <mntent.h>
 #include <limits.h>
@@ -52,6 +53,10 @@ RCSID("$Id$");
 
 #include "at_common.h"
 #include "at_mntent.h"
+
+#ifndef _PATH_MOUNTED
+#define _PATH_MOUNTED "/etc/mtab"
+#endif
 
 struct quota_struct
 {
@@ -64,7 +69,8 @@ static char *_object_name = "Quota";
 
 static struct program *quota_program;
 
-#define THIS ((struct quota_struct*)get_storage(fp->current_object, quota_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, quota_program))
+#define THIS ((struct quota_struct*)THIS_LOW->object_data)
 
 /**
  ** Support functions
@@ -137,9 +143,51 @@ hasquota(struct mntent *mnt, int type, char **qfnamep)
 }
 /* STOLEN END */
 
+static struct mntent *is_mounted(char *dev, char *fn)
+{
+    struct mntent   *ret;
+    FILE            *fmnt;
+    
+    if (!dev)
+	return NULL;
+	
+    fmnt = setmntent(_PATH_MOUNTED, "r");
+    if (!fmnt)
+	FERROR(fn, "Cannot open the mounted filesystems file");
+	
+    ret = getmntent(fmnt);
+    while(ret) {
+	if (!strncmp(ret->mnt_fsname, dev, strlen(ret->mnt_fsname))) {
+	    endmntent(fmnt);
+	    return ret;
+	}
+	    
+	ret = getmntent(fmnt);
+    }
+    
+    endmntent(fmnt);
+    return ret;
+}
+
 static void
 f_quotaon(INT32 args)
-{}
+{
+    char           *fname;
+    struct mntent  *mnt;
+    
+    if (args < 1)
+	FERROR("on", "one STRING argument required");
+	
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+        FERROR("on", "Wrong argument type for argument 1. Expected 8-bit string");
+	
+    mnt = is_mounted(ARG(1).u.string->str, "on");
+    if (!mnt)
+	FERROR("on", "Requested file system is not mounted: %s", 
+	       ARG(1).u.string->str);
+	       
+    pop_n_elems(args);
+}
 
 static void
 f_quotaoff(INT32 args)
@@ -174,11 +222,18 @@ f_create(INT32 args)
 {
     if (THIS->fs)
 	free(THIS->fs);
+	
+    pop_n_elems(args);
 }
 
 static void
 init_quota(struct object *o)
 {
+    THIS_LOW->object_name = _object_name;
+    THIS_LOW->object_data = malloc(sizeof(struct quota_struct));
+    if (!THIS_LOW->object_data)
+	error("Out of memory in AdminTools.Shadow init!\n");
+
     memset(&THIS->dq, 0, sizeof(THIS->dq));
     memset(&THIS->stats, 0, sizeof(THIS->stats));
     THIS->fs = NULL;
@@ -186,22 +241,29 @@ init_quota(struct object *o)
 
 static void
 exit_quota(struct object *o)
-{}
+{
+    if (THIS_LOW->object_data)
+	free(THIS_LOW->object_data);
+}
 
 struct program*
 _at_quota_init(void)
 {
     start_new_program();
-    ADD_STORAGE(struct quota_struct);
+    ADD_STORAGE(ATSTORAGE);
 
     set_init_callback(init_quota);
     set_exit_callback(exit_quota);
 
+    ADD_FUNCTION("create", f_create, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("on", f_quotaon, tFunc(tString, tVoid), 0);
+    ADD_FUNCTION("off", f_quotaoff, tFunc(tVoid, tVoid), 0);
+    
     add_integer_constant("USRQUOTA", USRQUOTA, 0);
     add_integer_constant("GRPQUOTA", GRPQUOTA, 0);
     
     quota_program = end_program();
-    add_program_constant("Directory", quota_program, 0);
+    add_program_constant("Quota", quota_program, 0);
     
     return quota_program;
 }

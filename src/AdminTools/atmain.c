@@ -103,20 +103,27 @@ DEFINE_IMUTEX(at_shadow_mutex);
 
 static struct program   *shadow_program;
 static struct program   *dir_program;
+static struct program   *quota_program;
 
 void pike_module_init(void)
 {
     init_interleave_mutex(&at_shadow_mutex);
 
+    init_common("AdminTools");
+    
     /* Shadow stuff */
     shadow_program = _at_shadow_init();
     
     /* Dir stuff */
     dir_program = _at_directory_init();
+    
+    /* Quota stuff */
+    quota_program = _at_quota_init();
 }
 
 void pike_module_exit(void)
 {
   free_program(shadow_program);
   free_program(dir_program);
+  free_program(quota_program);
 }
