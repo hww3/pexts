@@ -18,6 +18,8 @@
  *
  * Simple glue for more advanced Unix functions.
  * Common macros and declarations.
+ *
+ * $Id$
  */
 #ifndef __at_common_h
 #define __at_common_h
@@ -53,6 +55,12 @@
 #define LOCAL_BUF(_n_, _s_) char *_n_ = malloc(_s_)
 #define LOCAL_FREE(_n_) if (_n_) free(_n_)
 #define LOCAL_CHECK(_n_, _fn_) if (!_n_) FERROR("out of memory creating local buffer with malloc", _fn_)
+#endif
+
+#if !defined(NAME_MAX) && defined(_PC_NAME_MAX)
+#define NAME_MAX _PC_NAME_MAX
+#else
+#define NAME_MAX 1024
 #endif
 
 struct program* _at_shadow_init(void);
