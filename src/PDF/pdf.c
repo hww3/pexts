@@ -190,6 +190,13 @@ void f_setdash(INT32 args) {
 	pop_n_elems(args);
 }
 
+void f_setlinewidth(INT32 args) {
+	float linewidth;
+	get_all_args("setlinewidth",args,"%f",&linewidth);
+	PDF_setlinewidth(THIS->pdf, linewidth );
+	pop_n_elems(args);
+}
+
 void f_moveto(INT32 args) {
 	float x,y;
 	get_all_args("moveto",args,"%f%f",&x,&y);
@@ -288,6 +295,8 @@ void pike_module_init(void)
 // Graphical funcs
   add_function( "setdash", f_setdash,
 		"function(float,float:void)",0);
+  add_function( "setlinewidth", f_setlinewidth,
+		"function(float:void)",0);
   add_function( "moveto", f_moveto,
 		"function(float,float:void)",0);
   add_function( "lineto", f_lineto,

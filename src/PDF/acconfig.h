@@ -59,6 +59,7 @@ void f_generate(INT32 args);
 void f_stringwidth(INT32);
 // Graphics Functions
 void f_setdash(INT32);
+void f_setlinewidth(INT32);
 void f_moveto(INT32);
 void f_lineto(INT32);
 void f_curveto(INT32);
