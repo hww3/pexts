@@ -3,6 +3,7 @@ pexts (0.0.20020219-1) unstable; urgency=low
   * Latest snapshot
   * Compiled for new pike
   * Fixed some bugs in the _Newt module
+  * got rid of the annoying rpath warning from lintian
 
  -- Marek Habersack <grendel@debian.org>  Tue, 19 Feb 2002 12:55:49 +0100
 
