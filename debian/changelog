@@ -2,7 +2,7 @@ pexts (0.1.1-1) unstable; urgency=low
 
   * Latest cvs snapshot.
   * Switched to "normal" versioning scheme.
-  * Builds binary packages for pike 7.0, 7.2 and 7.4
+  * Builds binary packages for 7.2 and 7.4
   * Packages renamed so that they are prefixed with the pike name for
     which they were compiled.
   * Removed the buggy OpenLDAP module
