@@ -1,5 +1,5 @@
 /*
- * Caudium - An extensible World Wide Web server
+ * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000 The Caudium Group
  * 
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,38 @@ RCSID("$Id$");
 #endif
 
 
+static int parse_options(char *pp, int *study)
+{
+  int opts = 0;
+  while(*pp) {
+    switch (*pp++) {
+      /* Perl compatible options */
+    case 'i':	opts |= PCRE_CASELESS;  break;
+    case 'm':	opts |= PCRE_MULTILINE; break;
+    case 's':	opts |= PCRE_DOTALL;	break;
+    case 'x':	opts |= PCRE_EXTENDED;	break;
+	
+      /* PCRE specific options */
+    case '8':	opts |= PCRE_UTF8;	     break;	
+    case 'A':	opts |= PCRE_ANCHORED;       break;
+    case 'B':	opts |= PCRE_NOTBOL;         break;
+    case 'D':	opts |= PCRE_DOLLAR_ENDONLY; break;
+    case 'E':	opts |= PCRE_NOTEMPTY;       break;
+    case 'L':	opts |= PCRE_NOTEOL;         break;
+    case 'S':	if(study != NULL) *study = 1;break;
+    case 'U':	opts |= PCRE_UNGREEDY;	     break;
+    case 'X':	opts |= PCRE_EXTRA;	     break;	
+    case ' ': case '\n':
+      break;
+      
+    default:
+      return -pp[-1];
+    }
+  }
+  return opts;
+}
+
+
 /* Create a new PCRE regular expression and compile
  * and optionally study (optimize) the expression.
  */
@@ -47,7 +79,6 @@ RCSID("$Id$");
 void f_pcre_create(INT32 args)
 {
   struct pike_string *regexp; /* Regexp pattern */
-  struct svalue *opt_sval;    /* Option string svalue */
   pcre_extra *extra = NULL;   /* result from study, if enabled */
   pcre *re = NULL;            /* compiled regexp */
   int opts = 0;           /* Regexp compile options */
@@ -60,43 +91,38 @@ void f_pcre_create(INT32 args)
   char *locale = setlocale(LC_CTYPE, NULL); /* Get current locale for
 					     * translation table. */
 #endif
-  get_all_args("PCRE.Regexp->create", args, "%S%*", &regexp, &opt_sval);
-  switch(opt_sval->type) {
-  case T_STRING:
-    pp = opt_sval->u.string->str;
-    while(*pp) {
-      switch (*pp++) {
-	/* Perl compatible options */
-      case 'i':	opts |= PCRE_CASELESS;  break;
-      case 'm':	opts |= PCRE_MULTILINE; break;
-      case 's':	opts |= PCRE_DOTALL;	break;
-      case 'x':	opts |= PCRE_EXTENDED;	break;
-	
-	/* PCRE specific options */
-      case 'A':	opts |= PCRE_ANCHORED;	     break;
-      case 'D':	opts |= PCRE_DOLLAR_ENDONLY; break;
-      case 'S':	do_study  = 1;		     break;
-      case 'U':	opts |= PCRE_UNGREEDY;	     break;
-      case 'X':	opts |= PCRE_EXTRA;	     break;
-	
-      case ' ': case '\n':
+  switch(args)
+  {
+  case 2:
+    switch(sp[-1].type) {
+    case T_STRING:
+      opts = parse_options(sp[-1].u.string->str, &do_study);
+      if(opts < 0)
+	error("PCRE.Regexp->create(): Unknown option modifier '%c'.\n", -opts);
+      break;
+    case T_INT:
+      if(sp[-1].u.integer == 0) {
 	break;
-	
-      default:
-	error("PCRE.Regexp->create: Unknown option modifier '%c'.\n", pp[-1]);
       }
-    }
-    break;
-  case T_INT:
-    if(opt_sval->u.integer == 0) {
+      /* Fallthrough */
+    default:
+      error("Bad argument 2 to PCRE.Regexp->create() - expected string.\n");
       break;
     }
-    /* Fallthrough */
-  default:
-    error("Bad argument 2 to PCRE.Regexp->create() - expected string.\n");
+    /* Fall through */
+  case 1:
+    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
+      error("PCRE.Regexp->create(): Invalid argument 1. Expected 8-bit string.\n");
+    }
+    regexp = sp[-args].u.string;
+    if((INT32)strlen(regexp->str) != regexp->len)
+      error("PCRE.Regexp->create(): Regexp pattern contains null characters. Use \\0 instead.\n");
+    
     break;
+  default:
+    error("PCRE.Regexp->create(): Invalid number of arguments. Expected 1 or 2.\n");
   }
-  
+
 #if HAVE_SETLOCALE
   if (strcmp(locale, "C"))
     table = pcre_maketables();
@@ -127,7 +153,6 @@ void f_pcre_create(INT32 args)
 void f_pcre_match(INT32 args) 
 {
   struct pike_string *data; /* Data to match */
-  struct svalue *opt_sval;  /* Options string svalue */
   pcre_extra *extra = NULL;   /* result from study, if enabled */
   pcre *re = NULL;            /* compiled regexp */
   char *pp;                 /* Pointer... */
@@ -136,25 +161,14 @@ void f_pcre_match(INT32 args)
   switch(args)
   {
   case 2:
-    opt_sval = &sp[-2];
-    switch(opt_sval->type) {
+    switch(sp[-1].type) {
     case T_STRING:
-      pp = opt_sval->u.string->str;
-      while(*pp) {
-	switch (*pp++) {
-	case 'A':	opts |= PCRE_ANCHORED; break;
-	case 'B':	opts |= PCRE_NOTBOL;   break;
-	case 'L':	opts |= PCRE_NOTEOL;   break;
-	case 'E':	opts |= PCRE_NOTEMPTY; break;
-	case ' ': case '\n':
-	  break;
-	default:
-	  error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", pp[-1]);
-	}
-      }
+      opts = parse_options(sp[-1].u.string->str, NULL);
+      if(opts < 0)
+	error("PCRE.Regexp->match(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
-      if(opt_sval->u.integer == 0) {
+      if(sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
@@ -164,10 +178,10 @@ void f_pcre_match(INT32 args)
     }
     /* Fall through */
   case 1:
-    if(sp[-1].type != T_STRING || sp[-1].u.string->size_shift > 0) {
+    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
       error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
-    data = sp[-1].u.string;
+    data = sp[-args].u.string;
     break;
   default:
     error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");
@@ -196,7 +210,6 @@ void f_pcre_split(INT32 args)
 {
   struct array *arr;	    /* Result array */ 
   struct pike_string *data; /* Data to split */
-  struct svalue *opt_sval;  /* Options string svalue */
   pcre_extra *extra = NULL; /* result from study, if enabled */
   pcre *re = NULL;          /* compiled regexp */
   char *pp;                 /* Pointer... */
@@ -207,25 +220,14 @@ void f_pcre_split(INT32 args)
   get_all_args("PCRE.Regexp->split", args, "%S", &data);
   switch(args) {
   case 2:
-    opt_sval = &sp[-2];
-    switch(opt_sval->type) {
+    switch(sp[-1].type) {
     case T_STRING:
-      pp = opt_sval->u.string->str;
-      while(*pp) {
-	switch (*pp++) {
-	case 'A':	opts |= PCRE_ANCHORED; break;
-	case 'B':	opts |= PCRE_NOTBOL;   break;
-	case 'L':	opts |= PCRE_NOTEOL;   break;
-	case 'E':	opts |= PCRE_NOTEMPTY; break;
-	case ' ': case '\n':
-	  break;
-	default:
-	  error("PCRE.Regexp->split(): Unknown option modifier '%c'.\n", pp[-1]);
-	}
-      }
+      opts = parse_options(sp[-1].u.string->str, NULL);
+      if(opts < 0)
+	error("PCRE.Regexp->split(): Unknown option modifier '%c'.\n", -opts);
       break;
     case T_INT:
-      if(opt_sval->u.integer == 0) {
+      if(sp[-1].u.integer == 0) {
 	break;
       }
       /* Fallthrough */
@@ -235,10 +237,10 @@ void f_pcre_split(INT32 args)
     }
     /* Fallthrough */
   case 1:
-    if(sp[-1].type != T_STRING || sp[-1].u.string->size_shift > 0) {
+    if(sp[-args].type != T_STRING || sp[-args].u.string->size_shift > 0) {
       error("PCRE.Regexp->match(): Invalid argument 1. Expected 8-bit string.\n");
     }
-    data = sp[-1].u.string;
+    data = sp[-args].u.string;
     break;
   default:
     error("PCRE.Regexp->match(): Invalid number of arguments. Expected 1 or 2.\n");    

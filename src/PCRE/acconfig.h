@@ -1,5 +1,5 @@
 /*
- * Caudium - An extensible World Wide Web server
+ * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000 The Caudium Group
  * 
  * This program is free software; you can redistribute it and/or
