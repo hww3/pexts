@@ -1,4 +1,4 @@
-pexts (0.0.20010626-3) unstable; urgency=low
+pexts (0.0.20010626-1) unstable; urgency=low
 
   * Incorrect dependencies
   * Relaxed dependency upon pike
