@@ -1,0 +1,54 @@
+Pike Extension Package by the Caudium Group
+===========================================
+
+
+Copyright 
+---------
+
+  PExts is Copyright © The Caudium Group, 2000-
+
+  This software is distributed under GPL, see the file COPYING for
+  more details.
+
+
+Installing
+----------
+
+  From CVS:
+  +++++++++
+    ./autogen.sh
+    ./configure [--with-pike=/path/to/pike]
+    make install
+
+  From tarball:
+  +++++++++++++
+    ./configure [--with-pike=/path/to/pike]
+    make install
+
+  The configure option --with-pike is optional. If the pike you want
+  to use is in your path, it's not required. The configure script
+  searches in many locations for a suitable pike. If you want to use
+  PExts with the Caudium webserver, use the --with-pike option
+  to point to the correct binary (which normally would be
+  $prefix/caudium/server/bin/caudium, where $prefix is the prefix used
+  when installing the webserver).
+
+Requirements:
+-------------
+
+  The minimum requirement for PExts is Pike 7.0. Initially we planned to
+  support Pike 0.6 as well, but due to significant changes in the Pike C
+  module interface and other internal Pike changes, we changed our mind.
+  If you are running Roxen 1.3 and want to use these extension modules, we
+  suggest that you upgrade to Caudium, which is Roxen 1.3 compatible, but
+  can be run with Pike 7.0 and 7.1.
+
+  Individual modules might have other requirements. Please see the file
+  README.modules for details.
+
+
+More information:
+-----------------
+
+  Please go to http://caudium.net/faqs/pexts.html for the pexts FAQ.
+

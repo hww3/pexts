@@ -1,0 +1,55 @@
+PExts Module List
+=================
+
+AdminTools:
+
+  This module implements various low-level system calls, like quotas,
+  shadow files, directory access and more.
+  Requires: OS Support for various systemcalls. Detected by configure.
+  Principal Author: Marek Habersack <grendel@caudium.net>
+
+Mhash:
+
+  A glue to the Mhash library hashing library. It provides fast
+  implementations of a large number of hashing algorithms.
+  Requires: Mhash library from http://mhash.sourceforge.net/
+  Principal Author: David Hedbor <david@caudium.net>
+  TODO: Hashed password support.
+
+Newt:
+
+  A module adding Newt support for Pike.
+  Requires: The newt library
+  Principal Author: Zsolt Varga <redax@caudium.net>
+
+PCRE:
+
+  A glue to the Perl Compatible Regular Expression library,
+  PCRE. Implements fast, extensive regexps.
+  Requires: The PCRE library from http://www.pcre.org/
+  Principal Authod: David Hedbor <david@caudium.net>
+  TODO: Complex functionality like regexp replacing.
+
+PDF:
+
+  A glue to PDFlib. Allows for dynamic generation of PDF files from
+  within Pike. See src/PDF/README for special instructions on compilation.
+  Requires: PDFlib from http://www.pdflib.com/
+  Principal Author: Zsolt Varga <redax@caudium.net>
+
+_BerkeleyDB:
+
+  Low-level glue to the Berkeley DB library. In a very early stage.
+  Requires: Berkeley DB 3.x libraries from http://www.sleepycat.com/
+  Principal Author: David Hedbor <david@hedbor.org>
+  TODO: Transactions, DBENV support, cursors, locks, higher level
+        Pike interface.
+
+bzip2:
+
+  Glue to the bzip2 library, enabling compression and decompression of
+  bzip2 data.
+  Requires: libbz2 from http://sources.redhat.com/bzip2/
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  TODO: File based (de)compression, possibly non-blocking operation?
+
