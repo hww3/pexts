@@ -22,6 +22,16 @@ Newt:
   Requires: The newt library
   Principal Author: Zsolt Varga <redax@caudium.net>
 
+_Newt:
+
+  Experimental module for Newt support. It's a different approach to the
+  subject, thus a separate module.
+  Requires: The newt library
+  Principal Author: Marek Habersack <grendel@caudium.net>
+  TODO: finish the Newt.pmod
+        implement the Grid functions
+	rewrite the Newt C examples in Pike
+	
 PCRE:
 
   A glue to the Perl Compatible Regular Expression library,
