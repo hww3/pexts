@@ -51,7 +51,7 @@ typedef struct
     const char        *gver;
 } GPGME_STRUCT;
 
-#define THIS ((GPGME_STRUCT*)get_storage(fp->current_object, gpgme_program))
+#define THIS ((GPGME_STRUCT*)get_storage(Pike_fp->current_object, gpgme_program))
 #define CHECK_OK if (!THIS->ev_ok) {pop_n_elems(args); push_int(GPGME_Invalid_Engine); return; }
 
 

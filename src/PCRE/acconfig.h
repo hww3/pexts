@@ -26,7 +26,7 @@
 @BOTTOM@
 
 #include "pcrelib/pcre.h"
-#define THIS ((PCRE_Regexp *)fp->current_storage)
+#define THIS ((PCRE_Regexp *)Pike_fp->current_storage)
 
 typedef struct
 {

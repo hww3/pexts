@@ -925,7 +925,7 @@ static void f_avs_search(INT32 args)
   if (n != AVS_OK)
     Pike_error("Index->search(): %s\n", avs_errmsg(n));
 
-  ref_push_object(fp->current_object);
+  ref_push_object(Pike_fp->current_object);
   push_object(clone_object(search_program, 1));
 
 #ifdef _REENTRANT
@@ -954,7 +954,7 @@ static void f_count(INT32 args)
   if (n != AVS_OK)
     Pike_error("Index->count(): %s\n", avs_errmsg(n));
 
-  ref_push_object(fp->current_object);
+  ref_push_object(Pike_fp->current_object);
   push_object(clone_object(count_program, 1));
 }
 

@@ -31,7 +31,7 @@ struct window {
   WINDOW *win;
 };
 
-#define THISWIN ((struct window *)(fp->current_storage))
+#define THISWIN ((struct window *)(Pike_fp->current_storage))
 
 #define W_VOID_INT_FN(f) \
 static void f_##f(INT32 args) \

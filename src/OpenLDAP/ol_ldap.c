@@ -43,7 +43,7 @@ RCSID("$Id$");
 #include <string.h>
 #include <time.h>
 
-#define THIS ((OLSTORAGE*)get_storage(fp->current_object, ldap_program))
+#define THIS ((OLSTORAGE*)get_storage(Pike_fp->current_object, ldap_program))
 
 struct program       *ldap_program;
 

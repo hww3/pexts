@@ -31,7 +31,7 @@ struct screen {
   SCREEN *scr;
 };
 
-#define THISSCR ((struct screen *)(fp->current_storage))
+#define THISSCR ((struct screen *)(Pike_fp->current_storage))
 
 static void init_screen_struct(struct object *o)
 {

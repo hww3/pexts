@@ -43,7 +43,7 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
-#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, system_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(Pike_fp->current_object, system_program))
 #define THIS ((void*)THIS_LOW->object_data)
 
 static char *_object_name = "System";
@@ -56,7 +56,7 @@ typedef struct
     int                    fd;
 } MKSTEMP_STORAGE;
 
-#define THIS_MKSTEMP ((MKSTEMP_STORAGE*)get_storage(fp->current_object, mkstemp_program))
+#define THIS_MKSTEMP ((MKSTEMP_STORAGE*)get_storage(Pike_fp->current_object, mkstemp_program))
 
 static void
 f_ln(INT32 args)

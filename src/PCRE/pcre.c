@@ -86,7 +86,7 @@ void f_pcre_create(INT32 args)
   char *locale = setlocale(LC_CTYPE, NULL); /* Get current locale for
 					     * translation table. */
 #endif
-  free_regexp(fp->current_object);
+  free_regexp(Pike_fp->current_object);
   switch(args)
   {
    case 2:

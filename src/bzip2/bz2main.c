@@ -49,7 +49,7 @@ typedef struct
     int         blkSize;
 } BZSTRUCT;
 
-#define THIS ((BZSTRUCT*)fp->current_storage)
+#define THIS ((BZSTRUCT*)Pike_fp->current_storage)
 
 /* Inflate class */
 static void

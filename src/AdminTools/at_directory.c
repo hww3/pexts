@@ -66,7 +66,7 @@ static struct pike_string *s_off;
 static struct pike_string *s_reclen;
 static struct pike_string *s_name;
 
-#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, dir_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(Pike_fp->current_object, dir_program))
 #define THIS ((struct dir_struct*)THIS_LOW->object_data)
 
 /*

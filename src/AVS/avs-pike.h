@@ -87,13 +87,13 @@ struct private_thesaurus_data
 };
 
 
-#define PIKE_INDEX     ((struct private_index_data     *)(fp->current_storage))
-#define PIKE_SEARCH    ((struct private_search_data    *)(fp->current_storage))
-#define PIKE_COUNT     ((struct private_count_data     *)(fp->current_storage))
-#define PIKE_PHRASE    ((struct private_phrase_data    *)(fp->current_storage))
-#define PIKE_SPELL     ((struct private_spell_data     *)(fp->current_storage))
-#define PIKE_STEM      ((struct private_stem_data      *)(fp->current_storage))
-#define PIKE_THESAURUS ((struct private_thesaurus_data *)(fp->current_storage))
+#define PIKE_INDEX     ((struct private_index_data     *)(Pike_fp->current_storage))
+#define PIKE_SEARCH    ((struct private_search_data    *)(Pike_fp->current_storage))
+#define PIKE_COUNT     ((struct private_count_data     *)(Pike_fp->current_storage))
+#define PIKE_PHRASE    ((struct private_phrase_data    *)(Pike_fp->current_storage))
+#define PIKE_SPELL     ((struct private_spell_data     *)(Pike_fp->current_storage))
+#define PIKE_STEM      ((struct private_stem_data      *)(Pike_fp->current_storage))
+#define PIKE_THESAURUS ((struct private_thesaurus_data *)(Pike_fp->current_storage))
 
 #ifdef _REENTRANT
 # define GET_MUTEX(X) PIKE_MUTEX_T *mtx = &(X)->mtx

@@ -69,7 +69,7 @@ static char *_object_name = "Quota";
 
 static struct program *quota_program;
 
-#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, quota_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(Pike_fp->current_object, quota_program))
 #define THIS ((struct quota_struct*)THIS_LOW->object_data)
 
 #define F_USRQUOTA 0x01

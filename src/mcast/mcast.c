@@ -60,7 +60,7 @@ static struct program *stdio_udp;
 
 /* Macro para acceder a los datos internos */
 #undef THIS
-#define THIS ((struct mcast_storage *)(fp->current_storage))
+#define THIS ((struct mcast_storage *)(Pike_fp->current_storage))
 #define UDP (&(THIS->udp))
 #define FD (UDP->fd)
 

@@ -34,7 +34,7 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
-#define THIS_OBJ ((ATSTORAGE*)fp->current_storage)
+#define THIS_OBJ ((ATSTORAGE*)Pike_fp->current_storage)
 
 static char *module_name;
 

@@ -70,7 +70,7 @@ typedef struct
     int         gmode;
 } GZSTRUCT;
 
-#define THIS ((GZSTRUCT*)fp->current_storage)
+#define THIS ((GZSTRUCT*)Pike_fp->current_storage)
 
 static INLINE gzFile
 open_gz(char *from)

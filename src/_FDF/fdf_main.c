@@ -55,7 +55,7 @@ typedef struct
 #endif
 } FDF_STORAGE;
 
-#define THIS ((FDF_STORAGE*)get_storage(fp->current_object, fdf_program))
+#define THIS ((FDF_STORAGE*)get_storage(Pike_fp->current_object, fdf_program))
 #define THAT(X) ((FDF_STORAGE*)get_storage((X), (X)->prog))
 
 /* pdfFileSpec stuff */
@@ -425,7 +425,7 @@ static void f_FDFSetOnImportJavaScript(INT32 args)
 {
     FDFErc   ret;
     char    *script = NULL;
-    ASBool   before = 0;
+    INT32   before = 0;
     
     get_all_args("FDF->SetOnImportJavaScript", args, "%s%i", &script, &before);
 
@@ -485,7 +485,7 @@ static ASBool enumValuesProc(char *fieldName, char *fieldVal, void *data)
 static void f_FDFEnumValues(INT32 args)
 {
     FDFErc          ret;
-    ASBool          skipEmpty = 0;
+    INT32          skipEmpty = 0;
     char           *nameBuf;
     char           *valueBuf;
     unsigned        memamt = 0;
@@ -678,7 +678,7 @@ static void f_FDFExtractAttachment(INT32 args)
 #define BUF_SIZE 1024
     
     FDFErc          ret;
-    ASBool          isFilePath = 0;
+    INT32          isFilePath = 0;
     char           *path = NULL, *fieldName = NULL, *mimeType = NULL;
     ASInt32         nFileName, nMimeTypeSize;
     struct mapping *m;
@@ -1551,7 +1551,7 @@ static void f_FDFSetGoToAction(INT32 args)
     FDFErc            ret;
     char             *field, *dest;
     FDFActionTrigger  which;
-    ASBool            notUsed = 0;
+    INT32            notUsed = 0;
 
     switch(args) {
         case 3:
@@ -1592,7 +1592,7 @@ static void f_FDFSetGoToRAction(INT32 args)
     FDFErc            ret;
     char             *field, *dest, *theFile;
     FDFActionTrigger  which;
-    ASBool            addNewWindow = 0, newWindow = 1, notUsed = 0;
+    INT32            addNewWindow = 0, newWindow = 1, notUsed = 0;
 
     switch(args) {
         case 3:
@@ -1645,7 +1645,7 @@ static void f_FDFSetHideAction(INT32 args)
     FDFErc            ret;
     char             *field, *dest;
     FDFActionTrigger  which;
-    ASBool            isHide = 1;
+    INT32            isHide = 1;
 
     switch(args) {
         case 3:
@@ -1686,7 +1686,7 @@ static void f_FDFSetIF(INT32 args)
     FDFErc            ret;
     char             *field;
     FDFScaleWhen      scaleWhen;
-    ASBool            proportional = 0;
+    INT32            proportional = 0;
     float             x, y;
 
     get_all_args("FDF->SetIF", args, "%s%i%i%f%f", &field, &scaleWhen,
@@ -2039,7 +2039,7 @@ static void f_FDFSetURIAction(INT32 args)
     FDFErc            ret;
     char             *field, *uri;
     FDFActionTrigger  which;    
-    ASBool            isMap;
+    INT32            isMap;
     
     get_all_args("FDF->SetURIAction", args, "%s%i%s%i", &field, &which, &uri, &isMap);
 
@@ -2068,7 +2068,7 @@ static void f_FDFSetValue(INT32 args)
 {
     FDFErc            ret;
     char             *field, *val;
-    ASBool            notUsed;
+    INT32            notUsed;
     
     get_all_args("FDF->SetValue", args, "%s%s%i", &field, &val, &notUsed);
 

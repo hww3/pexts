@@ -54,7 +54,7 @@ typedef struct
 } ESMTP_STORAGE;
 
 #define TABLE_GROWTH_FACTOR 1
-#define THIS ((ESMTP_STORAGE*)get_storage(fp->current_object, esmtp_program))
+#define THIS ((ESMTP_STORAGE*)get_storage(Pike_fp->current_object, esmtp_program))
 
 static struct program   *esmtp_program;
 

@@ -34,7 +34,7 @@ typedef struct
 
 static struct program *mcrypt_program;
 
-#define THIS ((mcrypt_data*) (fp->current_storage))
+#define THIS ((mcrypt_data*) (Pike_fp->current_storage))
 
 static void f_create(INT32 args)
 {

@@ -43,7 +43,7 @@ RCSID("$Id$");
 
 #include "at_common.h"
 
-#define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, shadow_program))
+#define THIS_LOW ((ATSTORAGE*)get_storage(Pike_fp->current_object, shadow_program))
 #define THIS ((struct shadow_struct*)THIS_LOW->object_data)
 
 struct shadow_struct

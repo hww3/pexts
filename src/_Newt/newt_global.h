@@ -86,7 +86,7 @@ typedef struct
 #define BUTTON_COMPACT            0x000001
 
 #define THIS_OBJ(_o_) ((NEWT_DATA*)get_storage((_o_), (_o_)->prog))
-#define THIS ((NEWT_DATA*)get_storage(fp->current_object, fp->current_object->prog))
+#define THIS ((NEWT_DATA*)get_storage(Pike_fp->current_object, Pike_fp->current_object->prog))
 
 #define DICT_OK                    0
 #define DICT_NULL_DATA            -1
