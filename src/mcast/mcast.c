@@ -19,18 +19,7 @@
 
 /* Pike includes */
 #include "global.h"
-#include "interpret.h"
-#include "svalue.h"
-#include "stralloc.h"
-#include "array.h"
-#include "pike_macros.h"
-#include "program.h"
-#include "stralloc.h"
-#include "object.h"
-#include "pike_types.h"
-#include "threads.h"
-#include "dynamic_buffer.h"
-
+#include "caudium_util.h"
 #include "mcast_config.h"
 
 /* System includes */
@@ -83,9 +72,9 @@ static void mcast_join(INT32 args)
    struct ip_mreq mreq;
    
    if(args!=1)
-      Pike_error("mcast->join(): número de argumentos inválido\n");
+      Pike_error("mcast->join(): number of arguments invalid.\n");
    if(Pike_sp[-1].type!=T_STRING)
-      Pike_error("mcast->join(): Tipo del argumento inválido\n");
+      Pike_error("mcast->join(): expected string.\n");
    
    /* Verifica el estado del socket */
    if( FD < 0 )
@@ -115,9 +104,9 @@ static void mcast_leave(INT32 args)
    struct ip_mreq mreq;
 
    if(args!=1)
-      Pike_error("mcast->leave(): número de argumentos inválido\n");
+      Pike_error("mcast->leave(): number of arguments invalid.\n");
    if(Pike_sp[-1].type!=T_STRING)
-      Pike_error("mcast->leave(): Tipo del argumento inválido\n");
+      Pike_error("mcast->leave(): expected string.\n");
    
    /* Verifica el estado del socket */
    if( FD < 0 )
@@ -145,9 +134,9 @@ static void mcast_setTTL(INT32 args)
    int ttl;
    
    if( args != 1 )
-      Pike_error("mcast->setTTL(): número de argumentos inválido\n");
+      Pike_error("mcast->setTTL(): number of arguments invalid.\n");
    if(Pike_sp[-1].type != T_INT)
-      Pike_error("mcast->setTTL(): Tipo del argumento inválido\n");
+      Pike_error("mcast->setTTL(): expected string.\n");
    
    ttl = Pike_sp[-args].u.integer;
    
@@ -165,9 +154,9 @@ static void mcast_loopback(INT32 args)
    int loop;
    
    if( args != 1 )
-      Pike_error("mcast->setLoopback(): número de argumentos inválido\n");
+      Pike_error("mcast->setLoopback(): number of arguments invalid.\n");
    if(Pike_sp[-1].type != T_INT)
-      Pike_error("mcast->setLoopback(): Tipo del argumento inválido\n");
+      Pike_error("mcast->setLoopback(): expected string.\n");
    
    loop = Pike_sp[-args].u.integer;
    
@@ -185,9 +174,9 @@ static void mcast_setif(INT32 args)
    uint32_t ifaddr;
    
    if(args!=1)
-      Pike_error("mcast->setInterface(): número de argumentos inválido\n");
+      Pike_error("mcast->setInterface(): number of arguments invalid.\n");
    if(Pike_sp[-1].type!=T_STRING)
-      Pike_error("mcast->setInterface(): Tipo del argumento inválido\n");
+      Pike_error("mcast->setInterface(): expected string.\n");
    
    
    ifaddr = inet_addr(Pike_sp[-1].u.string->str);
@@ -209,9 +198,13 @@ void pike_module_exit(void) {}
 
 void pike_module_init(void)
 {
+#ifdef PEXTS_VERSION
+   pexts_init();
+#endif
+
    struct svalue sv;
    
-   /* Comienzo de la nueva clase */
+   /* Starting a new class */
    start_new_program();
    
    /* Agrega espacio para los datos internos */
@@ -228,7 +221,7 @@ void pike_module_init(void)
    push_text("files.UDP");
    SAFE_APPLY_MASTER("resolv",1);
    if(Pike_sp[-1].type != T_FUNCTION)
-     Pike_error("Error al resolver Stdio.UDP!\n");
+     Pike_error("Error in resolving of Stdio.UDP!\n");
    
    /* Obtiene el programa */
    stdio_udp = program_from_function(&Pike_sp[-1]);
