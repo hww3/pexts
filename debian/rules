@@ -41,7 +41,9 @@ configure-stamp:
 			       --without-_FDF \
 			       --without-PDF \
 			       --without-_BerkeleyDB \
-			       --without-Newt
+			       --without-Newt \
+			       --without-gpgme \
+			       --without-mnoGo
 
 	touch configure-stamp
 
