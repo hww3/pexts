@@ -688,15 +688,19 @@ if test -z "$LDSHARED" ; then
 	;;
     NetBSD*) 
 	LDSHARED="ld -Bshareable"
-	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD...)])
+	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD, Darwin, ...)])
 	;;
     OpenBSD*)
 	LDSHARED="ld -Bshareable"
-	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD...)])
+	AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD, Darwin, ...)])
 	;;
     BSD/OS*) LDSHARED="shlicc -r";;
     SCO_SV*) LDSHARED="cc -G -KPIC -Wl,-Bexport";;
     UNIX_SV*) LDSHARED="ld -G";;
+    Darwin*)
+        LD_SHARED="$CC -bundle -undefined error -bundle_loader $PIKE";;
+        AC_DEFINE(RUNNING_BSD, 1, [Define if your system is BSD flavour (FreeBSD, NetBSD, OpenBSD, Darwin, ...)])
+        ;;
     UnixWare*)
       if test "$GCC" = yes ; then
         LDSHARED="ld -G"
