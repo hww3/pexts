@@ -13,14 +13,6 @@ RCSID("$Id$");
 #include <stdlib.h>
 #include <mcrypt.h>
 
-#if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION == 1 && PIKE_BUILD_VERSION >= 12) || PIKE_MAJOR_VERSION > 7 || (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION > 1)
-# include "pike_error.h"
-#else
-# include "error.h"
-# ifndef Pike_error
-#  define Pike_error error
-# endif
-#endif
 #ifndef ARG
 /* Get argument # _n_ */
 #define ARG(_n_) sp[-((args - _n_) + 1)]
