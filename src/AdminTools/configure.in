@@ -8,6 +8,7 @@ AC_CHECK_FUNCS(getspent getspent_r getspnam getspnam_r opendir closedir \
 			   readdir readdir_r rewinddir seekdir telldir scandir      \
 			   alphasort versionsort sysconf setspent endspent \
 			   quotactl hasmntopt getmntent setmntent) 
+AC_FUNC_ALLOCA
 
 AC_MSG_CHECKING(for working (and failsafe) strerror)
 AC_CACHE_VAL(atools_cv_func_failsafe_strerror,
