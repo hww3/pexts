@@ -2780,9 +2780,11 @@ f_formRun(INT32 args)
             push_string(make_shared_string("EXIT_FDREADY"));
             break;
 
+#ifdef HAVE_NEWTFORMSETTIMER
         case NEWT_EXIT_TIMER:
             push_string(make_shared_string("EXIT_TIMER"));
             break;
+#endif
 
         default:
             push_int(0);
