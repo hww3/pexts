@@ -31,6 +31,7 @@ RCSID("$Id$");
 #include "stralloc.h"
 #include "pike_macros.h"
 #include "module_support.h"
+#include "mapping.h"
 #include "program.h"
 #include "error.h"
 #include "threads.h"
@@ -249,12 +250,152 @@ f_quotaoff(INT32 args)
     pop_n_elems(args);
 }
 
+/*
+ * Push dquota block and create a suitable array
+ */
+static struct mapping*
+make_time_mapping(time_t t, char *fn)
+{
+    struct mapping *m;
+    struct svalue  sv, sk;
+    struct tm      *tm;
+    
+    m = allocate_mapping(9);
+    if (!m)
+	FERROR(fn, "Error while allocating time mapping");
+	
+    tm = localtime(&t);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_sec;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("sec");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_min;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("min");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_hour;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("hour");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_mday;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("mday");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_mon;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("mon");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_year;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("year");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_wday;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("wday");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_yday;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("yday");
+    mapping_insert(m, &sv, &sk);
+    
+    sv.type = T_INT;
+    sv.u.integer = tm->tm_isdst;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("isdst");
+    mapping_insert(m, &sv, &sk);
+    
+    return m;
+}
+
+static void
+push_dqblk(struct dqblk *dqb, char *fn)
+{
+    struct mapping *m;
+    struct svalue  sv, sk;
+    
+    m = allocate_mapping(7);
+    if (!m)
+	FERROR(fn, "Error while allocating dqblk mapping");
+	
+    /* blocks hard limit */    
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_bhardlimit;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("bhardlimit");
+    mapping_insert(m, &sk, &sv);
+    
+    /* blocks soft limit */
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_bsoftlimit;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("bsoftlimit");
+    mapping_insert(m, &sk, &sv);
+    
+    /* currently allocated blocks */
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_curblocks;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("curblocks");
+    mapping_insert(m, &sk, &sv);
+    
+    /* inodes hard limit */
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_ihardlimit;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("ihardlimit");
+    mapping_insert(m, &sk, &sv);
+    
+    /* inodes soft limit */
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_isoftlimit;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("isoftlimit");
+    mapping_insert(m, &sk, &sv);
+    
+    /* Currently allocated inodes */
+    sv.type = T_INT;
+    sv.u.integer = dqb->dqb_curinodes;
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("curinodes");
+    mapping_insert(m, &sk, &sv);
+    
+    /* times... */
+    sv.type = T_MAPPING;
+    sv.u.mapping = make_time_mapping(dqb->dqb_btime, fn);
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("btime");
+    mapping_insert(m, &sk, &sv);
+    
+    sv.type = T_MAPPING;
+    sv.u.mapping = make_time_mapping(dqb->dqb_itime, fn);
+    sk.type = T_STRING;
+    sk.u.string = make_shared_string("itime");
+    mapping_insert(m, &sk, &sv);
+}
+
 static void
 f_getquota(INT32 args)
 {
     char            *fs;
     struct mntent   *mnt;
-    struct dqblk    gdqb, udqb;
+    struct dqblk    dqb;
+    struct array    *arr;
     int             which = F_USRQUOTA;
     
     if (args < 1)
@@ -282,17 +423,26 @@ f_getquota(INT32 args)
     if (!mnt)
 	FERROR("get", "File system is not mounted: %s", fs);
 	
-    if (which & F_USRQUOTA)
-	if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), fs, 0, (void*)&udqb) < 0)
+    if (which & F_USRQUOTA) {
+	if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), fs, 0, (void*)&dqb) < 0)
 	    FERROR("get", "System error ocurred while getting user quota on '%s':\n\t%s",
 	           fs, strerror(errno));
+	push_dqblk(&dqb, "get");
+    } else
+	push_int(0);
 		   
-    if (which & F_GRPQUOTA)
-	if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), fs, 0, (void*)&gdqb) < 0)
+    if (which & F_GRPQUOTA) {
+	if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), fs, 0, (void*)&dqb) < 0)
 	    FERROR("get", "System error ocurred while getting group quota on '%s':\n\t%s",
 	           fs, strerror(errno));
+	push_dqblk(&dqb, "get");
+    } else
+	push_int(0);
 
+    arr = aggregate_array(2);
     pop_n_elems(args);
+
+    push_array(arr);
 }
 
 static void

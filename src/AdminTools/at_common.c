@@ -70,7 +70,7 @@ void FERROR(char *fn, char *format, ...)
 /*
  * Displays a function error for the current object
  */
-void OPRROR(char *fn, char *format, ...)
+void OPERROR(char *fn, char *format, ...)
 {
     va_list      args;
     static char  *efmt = "%s%s: ";
