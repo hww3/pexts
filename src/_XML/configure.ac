@@ -1,7 +1,7 @@
 AC_INIT(xml_main.c)
 AC_CONFIG_HEADER(xml_config.h)
 
-CAUDIUM_MODULE_INIT([_XSLT])
+CAUDIUM_MODULE_INIT([_XML])
 
 AH_BOTTOM([
 void pike_module_init(void);
