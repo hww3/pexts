@@ -1,0 +1,8 @@
+configure
+ol_config.h
+ol_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+OpenLDAP.so
