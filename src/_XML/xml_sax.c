@@ -1,17 +1,17 @@
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000-2003 The Caudium Group
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -74,6 +74,8 @@ RCSID("$Id$");
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stddef.h>
+#include <limits.h>
 
 #include <libxml/tree.h>
 #include <libxml/SAX.h>
@@ -93,7 +95,8 @@ static unsigned int   __debug_indent;
 
 #define THIS ((sax_storage*)Pike_fp->current_storage)
 #define CB_ABSENT(_idx_) (THIS->callbackOffsets[(_idx_)] == -1)
-#define CB_API(_name_) {#_name_, 1}
+#define CB_API(_name_, _xmlAPI_) {#_name_, 1, offsetof(xmlSAXHandler,_xmlAPI_)}
+#define CB_OPT_API(_name_, _xmlAPI_) {#_name_, 0, offsetof(xmlSAXHandler,_xmlAPI_)}
 #define CB_CALL(_offset_, _args_) apply_low(THIS->callbacks, THIS->callbackOffsets[(_offset_)], (_args_))
 
 #define safe_push_text(_txt_) if ((_txt_)) push_text((_txt_)); else push_int(0)
@@ -135,6 +138,7 @@ typedef struct
 {
   char   *name;
   int     req;
+  int     saxFunIdx;
 } pikeCallbackAPI;
 
 typedef struct 
@@ -184,31 +188,31 @@ static struct program  *sax_program;
 
 static pikeCallbackAPI  callback_api[] =
 {
-  CB_API(internalSubsetSAX),
-  CB_API(isStandaloneSAX),
-  CB_API(hasInternalSubsetSAX),
-  CB_API(hasExternalSubsetSAX),
-  CB_API(getEntitySAX),
-  CB_API(entityDeclSAX),
-  CB_API(notationDeclSAX),
-  CB_API(attributeDeclSAX),
-  CB_API(elementDeclSAX),
-  CB_API(unparsedEntityDeclSAX),
-  CB_API(startDocumentSAX),
-  CB_API(endDocumentSAX),
-  CB_API(startElementSAX),
-  CB_API(endElementSAX),
-  CB_API(referenceSAX),
-  CB_API(charactersSAX),
-  CB_API(ignorableWhitespaceSAX),
-  CB_API(processingInstructionSAX),
-  CB_API(commentSAX),
-  CB_API(warningSAX),
-  CB_API(errorSAX),
-  CB_API(fatalErrorSAX),
-  CB_API(getParameterEntitySAX),
-  CB_API(cdataBlockSAX),
-  CB_API(externalSubsetSAX),
+  CB_OPT_API(internalSubsetSAX, internalSubset),
+  CB_OPT_API(isStandaloneSAX, isStandalone),
+  CB_OPT_API(hasInternalSubsetSAX, hasInternalSubset),
+  CB_OPT_API(hasExternalSubsetSAX, hasExternalSubset),
+  CB_OPT_API(getEntitySAX, getEntity),
+  CB_OPT_API(entityDeclSAX, entityDecl),
+  CB_OPT_API(notationDeclSAX, notationDecl),
+  CB_OPT_API(attributeDeclSAX, attributeDecl),
+  CB_OPT_API(elementDeclSAX, elementDecl),
+  CB_OPT_API(unparsedEntityDeclSAX, unparsedEntityDecl),
+  CB_API(startDocumentSAX, startDocument),
+  CB_API(endDocumentSAX, endDocument),
+  CB_API(startElementSAX, startElement),
+  CB_API(endElementSAX, endElement),
+  CB_OPT_API(referenceSAX, reference),
+  CB_OPT_API(charactersSAX, characters),
+  CB_OPT_API(ignorableWhitespaceSAX, ignorableWhitespace),
+  CB_OPT_API(processingInstructionSAX, processingInstruction),
+  CB_OPT_API(commentSAX, comment),
+  CB_OPT_API(warningSAX, warning),
+  CB_OPT_API(errorSAX, error),
+  CB_OPT_API(fatalErrorSAX, fatalError),
+  CB_OPT_API(getParameterEntitySAX, getParameterEntity),
+  CB_OPT_API(cdataBlockSAX, cdataBlock),
+  CB_OPT_API(externalSubsetSAX, externalSubset),
 };
 
 static xmlSAXHandler   pextsSAX = {
@@ -871,42 +875,14 @@ static void pextsExternalSubset(void *ctx, const xmlChar *name, const xmlChar *e
   DBG_FUNC_LEAVE();
 }
 
-/*
- * We require the callbacks object to have all the methods found in the
- * xmlSAXHandler structure to be present in the Pike object passed as the
- * callbacks:
- *
- *   internalSubsetSAX
- *   isStandaloneSAX
- *   hasInternalSubsetSAX
- *   hasExternalSubsetSAX
- *   getEntitySAX
- *   entityDeclSAX
- *   notationDeclSAX
- *   attributeDeclSAX
- *   elementDeclSAX
- *   unparsedEntityDeclSAX
- *   setDocumentLocatorSAX
- *   startDocumentSAX
- *   endDocumentSAX
- *   startElementSAX
- *   endElementSAX
- *   referenceSAX
- *   charactersSAX
- *   ignorableWhitespaceSAX
- *   processingInstructionSAX
- *   commentSAX
- *   warningSAX
- *   errorSAX
- *   fatalErrorSAX
- *   getParameterEntitySAX
- *   cdataBlockSAX
- *   externalSubsetSAX
+/* To learn which callbacks are required take a look at the callbacks_api
+ * array above.
  */
 static int is_callback_ok(struct object *callbacks, char **missing_method)
 {
   int                 ioff, i;
   struct identifier  *ident;
+  void              **tmp;
   
   if (!callbacks)
     return 0;
@@ -939,8 +915,14 @@ static int is_callback_ok(struct object *callbacks, char **missing_method)
         *missing_method = callback_api[i].name;
       return 0;
     }
-    
+
+    /* Put the offset in the callbacks array and initialize the SAX handler
+     * structure with appropriate function pointer. The pointer arithmetic
+     * is hairy, but it works :>
+     */
     THIS->callbackOffsets[i] = ioff;
+    tmp = (void**)((char*)THIS->sax + callback_api[i].saxFunIdx);
+    *tmp = *((void**)((char*)(&pextsSAX) + callback_api[i].saxFunIdx));
     i++;
   }
   
@@ -1020,18 +1002,23 @@ static void f_create(INT32 args)
       default:
         Pike_error("Incorrect number of arguments: expected between 2 and 4\n");
   }
-
   
   /* check whether file_obj is Stdio.File or derived */
   if (file_obj && find_identifier("read", file_obj->prog) < 0)
     Pike_error("Passed file object is not Stdio.File or derived from it\n");
+
+  /* The parser state is initialized so that no time is wasted for
+   * callbacks that aren't used by the calling Pike code.
+   */
+  THIS->sax = (xmlSAXHandler*)calloc(1, sizeof(xmlSAXHandler));
+  if (!THIS->sax)
+    SIMPLE_OUT_OF_MEMORY_ERROR("create", sizeof(xmlSAXHandler));
   
   /* check whether the callbacks object contains all the required methods
    * */
   if (!is_callback_ok(callbacks, &missing_method)) 
     Pike_error("Passed callbacks object is not valid. The %s method is missing.\n",
                missing_method);
-
   
   /* choose the parsing method */
   if (file_obj)
@@ -1046,7 +1033,6 @@ static void f_create(INT32 args)
   pop_n_elems(args);
   
   /* initialize the parser and state */
-  THIS->sax = &pextsSAX;
   switch (THIS->parsing_method) {
       case PARSE_PUSH_PARSER:
         THIS->file_obj = file_obj;
