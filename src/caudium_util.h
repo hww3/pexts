@@ -166,4 +166,24 @@ pexts_init(void)
 #define ARG(_n_) Pike_sp[-((args - _n_) + 1)]
 #endif
 
+/* Pike compatibility stuff */
+#if (PIKE_MAJOR_VERSION == 7 && PIKE_MINOR_VERSION < 4) || PIKE_MAJOR_VERSION < 7
+#ifndef move_svalue
+#define move_svalue(TO, FROM) do {					\
+    struct svalue *_to = (TO);						\
+    struct svalue *_from = (FROM);					\
+    dmalloc_touch_svalue(_from);					\
+    *_to = *_from;							\
+  } while (0)
+#endif
+
+#ifndef stack_pop_to_no_free
+#define stack_pop_to_no_free(X) move_svalue(X, --Pike_sp)
+#endif
+
+#ifndef stack_pop_to
+#define stack_pop_to(X) do { struct svalue *_=(X); free_svalue(_); stack_pop_to_no_free(_); }while(0)
+#endif
+#endif /* old pike */
+
 #endif /* HAVE_CAUDIUM_UTIL_H */
