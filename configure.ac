@@ -248,7 +248,7 @@ if test "$prefix" != "NONE"; then
 fi
 FOUND_PIKE=0
 PIKE_INCLUDE_DIRS=""
-for PIKE in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pike /sw/local/bin/pike /opt/local/bin/pike /usr/gnu/bin/pike /usr/bin/pike ; do
+for PIKE in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pike /sw/bin/pike74 /sw/local/bin/pike /opt/local/bin/pike /usr/gnu/bin/pike /usr/bin/pike /usr/pkg/bin/pike /usr/pkg/bin/pike74; do
   if test -x $PIKE; then
     echo -n "  ...${PIKE}"
     THIS_PIKE_VER=`$PIKE -e 'int maj,min,bld;sscanf(version(),"Pike v%d.%d release %d",maj,min,bld);write(sprintf("%d.%d.%d",maj,min,bld));exit(0);'`
@@ -272,7 +272,7 @@ for PIKE in $DEFPIKE $PREFIXPIKE $pathpike /usr/local/bin/pike /opt/pike/bin/pik
     echo -n " => good version"
 
     PIKE_INCDIR="`dirname $PIKE`/.."
-    for INCDIR in $PIKE_INCDIR/pike/$THIS_PIKE_VER/include/pike $PIKE_INCDIR/include/`basename $PIKE` \
+    for INCDIR in $PIKE_INCDIR/pike/$THIS_PIKE_VER/include/pike $PIKE_INCDIR/include/`basename $PIKE` $PIKE_INCDIR/include/pike/${THIS_PIKE_VER} \
                   $PIKE_INCDIR/include/pike$THIS_PIKE_VER $PIKE_INCDIR/include/pike${THIS_PIKE_MAJOR}.${THIS_PIKE_MINOR} $PIKE_INCDIR/include/pike; do
       OLD_DIR=`pwd`
       cd $INCDIR &> /dev/null
@@ -310,24 +310,30 @@ if test x"$FOUND_PIKE" = "x1"; then
 else
   cat << EOF
 *****************************************************************************
-*** I couldn't find a suitable Pike for Pexts. Pexts
-*** require Pike $REQ_PIKE_VER or newer. You can download and install one of
+*** I couldn't find a suitable Pike for Caudium. Caudium 1.3
+*** requires Pike $REQ_PIKE_VER or newer. Running Caudium with Pike 0.6, 7.0,
+*** 7.2 or 7.3 is no longer supported. You can download and install one of
 *** our Pike $REQ_PIKE_MAJOR.$REQ_PIKE_MINOR snapshots available from our website at:
 ***
 ***     http://caudium.net/download/source/caudiumbuild.rxml 
 ***
-*** PLEASE NOTE: THIS VERSION OF PEXTS NO LONGER SUPPORTS PIKE < $REQ_PIKE_MAJOR.$REQ_PIKE_MINOR.$REQ_PIKE_BUILD!
+*** PLEASE NOTE: THIS VERSION OF CAUDIUM NO LONGER SUPPORTS PIKE < $REQ_PIKE_MAJOR.$REQ_PIKE_MINOR.$REQ_PIKE_BUILD!
 ***
 *** If you have this or newer version of Pike installed in a different 
 *** location or under a different name, please use the --with-pike argument
 *** to the configure script to specify the location of the Pike binary you
-*** want to use with Pexts.
+*** want to use with Caudium
 ***
 *****************************************************************************
 EOF
   exit 1;
 fi
 
+export PIKE PIKE_INCLUDE_DIRS PIKE_VERSION
+AC_SUBST(PIKE)
+AC_SUBST(PIKE_VERSION)
+
+#############################################################################
 dnl find the module dirs for this pike
 dnl we work only with pike 7.x.x, so no checks for major < 7 needed
 dnl Code below builds a variable with a list of module directories
