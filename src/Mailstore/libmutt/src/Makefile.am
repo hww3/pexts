@@ -16,7 +16,9 @@ endif
 
 libdir = .
 
-INCLUDES = -I$(srcdir)/../imap/ -I$(srcdir)
+INCLUDES = -I$(top_srcdir)/imap -I$(top_srcdir)/src
+AM_CFLAGS = -I$(top_srcdir)/imap -I$(top_srcdir)/src
+CFLAGS += @CFLAGS@ $(INCLUDES)
 
 noinst_LIBRARIES = libmutt.a
 
