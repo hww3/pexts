@@ -1,7 +1,7 @@
 /*
  * Pike Extension Modules - A collection of modules for the Pike Language
  * Copyright © 2000, 2001 The Caudium Group
- * 
+ *  
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -45,7 +45,7 @@ RCSID("$Id$");
 #include "at_common.h"
 
 #define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, pam_program))
-#define THIS ((void*)THIS_LOW->object_data)
+#define THIS ((PAM_OBJECT_DATA*)THIS_LOW->object_data)
 
 static char *_object_name = "PAM";
 static struct program *pam_program;
@@ -55,6 +55,11 @@ typedef struct
   char    *oldpass;
   char    *newpass;
 } MY_CONV_DATA;
+
+typedef struct
+{
+    char   *appname;
+} PAM_OBJECT_DATA;
 
 static int
 chpass_conv_func(int num_msg, const struct pam_message **msg,
@@ -135,13 +140,28 @@ f_chpass(INT32 args)
 
 static void
 f_create(INT32 args)
-{}
+{
+    get_all_args("AdminTools.PAM->create", args,
+                 "%s", THIS->appname);
+
+    if (!THIS->appname)
+        FERROR("create", "First argument is required - an application name");
+
+    pop_n_elems(args);
+}
 
 static void
 init_pam(struct object *o)
 {
+    PAM_OBJECT_DATA   *dta;
+
+    dta = (PAM_OBJECT_DATA*)malloc(sizeof(PAM_OBJECT_DATA));
+    if (!dta)
+        FERROR("init_pam", "Out of memory!");
+
+    dta->appname = NULL;
     THIS_LOW->object_name = _object_name;
-    THIS_LOW->object_data = NULL;
+    THIS_LOW->object_data = dta;
 }
 
 static void
@@ -158,7 +178,7 @@ _at_pam_init(void)
     set_exit_callback(exit_pam);
 
     ADD_FUNCTION("create", f_create, 
-                 tFunc(tVoid, tVoid), 0);
+                 tFunc(tString, tVoid), 0);
     ADD_FUNCTION("chpass", f_chpass,
                  tFunc(tString tString tString tString, tInt), 0);
     
