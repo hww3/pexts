@@ -39,8 +39,6 @@
 #include <libxslt/xsltutils.h>
 #include <libxslt/xsltconfig.h>
 
-
-
 #include <stdio.h>
 #include <fcntl.h>
 
@@ -54,7 +52,7 @@
 #define DEBUG_XSLT(d)
 #endif
 
-extern int xmlLoadExtDtdDefaultValue;
+/* extern int xmlLoadExtDtdDefaultValue; */
 int xslWasInit;
 struct program *xslt_program=NULL;
 struct program *stylesheet_program=NULL;
@@ -109,7 +107,7 @@ static void init_stylesheet_storage(struct object *o)
 //!
 //! Creation function for the Parser object.
 //!
-void f_create(INT32 args)
+static void f_create(INT32 args)
 {
     pop_n_elems(args);
 }
@@ -117,7 +115,7 @@ void f_create(INT32 args)
 //!
 //! Set the xml Data for the transformation.
 //!
-void f_set_xml_data(INT32 args)
+static void f_set_xml_data(INT32 args)
 {
     if ( args != 1 )
 	Pike_error("XSLT.Parser()->set_xml_data: Expected one argument.\n");
@@ -135,7 +133,7 @@ void f_set_xml_data(INT32 args)
 //!
 //! Set the variables used for transformation.
 //!
-void f_set_variables(INT32 args)
+static void f_set_variables(INT32 args)
 {
     if ( args != 1 )
 	Pike_error("XSLT.Parser()->set_variables: Expected one argument.\n");
@@ -151,12 +149,11 @@ void f_set_variables(INT32 args)
 //!
 //! @param
 //!
-void xsl_error(void* ctx, const char* msg, ...) {
+static void xsl_error(void* ctx, const char* msg, ...) {
     va_list args;
     char buf[1024];
     char out[2048] = { 0 };
     xslt_storage* store = (xslt_storage*) ctx;
-
 
     DEBUG_XSLT("xsl_error()\n");
     DEBUG_XSLT(msg);
@@ -191,7 +188,7 @@ void xsl_error(void* ctx, const char* msg, ...) {
 //!
 //! Error function
 //!
-void xml_error(void* ctx, const char* msg, ...) {
+static void xml_error(void* ctx, const char* msg, ...) {
     va_list args;
     char buf[1024];
     char out[2048] = { 0 };
@@ -238,11 +235,11 @@ static void f_run( INT32 args )
     struct keypair            *k;
     int           success, count;
     char*           resultBuffer;
-    int              varcount, i;
+    int              varcount = 0, i;
     xmlChar*               value;
     const xmlChar*           str;
 
-    char **vars            = NULL; // variables
+    const char **vars            = NULL; // variables
     xmlChar* params[MAX_PARAMS+1];
     
     if ( args != 1 || Pike_sp[-args].type != T_OBJECT )
@@ -325,7 +322,7 @@ static void f_run( INT32 args )
 	    str = (const xmlChar*) sind.u.string->str;
 	    // namespaces are bad
 	    if ( xmlStrchr(str, ':') ) 
-		vars[tmpint++] = (const char*) "supressed";
+		vars[tmpint++] = "supressed";
 	    else
 		vars[tmpint++] = sind.u.string->str;
 	    vars[tmpint++] = value;
@@ -386,7 +383,7 @@ static void f_run( INT32 args )
 //!
 //! Get the libxml2 Version-
 //!
-void f_get_version(INT32 args)
+static void f_get_version(INT32 args)
 {
     char *result = malloc(200);
     
@@ -402,7 +399,7 @@ void f_get_version(INT32 args)
 //!
 //! Create a new Stylesheet object and set the initial error function.
 //!
-void f_create_stylesheet(INT32 args)
+static void f_create_stylesheet(INT32 args)
 {
     if ( THIS->err_str != NULL ) {
 	free_string(THIS->err_str);
@@ -416,7 +413,7 @@ void f_create_stylesheet(INT32 args)
 //!
 //! Set the function to be called when parsing xsl:include tags.
 //!
-void f_set_include_callbacks(INT32 args)
+static void f_set_include_callbacks(INT32 args)
 {
   int i;
   if ( args != 4 )
@@ -451,7 +448,7 @@ void f_set_include_callbacks(INT32 args)
 //!
 //! Set a language for the Stylesheet.
 //!
-void f_set_language(INT32 args)
+static void f_set_language(INT32 args)
 {
     struct pike_string* str;
 
@@ -471,7 +468,7 @@ void f_set_language(INT32 args)
 //!
 //! xsl:include callback registered to xslt. Only matches steam://
 //!
-int _include_match(const char* filename)
+static int _include_match(const char* filename)
 {
   int match;
   
@@ -493,7 +490,7 @@ int _include_match(const char* filename)
 //!
 //! Include open callback function.
 //!
-void* _include_open(char* const filename)
+static void* _include_open(const char* filename)
 {
     struct object*    obj;
 
@@ -523,9 +520,9 @@ void* _include_open(char* const filename)
 //!
 //! Read from the opened include file. 
 //!
-int _include_read(void* context, char* buffer, int len)
+static int _include_read(void* context, char* buffer, int len)
 {
-    int result;
+    int result = 0;
     THREAD_SAFE_RUN(result=f_include_read(context, buffer, len));
     return result;
 }
@@ -534,7 +531,7 @@ int _include_read(void* context, char* buffer, int len)
 //!
 //! Read the content
 //!
-int f_include_read(void* context, char* buffer, int len)
+static int f_include_read(void* context, char* buffer, int len)
 {
     struct pike_string* str;
 
@@ -586,19 +583,20 @@ int f_include_read(void* context, char* buffer, int len)
 //!
 //! @param
 //!
-void _include_close(void* context)
+static int _include_close(void* context)
 {
   struct pike_string* str;
   
   if ( THIS->close_include == NULL )
-    return;
+    return -1;
   push_svalue(THIS->close_include);
   add_ref(THIS->file);
   push_object(THIS->file);
   f_call_function(2);
+  return 0;
 }
 
-void f_get_method(INT32 args)
+static void f_get_method(INT32 args)
 {
     if ( THAT->stylesheet == NULL )
 	Pike_error("XSLT.Stylesheet(): no stylesheet!");
@@ -612,7 +610,7 @@ void f_get_method(INT32 args)
 //! Set the content of the Stylesheet which will create the parse
 //! xsltStylesheet structure and store it in the objects storage.
 //!
-void f_set_content(INT32 args)
+static void f_set_content(INT32 args)
 {
     struct pike_string* str;
     xmlDocPtr           xsl;
@@ -662,6 +660,10 @@ void f_set_content(INT32 args)
 //!
 void pike_module_init( void )
 {
+#ifdef PEXTS_VERSION
+  pexts_init();
+#endif
+
     xmlSubstituteEntitiesDefault(1);
     xmlLoadExtDtdDefaultValue = 1;
     xmlRegisterInputCallbacks(

@@ -93,5 +93,16 @@ static void f_create_stylesheets( INT32 args );
 static void f_content_type( INT32 args );
 static void f_charset( INT32 args );
 static void f_set_include_callbacks( INT32 args );
-void xml_error(void* ctx, const char* msg, ...);
+static void f_get_version(INT32 args);
+static void f_create_stylesheet(INT32 args);
+static void f_set_language(INT32 args);
+static int f_include_read(void* context, char* buffer, int len);
+
+static int _include_match(const char* filename);
+static void* _include_open(const char* filename);
+static int _include_read(void* context, char* buffer, int len);
+static int _include_close(void *context);
+
+static void xml_error(void* ctx, const char* msg, ...);
+static void xsl_error(void* ctx, const char* msg, ...);
 #endif /* __XSLT_H */
