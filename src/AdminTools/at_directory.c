@@ -350,9 +350,11 @@ f_dir_index(INT32 args)
             if (ARG(1).u.string == s_ino) {
                 pop_n_elems(args);                
                 push_int(THIS->dent->d_ino);
+#ifndef RUNNING_BSD
             } else if (ARG(1).u.string == s_off) {
                 pop_n_elems(args);                
                 push_int(THIS->dent->d_off);
+#endif
             } else if (ARG(1).u.string == s_reclen) {
                 pop_n_elems(args);                
                 push_int(THIS->dent->d_reclen);
