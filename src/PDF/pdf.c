@@ -477,7 +477,10 @@ void pike_module_exit( void )
 }
 
 
-#endif /* HAVE_PDFLIB */
+#else /* HAVE_PDFLIB */
+void pike_module_init(void)
+{}
+#endif
 
 /*
  * Local variables:

@@ -25,6 +25,8 @@ RCSID("$Id$");
 #include "pexts.h"
 #include "pcre_config.h"
 
+#include "pexts_ver.c"
+
 #ifdef HAVE_PCRE 
 #include <stdio.h>
 #include <fcntl.h>
@@ -302,6 +304,8 @@ static void init_regexp(struct object *o)
 /* Init the module */
 void pike_module_init(void)
 {
+  pexts_init();
+
   start_new_program();
   ADD_STORAGE( PCRE_Regexp  );
   ADD_FUNCTION( "create", f_pcre_create,
@@ -318,6 +322,7 @@ void pike_module_init(void)
 
 #else
 void pike_module_init(void) {
+    pexts_init();
 }
 #endif /* HAVE_PCRE */
 

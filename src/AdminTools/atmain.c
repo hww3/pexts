@@ -21,6 +21,10 @@
 #define _GNU_SOURCE
 #define _POSIX_PTHREAD_SEMANTICS
 
+#define MODULE_MAJOR 0
+#define MODULE_MINOR 1
+#define MODULE_BUILD 1
+
 #include "global.h"
 RCSID("$Id$");
 
@@ -97,11 +101,15 @@ static struct program   *dir_program;
 static struct program   *quota_program;
 static struct program   *system_program;
 
+#include "pexts_ver.c"
+
 void pike_module_init(void)
 {
     init_interleave_mutex(&at_shadow_mutex);
 
     init_common("AdminTools");
+
+    pexts_init();
     
     /* Shadow stuff */
     shadow_program = _at_shadow_init();

@@ -561,8 +561,12 @@ int store_component( newtComponent elem, char *nev, char *value )
 #endif /* HAVE_NEWT */
 /*----------------------------- - - --- - -  - - */
 
+#include "pexts_ver.c"
+
 void pike_module_init(void)
 {
+  pexts_init();
+
 #ifdef HAVE_NEWT
   start_new_program();
   /*//ADD_FUNCTION("create", f_init, "function(void:void)", ID_PUBLIC ); */

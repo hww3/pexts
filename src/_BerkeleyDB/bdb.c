@@ -26,8 +26,12 @@ RCSID("$Id$");
 
 /* Initialize and start module */
 
+#include "pexts_ver.c"
+
 void pike_module_init( void )
 {
+  pexts_init();
+  
 #ifdef HAVE_BDB
   f_bdb_init_db_program();
  

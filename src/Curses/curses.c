@@ -272,9 +272,13 @@ static void f_init_color(INT32 args)
 VOID_INT_FN(has_colors)
 VOID_INT_FN(can_change_color)
 #endif /* HAVE_CURSES */
+
+#include "pexts_ver.c"
 		
 void pike_module_init(void)
 {
+  pexts_init();
+
 #ifdef HAVE_CURSES
   init_screen_program();
   init_window_program();
