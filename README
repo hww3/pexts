@@ -17,6 +17,7 @@ Installing
   From CVS:
   +++++++++
     (execute these commands in the _top_ directory)
+    You need at least autoconf 2.53
 
     ./autogen.sh
     ./configure [--with-pike=/path/to/pike]
