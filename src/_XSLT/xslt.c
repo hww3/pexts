@@ -17,14 +17,19 @@
  * $Id$
  */
 
+#include "xslt_config.h"
+
 #include <string.h>
 #include <stdarg.h>
+
 #if defined(HAVE_XML2) && defined(HAVE_XSLT)
+
+#include "caudium_util.h"
+
 #include <libxml/xmlmemory.h>
 #include <libxml/debugXML.h>
 #include <libxml/HTMLtree.h>
 #include <libxml/xmlIO.h>
-#include <libxml/DOCBparser.h>
 #include <libxml/xinclude.h>
 #include <libxml/catalog.h>
 #include <libxml/xmlversion.h>
@@ -35,13 +40,6 @@
 #include <libxslt/xsltconfig.h>
 
 
-#include "global.h"
-#include "interpret.h"
-#include "stralloc.h"
-#include "pike_macros.h"
-#include "module_support.h"
-#include "mapping.h"
-#include "threads.h"
 
 #include <stdio.h>
 #include <fcntl.h>

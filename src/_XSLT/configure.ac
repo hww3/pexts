@@ -16,6 +16,7 @@ if test "$XSLT_CONFIG" = "xslt-config"; then
   XSLT_LIBS="`$XSLT_CONFIG --libs`"
   AC_SUBST(XSLT_CFLAGS)
   AC_SUBST(XSLT_LIBS)
+  AC_DEFINE(HAVE_XSLT,[],[Define if your system has libxslt installed])
   AC_MSG_RESULT([found])
 else
   AC_MSG_RESULT([not found])

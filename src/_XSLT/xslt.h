@@ -1,4 +1,7 @@
+#ifndef __XSLT_H
+#define __XSLT_H
 
+#include <malloc.h>
 
 /* This allows execution of c-code that requires the Pike interpreter to 
  * be locked from the Sablotron callback functions.
@@ -91,10 +94,4 @@ static void f_content_type( INT32 args );
 static void f_charset( INT32 args );
 static void f_set_include_callbacks( INT32 args );
 void xml_error(void* ctx, const char* msg, ...);
-
-
-
-
-
-
-
+#endif /* __XSLT_H */
