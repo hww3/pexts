@@ -56,9 +56,9 @@
 #endif
 
 /* Pexts version */
-#define PEXTS_VERSION "0.0.1"
+#define PEXTS_VERSION "0.1.1"
 #define PEXTS_MAJOR   0
-#define PEXTS_MINOR   0
+#define PEXTS_MINOR   1
 #define PEXTS_BUILD   1
 
 #ifndef MODULE_MAJOR
