@@ -1317,6 +1317,17 @@ static void exit_sax(struct object *o)
   if (econtent_prefix) free_string(econtent_prefix);
   if (econtent_c1) free_string(econtent_c1);
   if (econtent_c2) free_string(econtent_c2);
+  if (seDomain) free_string(seDomain);
+  if (seCode) free_string(seCode);
+  if (seMessage) free_string(seMessage);
+  if (seLevel) free_string(seLevel);
+  if (seFile) free_string(seFile);
+  if (seLine) free_string(seLine);
+  if (seStr1) free_string(seStr1);
+  if (seStr2) free_string(seStr2);
+  if (seStr3) free_string(seStr3);
+  if (seInt1) free_string(seInt1);
+  if (seInt2) free_string(seInt2);
 }
 
 int _init_xml_sax(void)
