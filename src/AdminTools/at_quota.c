@@ -50,6 +50,7 @@ RCSID("$Id$");
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/quota.h>
+#include <errno.h>
 
 #include "at_common.h"
 #include "at_mntent.h"
@@ -71,6 +72,9 @@ static struct program *quota_program;
 
 #define THIS_LOW ((ATSTORAGE*)get_storage(fp->current_object, quota_program))
 #define THIS ((struct quota_struct*)THIS_LOW->object_data)
+
+#define F_USRQUOTA 0x01
+#define F_GRPQUOTA 0x02
 
 /**
  ** Support functions
@@ -170,32 +174,126 @@ static struct mntent *is_mounted(char *dev, char *fn)
 }
 
 static void
-f_quotaon(INT32 args)
+quota_onoff(INT32 args, char *fn, int cmd)
 {
     char           *fname;
     struct mntent  *mnt;
+    int            qret = 0;
+    char           *fs;
+    int            which = F_USRQUOTA;
     
     if (args < 1)
-	FERROR("on", "one STRING argument required");
+	FERROR(fn, "single STRING argument required");
 	
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-        FERROR("on", "Wrong argument type for argument 1. Expected 8-bit string");
-	
-    mnt = is_mounted(ARG(1).u.string->str, "on");
+        FERROR(fn, "Wrong argument type for argument 1. Expected 8-bit string");
+
+    if (args > 1) {
+	if (ARG(2).type != T_INT)
+	    FERROR(fn, "Wrong argument type for argument 2. Expected INT");
+	which = 0;
+	if (ARG(2).u.integer & F_USRQUOTA)
+	    which |= F_USRQUOTA;
+	if (ARG(2).u.integer & F_GRPQUOTA)
+	    which |= F_GRPQUOTA;
+	    
+	if (!which)
+	    FERROR(fn, "Wrong argument value for argument 2. Expected a combination of USRQUOTA and GRPQUOTA");
+    }
+    	    
+    fs = ARG(1).u.string->str;
+    	
+    mnt = is_mounted(fs, "on");
     if (!mnt)
-	FERROR("on", "Requested file system is not mounted: %s", 
-	       ARG(1).u.string->str);
-	       
+	FERROR(fn, "File system is not mounted: %s", fs);
+
+    if (which & F_USRQUOTA) {
+	if (!hasquota(mnt, USRQUOTA, &fname))	
+	    qret |= F_USRQUOTA;
+	else {
+	    if (quotactl(QCMD(cmd, USRQUOTA), fs, 0, fname) < 0)
+		FERROR(fn, "System error while turning user quota on:\n\t%s",
+		       strerror(errno));
+	}
+    }
+    
+    if (which & F_GRPQUOTA) {
+	if (!hasquota(mnt, GRPQUOTA, &fname))
+	    qret |= F_GRPQUOTA;
+	else {
+	    
+	    if (quotactl(QCMD(cmd, GRPQUOTA), fs, 0, fname) < 0)
+		FERROR(fn, "System error while turning group quota on:\n\t%s",
+		       strerror(errno));
+	}
+    }
+    
+    if ((which & F_USRQUOTA) && (qret & F_USRQUOTA))
+	FERROR(fn, "User quota requested but not supported on '%s'", fs);
+	
+    if ((which & F_GRPQUOTA) && (qret & F_GRPQUOTA))
+	FERROR(fn, "Group quota requested but not supported on '%s'", fs);
+}
+
+static void
+f_quotaon(INT32 args)
+{
+    quota_onoff(args, "on", Q_QUOTAON);
     pop_n_elems(args);
 }
 
 static void
 f_quotaoff(INT32 args)
-{}
+{
+    quota_onoff(args, "off", Q_QUOTAOFF);
+    pop_n_elems(args);
+}
 
 static void
 f_getquota(INT32 args)
-{}
+{
+    char            *fs;
+    struct mntent   *mnt;
+    struct dqblk    gdqb, udqb;
+    int             which = F_USRQUOTA;
+    
+    if (args < 1)
+	FERROR("get", "Single STRING argument required");
+	
+    if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
+        FERROR("get", "Wrong argument type for argument 1. Expected 8-bit string");
+
+    if (args > 1) {
+	if (ARG(2).type != T_INT)
+	    FERROR("get", "Wrong argument type for argument 2. Expected INT");
+	which = 0;
+	if (ARG(2).u.integer & F_USRQUOTA)
+	    which |= F_USRQUOTA;
+	if (ARG(2).u.integer & F_GRPQUOTA)
+	    which |= F_GRPQUOTA;
+	    
+	if (!which)
+	    FERROR("get", "Wrong argument value for argument 2. Expected a combination of USRQUOTA and GRPQUOTA");
+    }
+
+    fs = ARG(1).u.string->str;
+    
+    mnt = is_mounted(fs, "on");
+    if (!mnt)
+	FERROR("get", "File system is not mounted: %s", fs);
+	
+    if (which & F_USRQUOTA)
+	if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), fs, 0, (void*)&udqb) < 0)
+	    FERROR("get", "System error ocurred while getting user quota on '%s':\n\t%s",
+	           fs, strerror(errno));
+		   
+    if (which & F_GRPQUOTA)
+	if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), fs, 0, (void*)&gdqb) < 0)
+	    FERROR("get", "System error ocurred while getting group quota on '%s':\n\t%s",
+	           fs, strerror(errno));
+
+    pop_n_elems(args);
+}
 
 static void
 f_setquota(INT32 args)
@@ -255,12 +353,17 @@ _at_quota_init(void)
     set_init_callback(init_quota);
     set_exit_callback(exit_quota);
 
-    ADD_FUNCTION("create", f_create, tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("on", f_quotaon, tFunc(tString, tVoid), 0);
-    ADD_FUNCTION("off", f_quotaoff, tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("create", f_create, 
+                 tFunc(tVoid, tVoid), 0);
+    ADD_FUNCTION("on", f_quotaon, 
+                 tFunc(tString tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("off", f_quotaoff, 
+                 tFunc(tString tOr(tInt, tVoid), tVoid), 0);
+    ADD_FUNCTION("get", f_getquota, 
+                 tFunc(tString tOr(tInt, tVoid), tOr(tArray, tInt)), 0);
     
-    add_integer_constant("USRQUOTA", USRQUOTA, 0);
-    add_integer_constant("GRPQUOTA", GRPQUOTA, 0);
+    add_integer_constant("USRQUOTA", F_USRQUOTA, 0);
+    add_integer_constant("GRPQUOTA", F_GRPQUOTA, 0);
     
     quota_program = end_program();
     add_program_constant("Quota", quota_program, 0);
