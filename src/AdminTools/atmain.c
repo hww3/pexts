@@ -399,7 +399,7 @@ do_opendir(char *dirpath)
 	 * program rather than use error() here?
 	 * /grendel 26-09-2000
 	 */
-	error("AdminTools.Directory->opendir(): %s\n", err);
+	error("AdminTools.Directory[do_opendir()]: %s\n", err);
     }
     
     return dirent;
@@ -409,12 +409,12 @@ static void
 f_opendir(INT32 args)
 {
 #ifdef HAVE_OPENDIR
-    get_all_args("AdminTools.Directory->opendir", args, "%S", &THIS->dir.dirname);
+    get_all_args("AdminTools.Directory->open", args, "%S", &THIS->dir.dirname);
     if (args != 1)
-	error("AdminTools.Directory->opendir(): Invalid number of arguments. Expected 1.\n");
+	error("AdminTools.Directory->open(): Invalid number of arguments. Expected 1.\n");
     
     if (ARG(1).type != T_STRING || ARG(1).u.string->size_shift > 0)
-	error("AdminTools.Directory->opendir(): Wrong argument type for argument 1. Expected 8-bit string.\n");
+	error("AdminTools.Directory->open(): Wrong argument type for argument 1. Expected 8-bit string.\n");
 
     /*
      * Do I have to make a copy of the string that's on the
@@ -425,28 +425,32 @@ f_opendir(INT32 args)
     pop_n_elems(args);
 
     if (THIS->dir.dir)
-	error("AdminTools.Directory->opendir(): previous directory not closed.\n");
+	error("AdminTools.Directory->open(): previous directory not closed.\n");
 
     THIS->dir.dir = do_opendir(THIS->dir.dirname->str);
 #else
-    error("AdminTools.Directory->opendir(): function not supported\n");
+    error("AdminTools.Directory->open(): function not supported\n");
 #endif
 }
 
+#ifdef HAVE_CLOSEDIR
 static void
 f_closedir(INT32 args)
 {
-#ifdef HAVE_CLOSEDIR
     pop_n_elems(args);
     if (!THIS->dir.dir) {
 	push_int(-1);
 	return;
     }
     push_int(closedir(THIS->dir.dir));
-#else
-    error("AdminTools.Directory->closedir(): function not supported\n");
-#endif
 }
+#else
+static void
+f_closedir(INT32 args)
+{
+    error("AdminTools.Directory->close(): function not supported\n");
+}
+#endif
 
 #if defined(HAVE_READDIR) || defined(HAVE_READDIR_R)
 static struct dirent*
@@ -458,10 +462,11 @@ my_readdir(DIR *dir)
 }
 #endif
 
+#if defined(HAVE_READDIR) || defined(HAVE_READDIR_R)
 static void
 f_readdir(INT32 args)
 {
-#if defined(HAVE_READDIR_R) || defined(HAVE_READDIR)
+
     struct dirent   *dent;
     
     if (!THIS->dir.dir) {
@@ -470,26 +475,63 @@ f_readdir(INT32 args)
     }
     
     dent = my_readdir(THIS->dir.dir);
-#else
-    error("AdminTools.Directory->readdir(): function not supported\n");
-#endif
-}
 
+}
+#else
+static void
+f_readdir(INT32 args)
+{
+    error("AdminTools.Directory->read(): function not supported\n");
+}
+#endif
+
+#ifdef HAVE_REWINDDIR
 static void
 f_rewinddir(INT32 args)
 {}
+#else
+static void
+f_rewinddir(INT32 args)
+{
+    error("AdminTools.Directory->rewind(): function not supported\n");
+}
+#endif
 
+#ifdef HAVE_SEEKDIR
 static void
 f_seekdir(INT32 args)
 {}
+#else
+static void
+f_seekdir(INT32 args)
+{
+    error("AdminTools.Directory->seek(): function not supported\n");
+}
+#endif
 
+#ifdef HAVE_TELLDIR
 static void
 f_telldir(INT32 args)
 {}
+#else
+static void
+f_telldir(INT32 args)
+{
+    error("AdminTools.Directory->tell(): function not supported\n");
+}
+#endif
 
+#ifdef HAVE_SCANDIR
 static void
 f_scandir(INT32 args)
 {}
+#else
+static void
+f_scandir(INT32 args)
+{
+    error("AdminTools.Directory->scandir(): function not supported\n");
+}
+#endif
 
 static void
 f_dir_create(INT32 args)
@@ -512,7 +554,7 @@ f_dir_create(INT32 args)
 	THIS->dir.dir = NULL;
 
 #else
-    error("AdminTools.Directory->opendir(): function not supported\n");
+    error("AdminTools.Directory->open(): function not supported\n");
 #endif
 
     THIS->dir.select_cb.type = T_INT;
@@ -528,7 +570,6 @@ f_dir_destroy(INT32 args)
 #ifdef HAVE_CLOSEDIR
     if (THIS->dir.dir)
 	closedir(THIS->dir.dir);
-    error("destroy called\n");
 #endif
     pop_n_elems(args);
 }
