@@ -183,7 +183,7 @@ void f_bdb_del(INT32 args) {
   int ret=0;
 
   CHECKBDB();
-  get_all_args("BerkeleyDB.DB->get", args, "%S", &key);
+  get_all_args("BerkeleyDB.DB->del", args, "%S", &key);
   if(key->size_shift)
     error("Invalid argument 1, expected 8-bit string.\n");
   MEMSET(&db_key, 0, sizeof(db_key));
@@ -201,6 +201,29 @@ void f_bdb_del(INT32 args) {
     push_int(1);
     break;
   case DB_NOTFOUND: /* key not found */
+    push_int(0); 
+    break;
+  default: /* fatal error */ 
+    BDBERR(db_strerror(ret));
+    break;
+  }
+}
+
+void f_bdb_sync(INT32 args) {
+  int ret=0;
+  CHECKBDB();
+
+  THREADS_ALLOW();
+  ret = db->sync(db, 0);
+  THREADS_DISALLOW();
+
+  pop_n_elems(args);
+  switch(ret)
+  {
+  case 0: /* All went fine */
+    push_int(1);
+    break;
+  case DB_INCOMPLETE: /* key not found */
     push_int(0); 
     break;
   default: /* fatal error */ 

@@ -44,6 +44,7 @@ void pike_module_init( void )
   add_function( "put", f_bdb_put, "function(string,string,int:int)",0 );
   add_function( "get", f_bdb_get, "function(string:string)",0 );
   add_function( "del", f_bdb_del, "function(string:int)",0 );
+  add_function( "sync", f_bdb_sync, "function(void:int)",0 );
 
   set_exit_callback(free_bdb_struct);
   set_init_callback(init_bdb_struct);

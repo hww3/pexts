@@ -36,5 +36,6 @@ void f_bdb_create(INT32 args);
 void f_bdb_put(INT32 args);
 void f_bdb_get(INT32 args);
 void f_bdb_del(INT32 args);
+void f_bdb_sync(INT32 args);
 
 #endif
