@@ -56,6 +56,9 @@ RCSID("$Id$");
 #include <pcreposix.h>
 #include <mailbox.h>
 #include <rfc822.h>
+#include <account.h>
+#include <mutt_socket.h>
+#include "md5.h"
 
 /* local headers */
 #include "mailstore.h"
@@ -105,6 +108,29 @@ typedef struct {
 	push_text(I); \
 	push_int(V);
 
+/*
+ * Not very elegant, but effective. We have to reference
+ * those routines so that they're pulled in from libmutta.
+ * Otherwise we'll end up with a .so that doesn't load.
+ */
+static void *__dummy_variable[] = {
+    NULL,
+    mutt_socket_readln_d,
+    mutt_socket_close,
+    mutt_to_base64,
+    mutt_socket_write_d,
+    MD5Final,
+    mutt_socket_readchar,
+    mutt_socket_head,
+    really_free_svalue,
+    mutt_socket_free,
+    MD5Init,
+    MD5Update,
+    mutt_from_base64,
+    mutt_socket_open,
+    mutt_conn_find,
+    mutt_account_getuser
+};
 
 /* forward declarations */
 void init_mailstore(struct object *o);
@@ -117,7 +143,6 @@ void f_stat(INT32 args);
 void mutt_message(const char *fmt, ...);
 
 /* pike methods */
-
 
 /*
 **! method: create(string uri)
@@ -133,7 +158,6 @@ void mutt_message(const char *fmt, ...);
 **!  nothing (for now)
 **! name: Mailstore() - class constructor for Maistore
 */
-
 void f_create(INT32 args) {
 	char *path;
 
@@ -249,11 +273,18 @@ void pike_module_init() {
 		tFunc(tVoid, tString), 0);
 
 	end_class("Mailbox",0);
+	
+	/* reference it so that it's not optimized out */
+	__dummy_variable[0] = (void*)NULL;
 }
 
 
 
-void pike_module_exit() { }
+void pike_module_exit() 
+{ 
+  /* reference it so that it's not optimized out */
+  __dummy_variable[0] = (void*)NULL;
+}
 
 
 /* libmutt callbacks */
