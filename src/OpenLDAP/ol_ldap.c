@@ -62,6 +62,58 @@ static struct pike_string   *modify_values;
 #define MOD_DELETE_STR       "delete"
 #define MOD_REPLACE_STR      "replace"
 
+static char*
+type2string(int type)
+{
+    static char casual[128];
+    
+    switch(type) {
+        case T_ARRAY:
+            return "T_ARRAY";
+
+        case T_MAPPING:
+            return "T_MAPPING";
+
+        case T_MULTISET:
+            return "T_MULTISET";
+
+        case T_OBJECT:
+            return "T_OBJECT";
+
+        case T_FUNCTION:
+            return "T_FUNCTION";
+
+        case T_PROGRAM:
+            return "T_PROGRAM";
+
+        case T_STRING:
+            return "T_STRING";
+
+        case T_TYPE:
+            return "T_TYPE";
+
+        case T_FLOAT:
+            return "T_FLOAT";
+
+        case T_INT:
+            return "T_INT";
+
+        case T_ZERO:
+            return "T_ZERO";
+
+        case T_TUPLE:
+            return "T_TUPLE";
+
+        case T_SCOPE:
+            return "T_SCOPE";
+
+        default:
+            snprintf(casual, sizeof(casual), "T_HOW_SHOULD_I_KNOW (value == %u)",
+                     type);
+            return casual;
+    }
+}
+
 /*
  **| method: void create ( string uri );
  **
@@ -177,6 +229,9 @@ f_ldap_bind(INT32 args)
     char    *who = "", *cred = "";
     int      auth  = LDAP_AUTH_SIMPLE, ret;
 
+    if (THIS->bound)
+        Pike_error("OpenLDAP.Client->bind(): cannot re-bind, unbind first\n");
+    
     switch (args) {
         case 3:
             if (ARG(3).type != T_INT)
@@ -202,8 +257,30 @@ f_ldap_bind(INT32 args)
             break;
     }
 
-    ret = ldap_bind_s(THIS->conn, who, cred, auth);
-    THIS->bound = ret ? 0 : 1;
+    switch(auth) {
+        case LDAP_AUTH_NONE:
+            ret = ldap_bind_s(THIS->conn, "", "", LDAP_AUTH_NONE);
+            break;
+
+        case LDAP_AUTH_SIMPLE:
+            ret = ldap_simple_bind_s(THIS->conn, who, cred);
+            break;
+
+        case LDAP_AUTH_SASL:
+            ret = ldap_bind_s(THIS->conn, who, cred, LDAP_AUTH_SASL);
+            break;
+
+        case LDAP_AUTH_KRBV4:
+        case LDAP_AUTH_KRBV41:
+        case LDAP_AUTH_KRBV42:
+            ret = ldap_kerberos_bind_s(THIS->conn, who);
+            break;
+            
+        default:
+            ret = ldap_bind_s(THIS->conn, who, cred, auth);
+            break;
+    }
+    THIS->bound = (ret == LDAP_SUCCESS) ? 1 : 0;
     
     pop_n_elems(args);
     
@@ -638,7 +715,8 @@ make_berval_array(struct svalue *val)
         
         for (i = 0; i < size; i++) {
             if (arr->item[i].type != T_STRING)
-                Pike_error("OpenLDAP.Client: expecting a string\n");
+                Pike_error("OpenLDAP.Client: expecting a string, got %s\n",
+                           type2string(arr->item[i].type));
 
             if (arr->item[i].u.string->size_shift > 0)
                 Pike_error("OpenLDAP.Client: expecting an 8-bit string\n");
@@ -997,6 +1075,9 @@ f_ldap_add(INT32 args)
     memset(mods, 0, arr->size + 1);
 
     for (i = 0; i < arr->size; i++) {
+        mods[i] = (LDAPMod*)malloc(sizeof(LDAPMod));
+        if (!mods[i])
+            Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
         mods[i]->mod_op = LDAP_MOD_BVALUES;
 
         if (arr->item[i].type != T_MAPPING)
