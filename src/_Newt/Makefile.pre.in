@@ -1,0 +1,14 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=_Newt
+OBJS= main.o functions.o component_base.o
+SOURCES=main.c functions.c component_base.c
+MODULE_LIBS=@LIBS@
+EXTRA_CLEAN=newt_config.h newt_config.h.in _Newt.so
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+
