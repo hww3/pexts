@@ -29,7 +29,7 @@ RCSID("$Id$");
 #ifdef HAVE_LIBLDAP
 struct program  *result_program;
 
-#define THIS ((OLSRTORAGE*)get_storage(fp->current_object, result_program))
+#define THIS ((OLRSTORAGE*)get_storage(fp->current_object, result_program))
 #define THIS_PARENT ((OLSTORAGE*)get_storage(Pike_fp->next->current_object, ldap_program))
 
 static void
@@ -107,13 +107,15 @@ exit_result(struct object *o)
 {
     if (THIS->msg)
         free(THIS->msg);
+    if (THIS->cur)
+        free(THIS->cur);
 }
 
 void
 _ol_result_program_init(void)
 {
     start_new_program();
-    ADD_STORAGE(OLSRTORAGE);
+    ADD_STORAGE(OLRSTORAGE);
 
     set_init_callback(init_result);
     set_exit_callback(exit_result);
