@@ -1,0 +1,104 @@
+
+
+object PDF.pdf();
+	create an empty pdf object in memory
+
+object PDF.pdf("/path/to/file.pdf");
+	create or open a pdf file
+
+>> object pdf=PDF.pdf();
+
+pdf->set_info( string key, string value)
+	fill document information field <key> with <value>. The keys
+	can be:	
+		Subject		Subject of the document
+		Title		Title of the document
+		Creator		Creator of the document
+		Author		Author of the document
+		Keywords	Keywords describing the contents of the 
+				document
+		<any custom>	User-defined field name. PDFlib supports
+				one additional field which may be arbitrary
+				named.
+
+pdf->begin_page( float width, float height );
+	Start a new page in the PDF file. The <width> and <height>
+	parameters are the dimensions of the new page in points.
+	1pt == 1 inch / 72 == 25.4 mm / 72 == 0.3528 mm
+
+	common standard page size dimensions
+	page format	width	height
+	a0		2380	3368
+	a1		1684	2380
+	a2		1190	1684
+	a3		842	1190
+	a4		595	842
+	a5		421	595
+	a6		297	421
+	b5		501	709
+	letter		612	794
+	legal		612	1008
+	ledger		1224	792
+	11x17		792	1224
+	
+	pdf->begin_page() must always be paired with a matching 
+	pdf->end_page() call
+
+pdf->end_page();
+	Must be used to finish a page description.
+
+pdf->close();
+	Finish the generated PDF document, free all document-related
+	resources, and close the output file if the PDF document has
+	been been opened with PDF.pdf(filename);. This function
+	must be called when the client is done generating pages, regardless
+	of the methid used to open the PDF document.
+	When the document was generated in memory, the document buffer will
+	still be kept after this function called.
+	see pdf->generate(); for memory method details.
+
+pdf->generate();
+	after a pdf->close() you can have the generated PDF file
+	if you  used the memory method (PDF.pdf();)
+
+int pdf->findfont( string fontname, string encoding, int embed )
+	Prepare the font <fontname> for later use with pdf->setfont().
+
+pdf->setfont( int font, float size );
+	Set the current font int he given fontsize. The font descriptor must
+	have been retrieved with pdf->findfont(). The font must be set on
+	each page befire drawing any text. Font settings will not be
+	retained across pages. The current font can be changed an arbitrary
+	number of times per page.
+
+pdf->show( string text, int|void len);
+	Print <text> in the current font and font size at the current text
+	position. Both font (via pd->setfont();) and current point 
+	(via pdf->moveto() or another text output function)
+	must have been set before. The current point is moved to the end of
+	the printed text.
+	An optional <len> argument specifies the maximum length.
+
+pdf->continue_text( string text, int|void len );
+	Move to the next line and print <text>. The start of the next line
+	is determinated by the leading parameter and the most recent call to
+	pdf->show(). The current point is moved to the end of the printed
+	text. 
+	An optional <len> argument specifies the maximum length.
+
+pdf->set_text_pos( float x, float y );
+	Set the current text position to (x,y).
+
+float pdf->stringwidth(	string text, int font, float size );
+float pdf->stringwidth(	string text, int len, int font, float size );
+	REturn the width of <text> in an arbitrary font and size which 
+	has been selected with pdf->findfont(). The width calcualtion tages
+	the current values of the following text parameters into account:
+	horizontal scaling, character spacing, and wird spacing. 
+	An optional <len> argument specifies the maximum length.
+
+
+
+
+
+
