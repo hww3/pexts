@@ -1,0 +1,14 @@
+AC_INIT(gpgme_main.c)
+AC_CONFIG_HEADER(gpgme_config.h)
+
+CAUDIUM_MODULE_INIT()
+
+AM_PATH_GPGME(0.3.4)
+AC_CHECK_HEADERS(gpgme.h)
+
+AC_OUTPUT(Makefile.pre, [${MAKE:-make} -f Makefile.pre depend])
+
+dnl ## Local Variables:
+dnl ## tab-width: 4
+dnl ## End:
+	

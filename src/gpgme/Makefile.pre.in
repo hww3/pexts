@@ -1,0 +1,15 @@
+VPATH=@srcdir@:@srcdir@/../..:../..
+MODNAME=gpgme
+OBJS= gpgme_main.o
+SOURCES=gpgme_main.c
+MODULE_LIBS=@LIBS@ @GPGME_LIBS@
+MODULE_CFLAGS=@GPGME_CFLAGS@
+EXTRA_CLEAN=gpgme_config.h gpgme_config.h.in gpgme.so
+
+@module_makefile@
+
+extrainstall:
+
+# DO NOT DELETE THIS LINE -- make  depend  depends  on  it.
+
+
