@@ -84,7 +84,9 @@ typedef struct
 typedef struct
 {
     LDAPMessage         *msg;
+    LDAPMessage         *cur;
     LDAP                *conn;
+    int                  num_entries;
 } OLRSTORAGE;
 #endif
 
