@@ -1,3 +1,11 @@
+pexts (0.1.1-2) unstable; urgency=low
+
+  * Latest cvs snapshot.
+  * Updated config.sub and config.guess
+  * Package build-depends on autoconf > 2.53
+
+ -- Marek Habersack <grendel@debian.org>  Tue, 17 Jun 2003 19:34:45 +0200
+
 pexts (0.1.1-1) unstable; urgency=low
 
   * Latest cvs snapshot.
