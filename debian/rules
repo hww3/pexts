@@ -132,8 +132,8 @@ inter-install:
 	dh_installdirs -A
 	install -d -m 755 $(CURDIR)/debian/pike/usr/lib/pike/$(PIKE_VERSION)/lib/modules
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/pike/
-	install -d -m 755 $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/Newt.pmod/
-	cp -pr pmod/Newt.pmod/* $(CURDIR)/debian/pike$(PVER)-pexts-newt/usr/lib/pike/$(PIKE_VERSION)/lib/modules/Newt.pmod/
+	install -d -m 755 $(CURDIR)/debian/pike/usr/lib/pike/$(PIKE_VERSION)/lib/modules/Newt.pmod/
+	cp -pr pmod/Newt.pmod/* $(CURDIR)/debian/pike/usr/lib/pike/$(PIKE_VERSION)/lib/modules/Newt.pmod/
 
 install: DH_OPTIONS=
 install: build
