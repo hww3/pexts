@@ -123,21 +123,22 @@ void f_bdb_put(INT32 args)
   THREADS_ALLOW();
   ret = db->put(db, txnid, &db_key, &db_data, flags);
   THREADS_DISALLOW();
-  pop_n_elems(args);
   switch(ret)
   {
   case 0: /* All went fine */
-    push_int(1);
+    ret = 1;
     break;
 
   case DB_KEYEXIST: /* Key exists and overwrite mode is disabled */
-    push_int(0);
+    ret = 0;
     break;
 
   default: /* Fatal error */
     BDBERR(db_strerror(ret));
     break;
   }
+  pop_n_elems(args);
+  push_int(ret);
 }
 
 void f_bdb_get(INT32 args) {
@@ -159,16 +160,17 @@ void f_bdb_get(INT32 args) {
   ret = db->get(db, txnid, &db_key, &db_data, 0);
   THREADS_DISALLOW();
 
-  pop_n_elems(args);
   switch(ret)
   {
   case 0: /* All went fine */
     data = make_shared_binary_string(db_data.data, db_data.size);
     free(db_data.data);
+    pop_n_elems(args);
     push_string(data);
     break;
   case DB_NOTFOUND: /* no key or empty key */
   case DB_KEYEMPTY:
+    pop_n_elems(args);
     push_int(0); 
     break;
   default: /* fatal error */ 
@@ -194,19 +196,20 @@ void f_bdb_del(INT32 args) {
   ret = db->del(db, txnid, &db_key, 0);
   THREADS_DISALLOW();
 
-  pop_n_elems(args);
   switch(ret)
   {
   case 0: /* All went fine */
-    push_int(1);
+    ret = 1;
     break;
   case DB_NOTFOUND: /* key not found */
-    push_int(0); 
+    ret = 0;
     break;
   default: /* fatal error */ 
     BDBERR(db_strerror(ret));
     break;
   }
+  pop_n_elems(args);
+  push_int(ret);
 }
 
 void f_bdb_sync(INT32 args) {
@@ -217,19 +220,20 @@ void f_bdb_sync(INT32 args) {
   ret = db->sync(db, 0);
   THREADS_DISALLOW();
 
-  pop_n_elems(args);
   switch(ret)
   {
   case 0: /* All went fine */
-    push_int(1);
+    ret = 1;
     break;
   case DB_INCOMPLETE: /* key not found */
-    push_int(0); 
+    ret = 0; 
     break;
   default: /* fatal error */ 
     BDBERR(db_strerror(ret));
     break;
   }
+  pop_n_elems(args);
+  push_int(ret);
 }
 
 #endif /* HAVE_BDB */
