@@ -1,3 +1,10 @@
+pexts (0.0.20001214-1) unstable; urgency=low
+
+  * Latest CVS snapshot
+  * The _Newt module works now
+
+ -- Marek Habersack <grendel@vip.net.pl>  Thu, 14 Dec 2000 18:41:25 +0100
+
 pexts (0.0.20001206-1) unstable; urgency=low
 
   * Initial Release.
