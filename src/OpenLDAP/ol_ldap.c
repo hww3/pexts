@@ -38,6 +38,7 @@ RCSID("$Id$");
 
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 
 #define THIS ((OLSTORAGE*)get_storage(fp->current_object, ldap_program))
 
@@ -49,6 +50,7 @@ static struct pike_string   *filter_str;
 static struct pike_string   *attrs_str;
 static struct pike_string   *attrsonly_str;
 static struct pike_string   *timeout_str;
+static struct pike_string   *empty_str;
 
 static void
 f_create(INT32 args)
@@ -242,9 +244,48 @@ f_set_scope(INT32 args)
 }
 
 static char**
-make_c_array(struct svalue *arr)
+make_c_array(struct svalue *val)
 {
-    return NULL;
+    char          **car;
+    int             i;
+    struct svalue  *sv;
+    struct array   *arr = val->u.array;
+    
+    if (!arr || !arr->size)
+        return NULL;
+
+    car = (char**)malloc((arr->size + 1) * sizeof(char*));
+    memset(car, 0, arr->size);
+    
+    if (!arr)
+        Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+
+    for (i = 0; i < arr->size; i++) {
+        if (arr->item[i].type != T_STRING)
+            continue;
+
+        if (arr->item[i].u.string->size_shift > 0)
+            continue;
+
+        car[i] = arr->item[i].u.string->str;
+    }
+    
+    return car;
+}
+
+static struct timeval *
+make_timeout(long val)
+{
+    struct timeval   *tv;
+
+    tv = (struct timeval*)malloc(sizeof(struct timeval));
+    if (!tv)
+        Pike_error("OpenLDAP.Client: OUT OF MEMORY!\n");
+
+    tv->tv_sec = val;
+    tv->tv_usec = 0;
+    
+    return tv;
 }
 
 static void
@@ -256,6 +297,8 @@ f_ldap_search(INT32 args)
     char               **attrs;
     int                  attrsonly;
     struct timeval      *timeout;
+    LDAPMessage         *res;
+    int                  ret;
     
     if (!args)
         Pike_error("OpenLDAP.Client->search() requires at least one argument\n");
@@ -326,7 +369,7 @@ f_ldap_search(INT32 args)
                 if (!val || val->type != T_INT)
                     timeout = NULL;
                 else
-                    timeout = NULL; /*TEMPORARY*/
+                    timeout = make_timeout(val->u.integer); /*TEMPORARY*/
                 
                 break;
             }
@@ -345,20 +388,64 @@ f_ldap_search(INT32 args)
                 Pike_error("OpenLDAP.Client->search() with single argument requires either a mapping or a string\n");
                 break;
         }
+    } else switch(args) {
+        case 4: /* timeout */
+            if (ARG(4).type != T_INT)
+                Pike_error("OpenLDAP.Client->search(): argument 4 must be an integer\n");
+            else
+                timeout = make_timeout(ARG(4).u.integer);
+            /* fall through */
+
+        case 3: /* attrsonly */
+            if (ARG(3).type != T_INT)
+                Pike_error("OpenLDAP.Client->search(): argument 3 must be an integer\n");
+            else
+                attrsonly = ARG(3).u.integer != 0;
+            /* fall through */
+
+        case 2: /* attrs */
+            if (ARG(2).type != T_INT)
+                Pike_error("OpenLDAP.Client->search(): argument 2 must be an array\n");
+            else
+                attrs = make_c_array(&ARG(3));
+
+            base = THIS->basedn;
+            scope = THIS->scope;
+            filter = ARG(1).u.string->str;
+            attrs = NULL;
+            attrsonly = 0;
+            timeout = NULL;
+            break;
+
+        default:
+            Pike_error("OpenLDAP.Client->search(): incorrect number of arguments\n");
+            break;
     }
+
+    ret = timeout ?
+        ldap_search_st(THIS->conn,
+                       base->str,
+                       scope,
+                       filter,
+                       attrs,
+                       attrsonly,
+                       timeout,
+                       &res) :
+        ldap_search_s(THIS->conn,
+                      base->str,
+                      scope,
+                      filter,
+                      attrs,
+                      attrsonly,
+                      &res);
+        
+    pop_n_elems(args);
+    push_int(0);
 }
 
 static void
 init_ldap(struct object *o)
 {
-    THIS->conn = NULL;
-    THIS->server_url = NULL;
-    THIS->basedn = NULL;
-    THIS->scope = LDAP_SCOPE_DEFAULT;
-    THIS->bound = 0;
-    THIS->lerrno = 0;
-    THIS->caching = 0;
-
     base_str = make_shared_string("base");
     add_ref(base_str);
 
@@ -376,6 +463,17 @@ init_ldap(struct object *o)
 
     timeout_str = make_shared_string("timeout");
     add_ref(timeout_str);
+
+    empty_str = make_shared_string("");
+    add_ref(empty_str);
+    
+    THIS->conn = NULL;
+    THIS->server_url = NULL;
+    THIS->basedn = empty_str;
+    THIS->scope = LDAP_SCOPE_DEFAULT;
+    THIS->bound = 0;
+    THIS->lerrno = 0;
+    THIS->caching = 0;
 }
 
 static void
@@ -392,6 +490,7 @@ exit_ldap(struct object *o)
     free_string(attrs_str);
     free_string(attrsonly_str);
     free_string(timeout_str);
+    free_string(empty_str);
 }
 
 struct program*
@@ -402,26 +501,6 @@ _ol_ldap_program_init(void)
 
     set_init_callback(init_ldap);
     set_exit_callback(exit_ldap);
-
-    /* LDAP constants */
-    /* AUTH stuff */
-    add_integer_constant("LDAP_AUTH_NONE", LDAP_AUTH_NONE, 0);
-    add_integer_constant("LDAP_AUTH_SIMPLE", LDAP_AUTH_SIMPLE, 0);
-    add_integer_constant("LDAP_AUTH_SASL", LDAP_AUTH_SASL, 0);
-    add_integer_constant("LDAP_AUTH_KRBV4", LDAP_AUTH_KRBV4, 0);
-    add_integer_constant("LDAP_AUTH_KRBV41", LDAP_AUTH_KRBV41, 0);
-    add_integer_constant("LDAP_AUTH_KRBV42", LDAP_AUTH_KRBV42, 0);
-
-    /* Cache stuff
-    add_integer_constant("LDAP_CACHE_OPT_CACHENOERRS", LDAP_CACHE_OPT_CACHENOERRS, 0);
-    add_integer_constant("LDAP_CACHE_OPT_CACHEALLERRS", LDAP_CACHE_OPT_CACHEALLERRS, 0);
-    */
-    
-    /* Scope stuff */
-    add_integer_constant("LDAP_SCOPE_DEFAULT", LDAP_SCOPE_DEFAULT, 0);
-    add_integer_constant("LDAP_SCOPE_BASE", LDAP_SCOPE_BASE, 0);
-    add_integer_constant("LDAP_SCOPE_ONELEVEL", LDAP_SCOPE_ONELEVEL, 0);
-    add_integer_constant("LDAP_SCOPE_SUBTREE", LDAP_SCOPE_SUBTREE, 0);
     
     ADD_FUNCTION("create", f_create,
                  tFunc(tString, tVoid), 0);
@@ -452,7 +531,7 @@ _ol_ldap_program_init(void)
     ADD_FUNCTION("search", f_ldap_search,
                  tFunc(tOr(tMapping,
                            tString tOr(tArray, tVoid) tOr(tInt, tVoid) tOr(tInt, tVoid)),
-                       tInt), 0);
+                       tObj), 0);
     
     ldap_program = end_program();
     add_program_constant("Client", ldap_program, 0);
