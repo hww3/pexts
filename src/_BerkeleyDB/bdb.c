@@ -40,14 +40,14 @@ void pike_module_init( void )
   add_integer_constant("DB_EXCL", DB_EXCL, 0);
   add_integer_constant("DB_NOMMAP", DB_NOMMAP, 0);
   add_integer_constant("DB_RDONLY", DB_RDONLY, 0);
-  add_integer_constant("DB_TRUNC", DB_TRUNCATE, 0);
+  add_integer_constant("DB_TRUNCATE", DB_TRUNCATE, 0);
 
   /* Database types */
   add_integer_constant("DB_BTREE", DB_BTREE, 0);
   add_integer_constant("DB_HASH", DB_HASH, 0);
   add_integer_constant("DB_QUEUE", DB_QUEUE, 0);
   add_integer_constant("DB_RECNO", DB_RECNO, 0);
-  add_integer_constant("DB_AUTO", DB_UNKNOWN, 0);
+  add_integer_constant("DB_UNKNOWN", DB_UNKNOWN, 0);
 #endif
 }
 
