@@ -20,7 +20,12 @@
 #ifndef __newt_global_h
 #define __newt_global_h
 
-#define __DEBUG__
+/*
+ * No debug by default
+ */
+#ifdef __DEBUG__
+#undef __DEBUG__
+#endif
 
 #if defined(__GNUC__ ) && defined(__DEBUG__)
 #include <stdio.h>
