@@ -266,7 +266,7 @@ _at_pam_init(void)
     ADD_FUNCTION("chpass", f_chpass,
                  tFunc(tString tString tString tString, tInt), 0);
     ADD_FUNCTION("start", f_pam_start,
-                 tFunc(tString tFun, tInt), 0);
+                 tFunc(tString tFunction, tInt), 0);
     
     pam_program = end_program();
     add_program_constant("PAM", pam_program, 0);
