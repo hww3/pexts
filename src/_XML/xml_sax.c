@@ -442,6 +442,11 @@ static int is_callback_ok(struct object *callbacks)
     return 0;
 
   i = 0;
+  /*
+   * walk the array of required methods, check whether each of them exists
+   * in the passed object and is a method, then record its offset in our
+   * storage so that the methods can be called later on.
+   */
   while (i < CB_API_SIZE) {
     ioff = find_identifier(callback_api[i].name, callbacks->prog);
     if (ioff < 0 && callback_api[i].req)
