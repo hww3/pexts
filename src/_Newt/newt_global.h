@@ -20,6 +20,18 @@
 #ifndef __newt_global_h
 #define __newt_global_h
 
+#define __DEBUG__
+
+#if defined(__GNUC__ ) && defined(__DEBUG__)
+#include <stdio.h>
+
+#define INFUN()  fprintf(stderr, "%s:%d %s <--\n", __FILE__, __LINE__, __FUNCTION__)
+#define OUTFUN() fprintf(stderr, "%s:%d %s -->\n", __FILE__, __LINE__, __FUNCTION__)
+#else
+#define INFUN()
+#define OUTFUN()
+#endif
+
 /*
  * Structure to hold all the component data not directly accessible from
  * within Pike and also all stuff we need to know to appropriately manage

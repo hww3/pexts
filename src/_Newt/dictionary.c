@@ -43,9 +43,6 @@ static DICT      **dictionaries;
 static unsigned    dictcount;
 static unsigned    dictmax;
 
-#define INFUN() printf(__FUNCTION__ " entered\n")
-#define OUTFUN() printf(__FUNCTION__  " leaving\n")
-
 static int
 dict_insert(DICT *dict, struct object *obj, void *data)
 {
@@ -114,7 +111,8 @@ dict_lookup(DICT *dict, void *data)
     obj = low_mapping_lookup(dict->dict, &skey);
 
     free_string(skey.u.string);
-    
+
+    OUTFUN();
     return obj->u.object;
 }
 
@@ -123,6 +121,8 @@ dict_foreach(DICT *dict, dict_cb_fn cb)
 {
     struct array      *arr;
     int               i;
+
+    INFUN();
     
     if (!dict || !cb)
         return;
@@ -135,6 +135,8 @@ dict_foreach(DICT *dict, dict_cb_fn cb)
         cb(arr->item[i].u.object);
 
     free_array(arr);
+
+    OUTFUN();
 }
 
 /*
@@ -144,25 +146,35 @@ DICT*
 dict_create(char *fn, char *name)
 {
     DICT      *tmp;
+
+    INFUN();
     
     if (!dictionaries) {
         dictionaries = (DICT**)calloc(sizeof(DICT*), INIT_DICTIONARIES);
-        if (!dictionaries)
+        if (!dictionaries) {
+            OUTFUN();
             FERROR(fn, "Failed to allocate memory for dictionaries (%d bytes)",
                    INIT_DICTIONARIES * sizeof(DICT*));
+        }
+        
         dictmax = INIT_DICTIONARIES;
     } else if(dictcount >= dictmax)  {
         dictionaries = (DICT**)realloc(dictionaries, (dictcount << 1) * sizeof(DICT*));
-        if (!dictionaries)
+        if (!dictionaries) {
+            OUTFUN();
             FERROR(fn, "Failed to enlarge memory for dictionaries (by %d bytes)",
                    INIT_DICTIONARIES * sizeof(DICT*));
+        }
+        
         dictmax = dictcount << 1;
     }
     
     tmp = dictionaries[dictcount] = (DICT*)calloc(sizeof(DICT), 1);
-    if (!dictionaries[dictcount])
+    if (!dictionaries[dictcount]) {
+        OUTFUN();
         FERROR(fn, "Failed to allocate memory for dictionary (%d bytes)",
                sizeof(DICT));
+    }
 
     dictcount++;
     tmp->dict = allocate_mapping(INIT_DICT_SIZE);
@@ -176,14 +188,20 @@ dict_create(char *fn, char *name)
     else
         tmp->name = NULL;
 
+    OUTFUN();
+    
     return tmp;
 }
 
 void
 init_dictionary(void)
 {
+    INFUN();
+    
     dictionaries = NULL;
     dictcount = 0;
+
+    OUTFUN();
 }
 
 #else

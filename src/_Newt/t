@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./test.pike 2> test.log

@@ -43,6 +43,19 @@ RCSID("$Id$");
 
 #if defined(HAVE_NEWT_H) && defined(HAVE_LIBNEWT)
 
+#ifdef __DEBUG__
+#include <stdio.h>
+
+void LOG_TO_FILE(char *s);
+
+static FILE*  lf = NULL;
+
+void LOG_TO_FILE(char *s)
+{
+    fprintf(lf, s);
+}
+#endif
+
 /*
  * Displays a function error for the current object->function()
  */
@@ -62,6 +75,9 @@ void ERROR(char *fn, char *format, ...)
     vsnprintf(myformat + strlen(myformat), sizeof(myformat) - strlen(myformat) - 1,
               format, args);
     strcat(myformat, "\n");
+
+    LOG_TO_FILE(myformat);
+    
     Pike_error(myformat);
     va_end(args);
 }
@@ -80,12 +96,17 @@ void FERROR(char *fn, char *format, ...)
     vsnprintf(myformat + strlen(myformat), sizeof(myformat) - strlen(myformat) - 1,
               format, args);
     strcat(myformat, "\n");
+
+    LOG_TO_FILE(myformat);
+        
     Pike_error(myformat);
     va_end(args);
 }
 
 void pike_module_init(void)
 {
+    lf = fopen("Newt.log", "w+");
+    
     init_dictionary();
 
     init_component_base();
@@ -93,7 +114,12 @@ void pike_module_init(void)
 }
 
 void pike_module_exit(void)
-{}
+{
+#ifdef __DEBUG__
+    if (lf)
+        fclose(lf);
+#endif
+}
 #else
 void pike_module_init(void)
 {}
