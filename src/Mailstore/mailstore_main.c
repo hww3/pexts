@@ -44,6 +44,7 @@
 #include "libmutt/src/mailbox.h"
 #include "libmutt/src/rfc822.h"
 #include "libmutt/src/mutt_socket.h"
+#include "libmutt/src/mime.h"
 #include "libmutt/src/md5.h"
 
 
@@ -327,6 +328,11 @@ void push_headers(HEADER *header) {
 	
 	push_text("subject");		PUSH_TEXT(header->env->real_subj);
 	push_text("message_id");	PUSH_TEXT(header->env->message_id);
+	push_text("type"); PUSH_TEXT( TYPE(header->content) );
+	push_text("subtype"); PUSH_TEXT(header->content->subtype);
+	push_text("encoding"); PUSH_TEXT( ENCODING(header->content->encoding) );
+	push_text("length"); push_int(header->content->length);
+	
 	PUSH_MAPPING_si("lines", header->lines);
 	PUSH_MAPPING_si("mime", header->mime);
 	PUSH_MAPPING_si("flagged", header->flagged);
@@ -344,7 +350,7 @@ void push_headers(HEADER *header) {
 		PUSH_ADDRESS("reply_to",reply_to);
 		PUSH_ADDRESS("return_path",return_path);
 		f_aggregate_mapping(14);
-	f_aggregate_mapping(22);
+	f_aggregate_mapping(30);
 }
 
 /* Mailstore.Mailbox.Message */
