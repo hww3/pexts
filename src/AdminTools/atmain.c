@@ -218,7 +218,7 @@ f_getallspents(INT32 args)
     INT32          nents;
     struct array   *sp_arr;
     char           buf[1024];
-    struct spwd    sp;
+    struct spwd    spbuf;
     
     if(THIS->shadow.db_opened)
         f_endspent(0);
@@ -227,7 +227,7 @@ f_getallspents(INT32 args)
     nents = 0;
 
     spent = getspent();
-    if (getspent_r(&sp, buf, sizeof(buf), &spent) != 0)
+    if (getspent_r(&spbuf, buf, sizeof(buf), &spent) != 0)
         return;
     
     while(spent) {
