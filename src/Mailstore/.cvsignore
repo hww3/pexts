@@ -1,0 +1,8 @@
+Makefile
+Makefile.pre
+autom4te.cache
+config.log
+config.status
+configure
+mailstore_config.h
+mailstore_config.h.in

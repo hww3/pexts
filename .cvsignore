@@ -6,3 +6,4 @@ config.cache
 config.h
 config.h.in
 autom4te.cache
+confdefs.h
