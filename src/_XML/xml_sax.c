@@ -480,25 +480,25 @@ static void f_create(INT32 args)
   switch(args) {
       case 4:
         if (ARG(4).type != T_INT)
-          Pike_error("Incorrect type for argument 4: expected an integer");
+          Pike_error("Incorrect type for argument 4: expected an integer\n");
         input_is_data = ARG(4).u.integer != 0;
         /* fall through */
         
       case 3:
         if (ARG(3).type != T_MAPPING)
-          Pike_error("Incorrect type for argument 3: expected a mapping");
+          Pike_error("Incorrect type for argument 3: expected a mapping\n");
         entities = ARG(3).u.mapping;
         /* fall through */
 
       case 2:
         if (ARG(2).type != T_OBJECT)
-          Pike_error("Incorrect type for argument 2: expected an object");
+          Pike_error("Incorrect type for argument 2: expected an object\n");
         callbacks = ARG(2).u.object;
         /* fall through */
 
       case 1:
         if (ARG(1).type != T_OBJECT && ARG(1).type != T_STRING)
-          Pike_error("Incorrect type for argument 1: expected a string or an object");
+          Pike_error("Incorrect type for argument 1: expected a string or an object\n");
         if (ARG(1).type == T_OBJECT)
           file_obj = ARG(1).u.object;
         else
@@ -506,17 +506,17 @@ static void f_create(INT32 args)
         break;
 
       default:
-        Pike_error("Incorrect number of arguments: expected between 2 and 4");
+        Pike_error("Incorrect number of arguments: expected between 2 and 4\n");
   }
 
   /* check whether file_obj is Stdio.File or derived */
   if (file_obj && find_identifier("read", file_obj->prog) < 0)
-    Pike_error("Passed file object is not Stdio.File or derived from it");
+    Pike_error("Passed file object is not Stdio.File or derived from it\n");
   
   /* check whether the callbacks object contains all the required methods
    * */
   if (!is_callback_ok(callbacks))
-    Pike_error("Passed callbacks object is not valid.");
+    Pike_error("Passed callbacks object is not valid.\n");
   
   /* choose the parsing method */
   if (file_obj)
@@ -526,7 +526,7 @@ static void f_create(INT32 args)
   else if (input_data)
     THIS->parsing_method = PARSE_FILE_PARSER;
   else
-    Pike_error("Cannot determine the parser type to use");
+    Pike_error("Cannot determine the parser type to use\n");
   
   /* initialize the parser and state */
   THIS->sax = &pextsSAX;
