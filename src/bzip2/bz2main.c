@@ -116,18 +116,20 @@ destalloc:
 	error("bzip2.inflate->inflate(): out of memory (needed %u bytes)\n",
 	      dlen);
 	      
-     retval = BZ2_bzBuffToBuffDecompress(dest,
-                                         &dlen,
-					 src->str,
-					 src->len,
-					 THIS->blkSize,
-					 0);
+#ifdef HAVE_OLD_LIBBZ2
+     retval = bzBuffToBuffDecompress(dest, &dlen, src->str, src->len,
+				     THIS->blkSize, 0);
+#else
+     retval = BZ2_bzBuffToBuffDecompress(dest, &dlen, src->str, src->len,
+					 THIS->blkSize, 0);
+#endif
 					 
     switch(retval) {
+#ifdef BZ_CONFIG_ERROR
 	case BZ_CONFIG_ERROR:
 	    error("bzip2.inflate->inflate(): your copy of libbz2 is seriously damaged!\n");
 	    break; /* never reached */
-	    
+#endif
 	case BZ_MEM_ERROR:
 	    error("bzip2.inflate->inflate(): out of memory decompressing block.\n");
 	    break; /* never reached */
@@ -258,17 +260,21 @@ destalloc: /* Yep, I know. goto's are ugly. But efficient. :P */
 	error("bzip2.deflate->deflate(): out of memory (needed %u bytes)\n",
 	      dlen);
 	
-    retval = BZ2_bzBuffToBuffCompress(dest,
-                                      &dlen,
-				      src->str,
+#ifdef HAVE_OLD_LIBBZ2
+    retval = bzBuffToBuffCompress(dest, &dlen, src->str,
+				  src->len << src->size_shift,
+				  THIS->blkSize, verbosity, 0);
+#else
+    retval = bzBuffToBuffCompress(dest, &dlen, src->str,
 				      src->len << src->size_shift,
-				      THIS->blkSize,
-				      verbosity, 0);
+				      THIS->blkSize, verbosity, 0);
+#endif
     switch(retval) {
+#ifdef BZ_CONFIG_ERROR
      case BZ_CONFIG_ERROR:
       error("bzip2.deflate->deflate(): your copy of libbz2 is seriously damaged!\n");
       break; /* never reached */
-	    
+#endif	    
      case BZ_MEM_ERROR:
       error("bzip2.deflate->deflate(): out of memory compressing block.\n");
       break; /* never reached */
