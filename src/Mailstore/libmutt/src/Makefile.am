@@ -18,7 +18,6 @@ libdir = .
 
 INCLUDES = -I$(top_srcdir)/imap -I$(top_srcdir)/src
 AM_CFLAGS = -I$(top_srcdir)/imap -I$(top_srcdir)/src
-CFLAGS += @CFLAGS@ $(INCLUDES)
 
 noinst_LIBRARIES = libmutt.a
 
@@ -74,6 +73,7 @@ noinst_HEADERS =
 	mailbox.h
 
 
-spotless: distclean
-	@rm -f Makefile Makefile.in
-	@rm -f muttconfig.h stamp-h1
+spotless:
+	echo doing spotless
+	-rm -f Makefile.in
+	-$(MAKE) distclean

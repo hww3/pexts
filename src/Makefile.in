@@ -22,7 +22,7 @@ modules: $(MODULES)
 
 spotless: force
 	for a in $(MODULES); do ( cd $$a && $(MAKE) $(MAKE_FLAGS) spotless); done
-	rm -f Makefile config.log config.status module_makefile .module_dirs
+	rm -f Makefile config.log config.status Makefile.rules .module_dirs
 
 Makefile: $(SRCDIR)/Makefile.in $(SRCDIR)/configure
 	@echo "configure or Makefile.in changed."

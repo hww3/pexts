@@ -25,7 +25,6 @@ DEFS = \
 #libmutt_a_CFLAGS = -I../src/
 INCLUDES = -I$(srcdir)/../src/
 AM_CFLAGS = -I$(srcdir)/../src/
-CFLAGS += $(INCLUDES)
 
 libimap_a_SOURCES = auth.c \
 	auth_login.c \
@@ -36,5 +35,6 @@ libimap_a_SOURCES = auth.c \
 	utf7.c \
 	util.c $(AUTHENTICATORS) $(GSSSOURCES)
 
-spotless: distclean
-	@rm -rf Makefile Makefile.in
+spotless:
+	-rm -f Makefile.in
+	-$(MAKE) distclean

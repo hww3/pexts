@@ -4,6 +4,7 @@ OBJS= mcrypt.o
 SOURCES=mcrypt.c
 MODULE_LIBS=@LIBMCRYPT_LIBS@
 MODULE_CFLAGS=@CFLAGS@ @LIBMCRYPT_CFLAGS@
+EXTRA_CLEAN=conf.libmcrypttest
 
 include @makefile_rules@
 
