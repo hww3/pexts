@@ -1,0 +1,8 @@
+configure
+avs_config.h
+avs_config.h.in
+config.log
+Makefile
+config.status
+Makefile.pre
+AVS.so
