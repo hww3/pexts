@@ -22,22 +22,300 @@
  */
 #define _GNU_SOURCE
 
+#include <stdio.h>
+
 #include "global.h"
 RCSID("$Id$");
 
-#include "caudium_util.h"
 #include "gpgme_config.h"
 
 #ifdef HAVE_LIBGPGME
+
 #ifdef HAVE_GPGME_H
 #include <gpgme.h>
 #endif
 
+#include "caudium_util.h"
+
+#ifndef GPGME_MIN_VER
+#define GPGME_MIN_VER "0.3.4"
+#endif
+
+static struct program      *gpgme_program;
+
+typedef struct
+{
+    unsigned int       ev_ok:1; /* is engine version ok? */
+    GpgmeError         lasterr;
+    GpgmeCtx           context;
+    const char        *gver;
+} GPGME_STRUCT;
+
+#define THIS ((GPGME_STRUCT*)get_storage(fp->current_object, gpgme_program))
+#define CHECK_OK if (!THIS->ev_ok) {pop_n_elems(args); push_int(GPGME_Invalid_Engine); return; }
+
+
+static void f_get_engine_info(INT32 args)
+{
+    const char  *ret;
+    
+    CHECK_OK;
+    ret = gpgme_get_engine_info();
+
+    pop_n_elems(args);
+    push_string(make_shared_string(ret));
+}
+
+static void f_strerror(INT32 args)
+{
+    const char  *ret;
+    GpgmeError  err = GPGME_No_Error;
+    
+    CHECK_OK;
+    get_all_args("strerror", args, "%i", &err);
+    
+    pop_n_elems(args);
+    ret = gpgme_strerror(err);
+
+    if (!ret)
+        push_string(make_shared_string("Unknown error code"));
+    else
+        push_string(make_shared_string(ret));
+}
+
+static void f_set_protocol(INT32 args)
+{
+    GpgmeError     err;
+    int            proto = GPGME_PROTOCOL_OpenPGP;
+
+    CHECK_OK;
+    if (args)
+        get_all_args("set_protocol", args, "%i", &proto);
+
+    pop_n_elems(args);
+    THIS->lasterr = gpgme_set_protocol(THIS->context, proto);
+
+    err = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
+    THIS->ev_ok = err != GPGME_No_Error ? 0 : 1;
+    
+    push_int(THIS->lasterr);
+}
+
+static void f_set_armor(INT32 args)
+{
+    int       yes = 1;
+
+    CHECK_OK;
+    if (args)
+        get_all_args("set_armor", args, "%i", &yes);
+
+    gpgme_set_armor(THIS->context, yes);
+    pop_n_elems(args);
+}
+
+static void f_get_armor(INT32 args)
+{
+    int       yes;
+
+    CHECK_OK;
+    yes = gpgme_get_armor(THIS->context);
+    pop_n_elems(args);
+
+    push_int(yes);
+}
+
+static void f_set_textmode(INT32 args)
+{
+    int       yes = 1;
+
+    CHECK_OK;
+    if (args)
+        get_all_args("set_textmode", args, "%i", &yes);
+
+    gpgme_set_textmode(THIS->context, yes);
+    pop_n_elems(args);
+}
+
+static void f_get_textmode(INT32 args)
+{
+    int      yes;
+
+    CHECK_OK;
+    yes = gpgme_get_textmode(THIS->context);
+    pop_n_elems(args);
+
+    push_int(yes);
+}
+
+static void f_set_include_certs(INT32 args)
+{
+    int   nrcerts;
+
+    CHECK_OK;
+    get_all_args("set_include_certs", args, "%i", &nrcerts);
+
+    pop_n_elems(args);
+    gpgme_set_include_certs(THIS->context, nrcerts);
+}
+
+static void f_get_include_certs(INT32 args)
+{
+    int   nrcerts;
+
+    CHECK_OK;
+
+    pop_n_elems(args);
+    nrcerts = gpgme_get_include_certs(THIS->context);
+
+    push_int(nrcerts);
+}
+
+static void f_set_keylist_mode(INT32 args)
+{
+    int   mode;
+
+    CHECK_OK;
+    get_all_args("set_keylist_mode", args, "%i", &mode);
+    pop_n_elems(args);
+
+    THIS->lasterr = gpgme_set_keylist_mode(THIS->context, mode);
+
+    push_int(THIS->lasterr);
+}
+
+static void f_get_keylist_mode(INT32 args)
+{
+    int   mode;
+
+    CHECK_OK;
+    pop_n_elems(args);
+
+    mode = gpgme_get_keylist_mode(THIS->context);
+
+    push_int(mode);
+}
+
+static void f_create(INT32 args)
+{
+    GpgmeError    err;
+    int           proto = GPGME_PROTOCOL_OpenPGP;
+    
+    if (args)
+        get_all_args("create", args, "%i", proto);
+    
+    err = gpgme_new(&THIS->context);
+    if (err != GPGME_No_Error)
+        Pike_error("Cannot create a GPGME context");
+
+    err = gpgme_set_protocol(THIS->context, proto);
+    if (err == GPGME_No_Error)
+        switch(proto) {
+            case GPGME_PROTOCOL_OpenPGP:
+            case GPGME_PROTOCOL_CMS:
+                THIS->lasterr = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
+                THIS->ev_ok = THIS->lasterr != GPGME_No_Error ? 0 : 1;
+                break;
+        }
+    
+    pop_n_elems(args);
+}
+
+static void init_gpgme(struct object *o)
+{
+    THIS->gver = gpgme_check_version(GPGME_MIN_VER);
+
+    if (!THIS->gver)
+        Pike_error("The GPGME libary is older than v%s",
+                   GPGME_MIN_VER);
+    
+    THIS->context = 0;
+}
+
+static void exit_gpgme(struct object *o)
+{
+    if (THIS->context)
+        gpgme_release(THIS->context);
+    
+    free_program(gpgme_program);
+}
+
 void pike_module_init(void)
 {
 #ifdef PEXTS_VERSION
-  pexts_init();
+    pexts_init();
 #endif
+
+    start_new_program();
+    ADD_STORAGE(GPGME_STRUCT);
+
+    set_init_callback(init_gpgme);
+    set_exit_callback(exit_gpgme);
+
+    ADD_FUNCTION("create", f_create,
+                 tFunc(tOr(tVoid, tInt), tVoid), 0);
+    
+    ADD_FUNCTION("get_engine_info", f_get_engine_info,
+                 tFunc(tVoid, tOr(tString, tInt)), 0);
+    ADD_FUNCTION("strerror", f_strerror,
+                 tFunc(tInt, tString), 0);
+    ADD_FUNCTION("set_protocol", f_set_protocol,
+                 tFunc(tInt, tInt), 0);
+    ADD_FUNCTION("set_armor", f_set_armor,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("get_armor", f_get_armor,
+                 tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("set_textmode", f_set_textmode,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("get_textmode", f_get_textmode,
+                 tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("set_include_certs", f_set_include_certs,
+                 tFunc(tInt, tVoid), 0);
+    ADD_FUNCTION("get_include_certs", f_get_include_certs,
+                 tFunc(tVoid, tInt), 0);
+    ADD_FUNCTION("set_keylist_mode", f_set_keylist_mode,
+                 tFunc(tInt, tInt), 0);
+    ADD_FUNCTION("get_keylist_mode", f_get_keylist_mode,
+                 tFunc(tVoid, tInt), 0);
+    /*TBD: passphrase callback */
+    /*TBD: progress meter callback */
+    
+    gpgme_program = end_program();
+    add_program_constant("gpgme", gpgme_program, 0);
+
+    /* Error codes */
+    add_integer_constant("GPGME_EOF", GPGME_EOF, 0);
+    add_integer_constant("GPGME_No_Error", GPGME_No_Error, 0);
+    add_integer_constant("GPGME_General_Error", GPGME_General_Error, 0);
+    add_integer_constant("GPGME_Out_Of_Core", GPGME_Out_Of_Core, 0);
+    add_integer_constant("GPGME_Invalid_Value", GPGME_Invalid_Value, 0);
+    add_integer_constant("GPGME_Busy", GPGME_Busy, 0);
+    add_integer_constant("GPGME_No_Request", GPGME_No_Request, 0);
+    add_integer_constant("GPGME_Exec_Error", GPGME_Exec_Error, 0);
+    add_integer_constant("GPGME_Too_Many_Procs", GPGME_Too_Many_Procs, 0);
+    add_integer_constant("GPGME_Pipe_Error", GPGME_Pipe_Error, 0);
+    add_integer_constant("GPGME_No_Recipients", GPGME_No_Recipients, 0);
+    add_integer_constant("GPGME_Invalid_Recipients", GPGME_Invalid_Recipients, 0);
+    add_integer_constant("GPGME_No_Data", GPGME_No_Data, 0);
+    add_integer_constant("GPGME_Conflict", GPGME_Conflict, 0);
+    add_integer_constant("GPGME_Not_Implemented", GPGME_Not_Implemented, 0);
+    add_integer_constant("GPGME_Read_Error", GPGME_Read_Error, 0);
+    add_integer_constant("GPGME_Write_Error", GPGME_Write_Error, 0);
+    add_integer_constant("GPGME_Invalid_Type", GPGME_Invalid_Type, 0);
+    add_integer_constant("GPGME_Invalid_Mode", GPGME_Invalid_Mode, 0);
+    add_integer_constant("GPGME_File_Error", GPGME_File_Error, 0);
+    add_integer_constant("GPGME_Decryption_Failed", GPGME_Decryption_Failed, 0);
+    add_integer_constant("GPGME_No_Passphrase", GPGME_No_Passphrase, 0);
+    add_integer_constant("GPGME_Canceled", GPGME_Canceled, 0);
+    add_integer_constant("GPGME_Invalid_Key", GPGME_Invalid_Key, 0);
+    add_integer_constant("GPGME_Invalid_Engine", GPGME_Invalid_Engine, 0);
+
+    /* Protocol constants */
+    add_integer_constant("GPGME_PROTOCOL_OpenPGP", GPGME_PROTOCOL_OpenPGP, 0);
+    add_integer_constant("GPGME_PROTOCOL_CMS", GPGME_PROTOCOL_CMS, 0);
+
+    /* Keylist constants */
+    add_integer_constant("GPGME_KEYLIST_MODE_LOCAL", GPGME_KEYLIST_MODE_LOCAL, 0);
+    add_integer_constant("GPGME_KEYLIST_MODE_EXTERN", GPGME_KEYLIST_MODE_EXTERN, 0);
 }
 
 void pike_module_exit(void)
@@ -52,5 +330,4 @@ void pike_module_init(void)
 
 void pike_module_exit(void)
 {}
-#endif
-#endif
+#endif /* HAVE_LIBGPGME */
