@@ -1,0 +1,7 @@
+configure
+config.log
+Makefile
+config.status
+Makefile.pre
+bdb_config.h
+bdb_config.h.in
