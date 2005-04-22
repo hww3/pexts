@@ -1,3 +1,10 @@
+pexts (0.2.0-2) unstable; urgency=low
+
+  * Applied patch from Andreas Jochens <aj@andaco.de> which makes it
+    possible to compile pexts on AMD64 with gcc 4.0 (closes: Bug#303919)
+
+ -- Marek Habersack <grendel@debian.org>  Fri, 22 Apr 2005 03:23:48 +0200
+
 pexts (0.2.0-1) unstable; urgency=low
 
   * The latest upstream release

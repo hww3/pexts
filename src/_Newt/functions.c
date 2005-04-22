@@ -1642,7 +1642,7 @@ f_listboxGetSelection(INT32 args)
     
     func_prolog("listboxGetSelection", ids, caller, NULL, 0);
 
-    (void**)items = newtListboxGetSelection(THIS_OBJ(caller)->u.component, &numitems);
+    items = newtListboxGetSelection(THIS_OBJ(caller)->u.component, &numitems);
 
     pop_n_elems(args);
     
@@ -1835,7 +1835,7 @@ f_checkboxTreeGetSelection(INT32 args)
     
     func_prolog("checkboxTreeGetSelection", ids, caller, NULL, 0);
 
-    (void**)items = newtCheckboxTreeGetSelection(THIS_OBJ(caller)->u.component, &numitems);
+    items = newtCheckboxTreeGetSelection(THIS_OBJ(caller)->u.component, &numitems);
 
     pop_n_elems(args);
     
@@ -1864,7 +1864,7 @@ f_checkboxTreeGetCurrent(INT32 args)
     
     func_prolog("checkboxTreeGetCurrent", ids, caller, NULL, 0);
 
-    (void*)ret = newtCheckboxTreeGetCurrent(THIS_OBJ(caller)->u.component);
+    ret = newtCheckboxTreeGetCurrent(THIS_OBJ(caller)->u.component);
 
     pop_n_elems(args);
 
@@ -1906,7 +1906,7 @@ f_checkboxTreeGetMultiSelection(INT32 args)
     
     pop_n_elems(args);
 
-    (void**)items = newtCheckboxTreeGetMultiSelection(THIS_OBJ(caller)->u.component, &numitems, seqnum);
+    items = newtCheckboxTreeGetMultiSelection(THIS_OBJ(caller)->u.component, &numitems, seqnum);
     
     /* Use numitems, as item can also be NULL... */
     for(i = 0; i < numitems; i++)
