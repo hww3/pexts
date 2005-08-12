@@ -178,7 +178,7 @@ static void xsl_error(void* ctx, const char* msg, ...) {
     }
     strcat(out, buf);
  
-    (struct pike_string *)(store->err_str) = make_shared_string(&out[0]);
+    store->err_str = make_shared_string(&out[0]);
     add_ref(store->err_str);
     DEBUG_XSLT("leaving xsl_error() with:\n");
     DEBUG_XSLT(out);
@@ -217,7 +217,7 @@ static void xml_error(void* ctx, const char* msg, ...) {
     strcat(out, buf);
     DEBUG_XSLT("leaving xml_error():\n");
     DEBUG_XSLT(out);
-    (struct pike_string *)(store->err_str) = make_shared_string(&out[0]);
+    store->err_str = make_shared_string(&out[0]);
     add_ref(store->err_str);
 }
 

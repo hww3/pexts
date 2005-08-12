@@ -150,7 +150,7 @@ f_clearKeyBuffer(INT32 args)
 }
 
 static void
-f_delay(INT32 args)
+local_f_delay(INT32 args)
 {
     if (args != 1)
         FERROR("delay", "Expected one argument, got %d instead", args);
@@ -3630,7 +3630,7 @@ void init_functions()
                  tFunc(tVoid, tVoid), 0);
     ADD_FUNCTION("clearKeyBuffer", f_clearKeyBuffer,
                  tFunc(tVoid, tVoid), 0);
-    ADD_FUNCTION("delay", f_delay,
+    ADD_FUNCTION("delay", local_f_delay,
                  tFunc(tInt, tVoid), 0);
     ADD_FUNCTION("openWindow", f_openWindow,
                  tFunc(tInt tInt tInt tInt tString, tVoid), 0);
