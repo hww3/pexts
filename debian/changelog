@@ -1,4 +1,4 @@
-pexts (0.2.0-3) unstable; urgency=high
+pexts (0.2.0-3) unstable; urgency=low
 
   * FTBFS (amd64/gcc-4.0):  (Closes: #303919). Applied the patch from
     Andreas Jochens <aj@andaco.de>, thanks a lot. Took some time to fix it
