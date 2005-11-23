@@ -1,3 +1,9 @@
+pexts (0.2.0-4) unstable; urgency=low
+
+  * Recompiled for the new Pike versions
+
+ -- Marek Habersack <grendel@debian.org>  Wed, 23 Nov 2005 20:22:43 +0100
+
 pexts (0.2.0-3) unstable; urgency=low
 
   * FTBFS (amd64/gcc-4.0):  (Closes: #303919). Applied the patch from
