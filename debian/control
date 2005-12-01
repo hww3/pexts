@@ -2,8 +2,8 @@ Source: pexts
 Section: interpreters
 Priority: optional
 Maintainer: Marek Habersack <grendel@debian.org>
-Standards-Version: 3.6.1
-Build-Depends: debhelper (>> 4.1.16), pike7.2 (>= 7.2.580-4), pike7.4-core (>> 7.4.341-2), pike7.4-dev (>> 7.4.341-2), pike7.6-core (>> 7.6.51), pike7.6-dev (>> 7.6.51), libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, autoconf (>> 2.53), automake, libtool, libpcre3-dev, libmcrypt-dev, libgeoip-dev
+Standards-Version: 3.6.2.1
+Build-Depends: debhelper (>> 4.1.16), pike7.2 (>= 7.2.580-4), pike7.4-core (>> 7.4.341-2), pike7.4-dev (>> 7.4.341-2), pike7.6-core (>= 7.6.53-1), pike7.6-dev (>= 7.6.53-1), libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, autoconf (>> 2.53), automake, libtool, libpcre3-dev, libmcrypt-dev, libgeoip-dev
 
 Package: pike7.2-pexts-admintools
 Architecture: any
