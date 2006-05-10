@@ -5,8 +5,11 @@ pexts (0.2.0-6) unstable; urgency=low
     #359642)
     Removed dependencies on pike7.4 and pike7.2. Patch from
     Stefan Huehner <stefan@huehner.org>, thanks.
+  * pexts(GNU/k*BSD): FTBFS: out of date config.sub/config.guess
+    (Closes: #341629)
+    Updated to the latest version available in Debian
 
- -- Marek Habersack <grendel@debian.org>  Wed, 10 May 2006 04:10:47 +0200
+ -- Marek Habersack <grendel@debian.org>  Wed, 10 May 2006 04:12:38 +0200
 
 pexts (0.2.0-5) unstable; urgency=low
 
