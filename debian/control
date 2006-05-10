@@ -3,27 +3,7 @@ Section: interpreters
 Priority: optional
 Maintainer: Marek Habersack <grendel@debian.org>
 Standards-Version: 3.6.2.1
-Build-Depends: debhelper (>> 4.1.16), pike7.2 (>= 7.2.580-4), pike7.4-core (>> 7.4.341-2), pike7.4-dev (>> 7.4.341-2), pike7.6-core (>= 7.6.53-1), pike7.6-dev (>= 7.6.53-1), libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, autoconf (>> 2.53), automake, libtool, libpcre3-dev, libmcrypt-dev, libgeoip-dev
-
-Package: pike7.2-pexts-admintools
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike AdminTools module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the more advanced Unix
- system interfaces which aren't supported by the core Pike modules.
-
-Package: pike7.4-pexts-admintools
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike AdminTools module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the more advanced Unix
- system interfaces which aren't supported by the core Pike modules.
+Build-Depends: debhelper (>> 4.1.16), pike7.6-core (>= 7.6.75-2), pike7.6-dev (>= 7.6.75-2), libnewt-dev, libmhash-dev, libpam0g-dev, libbz2-dev, libncurses5-dev, autoconf (>> 2.53), automake, libtool, libpcre3-dev, libmcrypt-dev, libgeoip-dev (>= 1.3.16-1)
 
 Package: pike7.6-pexts-admintools
 Architecture: any
@@ -35,26 +15,6 @@ Description: Pike AdminTools module
  This module implements a glue for the more advanced Unix
  system interfaces which aren't supported by the core Pike modules.
 
-Package: pike7.2-pexts-curses
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike (N)Curses module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the (N)Curses portable
- terminal access library.
-
-Package: pike7.4-pexts-curses
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike (N)Curses module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the (N)Curses portable
- terminal access library.
-
 Package: pike7.6-pexts-curses
 Architecture: any
 Depends: ${shlibs:Depends}, pike7.6 (>= ${pikever76}-1) | pike7.6 (<= ${pikever76}-99)
@@ -64,26 +24,6 @@ Description: Pike (N)Curses module
  .
  This module implements a glue for the (N)Curses portable
  terminal access library.
-
-Package: pike7.2-pexts-mhash
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike Mhash module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the Mhash library of strong
- hashes.
-
-Package: pike7.4-pexts-mhash
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike Mhash module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the Mhash library of strong
- hashes.
 
 Package: pike7.6-pexts-mhash
 Architecture: any
@@ -95,26 +35,6 @@ Description: Pike Mhash module
  This module implements a glue for the Mhash library of strong
  hashes.
 
-Package: pike7.2-pexts-newt
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike Newt module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the Newt user interface
- library.
-
-Package: pike7.4-pexts-newt
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike Newt module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the Newt user interface
- library.
-
 Package: pike7.6-pexts-newt
 Architecture: any
 Depends: ${shlibs:Depends}, pike7.6 (>= ${pikever76}-1) | pike7.6 (<= ${pikever76}-99)
@@ -124,26 +44,6 @@ Description: Pike Newt module
  .
  This module implements a glue for the Newt user interface
  library.
-
-Package: pike7.2-pexts-pcre
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike PCRE module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the PCRE - perl compatible
- regular expression library.
-
-Package: pike7.4-pexts-pcre
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike PCRE module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the PCRE - perl compatible
- regular expression library.
 
 Package: pike7.6-pexts-pcre
 Architecture: any
@@ -155,26 +55,6 @@ Description: Pike PCRE module
  This module implements a glue for the PCRE - perl compatible
  regular expression library.
 
-Package: pike7.2-pexts-bzip2
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike bzip2 module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the bzip2 compression
- library.
-
-Package: pike7.4-pexts-bzip2
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike bzip2 module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the bzip2 compression
- library.
-
 Package: pike7.6-pexts-bzip2
 Architecture: any
 Depends: ${shlibs:Depends}, pike7.6 (>= ${pikever76}-1) | pike7.6 (<= ${pikever76}-99)
@@ -185,26 +65,6 @@ Description: Pike bzip2 module
  This module implements a glue for the bzip2 compression
  library.
 
-Package: pike7.2-pexts-geoip
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike GeoIP module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the GeoIP IP to country
- code lookup library.
-
-Package: pike7.4-pexts-geoip
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike GeoIP module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the GeoIP IP to country
- code lookup library.
-
 Package: pike7.6-pexts-geoip
 Architecture: any
 Depends: ${shlibs:Depends}, pike7.6 (>= ${pikever76}-1) | pike7.6 (<= ${pikever76}-99)
@@ -214,26 +74,6 @@ Description: Pike GeoIP module
  .
  This module implements a glue for the GeoIP IP to country
  code lookup library.
-
-Package: pike7.2-pexts-mcrypt
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.2 (>= ${pikever72}-1) | pike7.2 (<= ${pikever72}-99)
-Description: Pike mcrypt module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the mcrypt library of strong
- hashes.
-
-Package: pike7.4-pexts-mcrypt
-Architecture: any
-Depends: ${shlibs:Depends}, pike7.4 (>= ${pikever74}-1) | pike7.4 (<= ${pikever74}-99)
-Description: Pike mcrypt module
- Pexts is a collection of Pike extension modules designed
- to fill the gaps that are in the standard Pike distribution.
- .
- This module implements a glue for the mcrypt library of strong
- hashes.
 
 Package: pike7.6-pexts-mcrypt
 Architecture: any

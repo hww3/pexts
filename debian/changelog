@@ -1,3 +1,13 @@
+pexts (0.2.0-6) unstable; urgency=low
+
+  * Uninstallable due to unmet dep on pike7.2 (Closes: #350431)
+  * pexts - FTBFS: build depends against not available package (Closes:
+    #359642)
+    Removed dependencies on pike7.4 and pike7.2. Patch from
+    Stefan Huehner <stefan@huehner.org>, thanks.
+
+ -- Marek Habersack <grendel@debian.org>  Wed, 10 May 2006 04:10:47 +0200
+
 pexts (0.2.0-5) unstable; urgency=low
 
   * pexts(GNU/k*BSD): FTBFS: out of date config.sub/config.guess
