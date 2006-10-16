@@ -191,7 +191,7 @@ binary-arch: build install
 #	dh_makeshlibs
 #	dh_perl
 	dh_shlibdeps
-	dh_gencontrol -Vpikever76=$(PIKE_VERSION76)"
+	dh_gencontrol -- -Vpikever76=$(PIKE_VERSION76)
 	dh_md5sums
 	dh_builddeb
 
